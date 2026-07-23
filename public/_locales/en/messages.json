@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Tab Manager"
+  },
+  "extensionDescription": {
+    "message": "Manage and quickly access browser tabs from the Chrome side panel."
+  },
+  "actionTitle": {
+    "message": "Open Tab Manager"
+  }
+}

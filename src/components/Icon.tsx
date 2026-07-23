@@ -1,0 +1,132 @@
+import type { SVGProps } from 'react'
+
+export type IconName =
+  | 'search'
+  | 'close'
+  | 'eye'
+  | 'eye-off'
+  | 'chevron'
+  | 'chevron-left'
+  | 'chevron-right'
+  | 'tab'
+  | 'refresh'
+  | 'clear'
+  | 'all-tabs'
+  | 'window'
+  | 'active-tab'
+  | 'globe'
+  | 'list'
+  | 'group'
+  | 'collapse-all'
+  | 'expand-all'
+  | 'check'
+
+interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'children' | 'name'> {
+  name: IconName
+}
+
+const paths: Record<IconName, React.ReactNode> = {
+  search: (
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-4-4" />
+    </>
+  ),
+  close: <path d="m6 6 12 12M18 6 6 18" />,
+  eye: (
+    <>
+      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+      <circle cx="12" cy="12" r="2.5" />
+    </>
+  ),
+  'eye-off': (
+    <>
+      <path d="M3 3 21 21" />
+      <path d="M10.6 6.2A9.9 9.9 0 0 1 12 6c6 0 9.5 6 9.5 6a17 17 0 0 1-2.3 3.1M6.3 6.3C3.8 8 2.5 12 2.5 12s3.5 6 9.5 6a9 9 0 0 0 3.2-.6" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    </>
+  ),
+  chevron: <path d="m8 10 4 4 4-4" />,
+  'chevron-left': <path d="m15 18-6-6 6-6" />,
+  'chevron-right': <path d="m9 18 6-6-6-6" />,
+  tab: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 9h18M7 7h.01" />
+    </>
+  ),
+  refresh: (
+    <>
+      <path d="M20 7v5h-5" />
+      <path d="M18.5 16a8 8 0 1 1 .8-7.5L20 12" />
+    </>
+  ),
+  clear: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9 9 6 6M15 9l-6 6" />
+    </>
+  ),
+  'all-tabs': (
+    <>
+      <rect x="3" y="5" width="14" height="12" rx="2" />
+      <path d="M7 3h12a2 2 0 0 1 2 2v12M7 9h6" />
+    </>
+  ),
+  window: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 8h18M7 6h.01M10 6h.01" />
+    </>
+  ),
+  'active-tab': (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 9h18" />
+      <circle cx="12" cy="14" r="2.5" />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+    </>
+  ),
+  list: (
+    <>
+      <path d="M8 6h13M8 12h13M8 18h13" />
+      <path d="M3 6h.01M3 12h.01M3 18h.01" />
+    </>
+  ),
+  group: (
+    <>
+      <rect x="3" y="4" width="8" height="7" rx="1" />
+      <rect x="13" y="4" width="8" height="7" rx="1" />
+      <rect x="3" y="13" width="8" height="7" rx="1" />
+      <rect x="13" y="13" width="8" height="7" rx="1" />
+    </>
+  ),
+  'collapse-all': <path d="m7 15 5-5 5 5M7 10l5-5 5 5" />,
+  'expand-all': <path d="m7 9 5 5 5-5M7 14l5 5 5-5" />,
+  check: <path d="m5 12 4 4L19 6" />,
+}
+
+export function Icon({ name, width = 18, height = 18, ...props }: IconProps) {
+  return (
+    <svg
+      {...props}
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      width={width}
+      height={height}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      focusable="false"
+    >
+      {paths[name]}
+    </svg>
+  )
+}

@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "标签页管理器"
+  },
+  "extensionDescription": {
+    "message": "在 Chrome 侧边栏中管理和快速访问浏览器标签页。"
+  },
+  "actionTitle": {
+    "message": "打开标签页管理器"
+  }
+}
