@@ -1,5 +1,4 @@
 # Chrome Tab Manager
-
 [简体中文](README.md) | English
 
 ## Project Overview
