@@ -476,9 +476,22 @@ async function renderReadyApp(api = createTestApi()) {
 
 describe('action popup shell CSS contract', () => {
   it('uses a compact popup viewport with an independently scrolling content area', () => {
-    expect(stylesSource).toMatch(/html,\s*body,\s*#root\s*\{[\s\S]*width:\s*min\(420px, 100vw\);[\s\S]*height:\s*min\(600px, 100vh\);/)
-    expect(stylesSource).toMatch(/\.popup-shell\s*\{[\s\S]*height:\s*100%;/)
-    expect(stylesSource).toMatch(/\.popup-content\s*\{[\s\S]*height:\s*100%;[\s\S]*overflow-y:\s*auto;/)
+    expect(stylesSource).toMatch(
+      /html\s*\{[^}]*width:\s*420px;[^}]*height:\s*600px;[^}]*overflow:\s*hidden;/,
+    )
+    expect(stylesSource).toMatch(
+      /body\s*\{[^}]*width:\s*420px;[^}]*height:\s*600px;[^}]*overflow:\s*hidden;/,
+    )
+    expect(stylesSource).toMatch(
+      /#root\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/,
+    )
+    expect(stylesSource).not.toMatch(/width:\s*min\(420px, 100vw\)|height:\s*min\(600px, 100vh\)/)
+    expect(stylesSource).toMatch(
+      /\.popup-shell\s*\{[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/,
+    )
+    expect(stylesSource).toMatch(
+      /\.popup-content\s*\{[^}]*height:\s*100%;[^}]*overflow-x:\s*hidden;[^}]*overflow-y:\s*auto;/,
+    )
     expect(stylesSource).not.toMatch(/\.drawer-rail|\.drawer-toggle|\.drawer-shell|\.drawer-content/)
   })
 })
