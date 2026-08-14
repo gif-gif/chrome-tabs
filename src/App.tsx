@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createSafeChromeTabsApi } from './chrome/chromeTabs'
 import { DomainGroup } from './components/DomainGroup'
-import { DrawerToggle } from './components/DrawerToggle'
 import { Header } from './components/Header'
 import { LanguageMenu } from './components/LanguageMenu'
 import { Icon } from './components/Icon'
@@ -65,7 +64,6 @@ export function App({ api }: AppProps) {
     () => new Map(),
   )
   const [operationMessage, setOperationMessage] = useState<PlainTranslationKey | null>(null)
-  const [sidePanelClosePending, setSidePanelClosePending] = useState(false)
   const [pendingTabIds, setPendingTabIds] = useState<Set<number>>(() => new Set())
   const pendingTabIdsRef = useRef(new Set<number>())
   const operationSequenceRef = useRef(0)
@@ -407,41 +405,9 @@ export function App({ api }: AppProps) {
     }
   }
 
-  async function handleCloseSidePanel() {
-    if (sidePanelClosePending) {
-      return
-    }
-
-    if (effectiveFocusedWindowId < 0) {
-      setOperationMessage('closeSidePanelError')
-      return
-    }
-
-    setSidePanelClosePending(true)
-    const operationSequence = ++operationSequenceRef.current
-
-    try {
-      await resolvedApi.closeSidePanel(effectiveFocusedWindowId)
-      if (operationSequence === operationSequenceRef.current) {
-        setOperationMessage(null)
-      }
-    } catch {
-      if (operationSequence === operationSequenceRef.current) {
-        setOperationMessage('closeSidePanelError')
-      }
-    } finally {
-      setSidePanelClosePending(false)
-    }
-  }
-
   return (
-    <div className="drawer-shell">
-      <DrawerToggle
-        t={t}
-        onClose={() => void handleCloseSidePanel()}
-        pending={sidePanelClosePending}
-      />
-      <main className="drawer-content" ref={setScrollContainer}>
+    <div className="popup-shell">
+      <main className="popup-content" ref={setScrollContainer}>
         <div
           className="sticky-controls"
           ref={setStickyToolbar}

@@ -453,13 +453,11 @@ function createTestApi(
   queryWindows: ReturnType<typeof vi.fn<ChromeTabsApi['queryWindows']>>
   activateTab: ReturnType<typeof vi.fn<ChromeTabsApi['activateTab']>>
   closeTab: ReturnType<typeof vi.fn<ChromeTabsApi['closeTab']>>
-  closeSidePanel: ReturnType<typeof vi.fn<ChromeTabsApi['closeSidePanel']>>
 } {
   return {
     queryWindows: vi.fn(queryWindows),
     activateTab: vi.fn<ChromeTabsApi['activateTab']>(async () => undefined),
     closeTab: vi.fn<ChromeTabsApi['closeTab']>(async () => undefined),
-    closeSidePanel: vi.fn<ChromeTabsApi['closeSidePanel']>(async () => undefined),
     subscribe: vi.fn(() => () => undefined),
   }
 }
@@ -476,39 +474,26 @@ async function renderReadyApp(api = createTestApi()) {
   return { api, user, ...view }
 }
 
-describe('side panel close rail CSS contract', () => {
-  it('keeps only a narrow close rail and removes the internal collapsed drawer rules', () => {
-    expect(stylesSource).toMatch(/\.drawer-rail\s*\{[\s\S]*width:\s*18px;/)
-    expect(stylesSource).toMatch(/\.drawer-toggle\s*\{[\s\S]*width:\s*18px;[\s\S]*height:\s*48px;/)
-    const drawerContentRule = stylesSource.match(/\.drawer-content\s*\{([\s\S]*?)\}/)?.[1]
-    expect(stylesSource).not.toMatch(/\.drawer-collapsed/)
-    expect(drawerContentRule).not.toMatch(/translateX|opacity:\s*0|pointer-events:\s*none/)
+describe('action popup shell CSS contract', () => {
+  it('uses a compact popup viewport with an independently scrolling content area', () => {
+    expect(stylesSource).toMatch(/html,\s*body,\s*#root\s*\{[\s\S]*width:\s*min\(420px, 100vw\);[\s\S]*height:\s*min\(600px, 100vh\);/)
+    expect(stylesSource).toMatch(/\.popup-shell\s*\{[\s\S]*height:\s*100%;/)
+    expect(stylesSource).toMatch(/\.popup-content\s*\{[\s\S]*height:\s*100%;[\s\S]*overflow-y:\s*auto;/)
+    expect(stylesSource).not.toMatch(/\.drawer-rail|\.drawer-toggle|\.drawer-shell|\.drawer-content/)
   })
 })
 
 describe('App integration', () => {
-  it('closes the Chrome Side Panel from the left rail instead of hiding internal content', async () => {
+  it('renders the tab manager as a popup without an explicit Side Panel close control', async () => {
     storeUiPreferences(false)
     const api = createTestApi()
-    const user = userEvent.setup()
     const { container } = render(<App api={api} />)
 
     await screen.findByText('GitHub - Chrome Tabs')
-    const closeButton = screen.getByRole('button', { name: '关闭侧边栏' })
-    const drawerContent = container.querySelector('.drawer-content')
-    expect(closeButton).toHaveClass('drawer-toggle')
-    expect(closeButton.closest('.drawer-rail')).toHaveClass('drawer-rail')
-    expect(drawerContent).toBeInTheDocument()
-    expect(drawerContent).not.toHaveAttribute('aria-hidden')
-    expect(drawerContent).not.toHaveAttribute('inert')
-
-    await user.click(closeButton)
-
-    expect(api.closeSidePanel).toHaveBeenCalledWith(10)
-    expect(container.querySelector('.drawer-content')).toBe(drawerContent)
-    expect(drawerContent).not.toHaveAttribute('aria-hidden')
-    expect(drawerContent).not.toHaveAttribute('inert')
-    expect(container.querySelector('.drawer-shell')).not.toHaveClass('drawer-collapsed')
+    expect(container.querySelector('.popup-shell')).toBeInTheDocument()
+    expect(container.querySelector('.popup-content')).toBeInTheDocument()
+    expect(container.querySelector('.drawer-rail')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '关闭侧边栏' })).not.toBeInTheDocument()
     expect(screen.getByRole('toolbar', { name: '标签页工具栏' })).toBeInTheDocument()
     expect(screen.getByRole('searchbox', { name: '搜索标签页' })).toBeInTheDocument()
     await waitFor(() =>
@@ -520,24 +505,6 @@ describe('App integration', () => {
       }),
     )
   })
-
-  it('shows a sanitized message when closing the Side Panel fails', async () => {
-    storeUiPreferences(false)
-    const api = createTestApi()
-    api.closeSidePanel.mockRejectedValueOnce(new Error('private side panel failure'))
-    const user = userEvent.setup()
-    const { container } = render(<App api={api} />)
-
-    await screen.findByText('GitHub - Chrome Tabs')
-    await user.click(screen.getByRole('button', { name: '关闭侧边栏' }))
-
-    expect(api.closeSidePanel).toHaveBeenCalledWith(10)
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      '无法关闭侧边栏，请重试。',
-    )
-    expect(container.innerHTML).not.toContain('private side panel failure')
-  })
-
 
   it('keeps count, privacy, search, filters, and the view switch inside one sticky toolbar', async () => {
     const { container } = await renderReadyApp()
@@ -1313,7 +1280,6 @@ describe('unavailable Chrome API initialization', () => {
     await expect(api.queryWindows()).rejects.toBeInstanceOf(Error)
     await expect(api.activateTab(1, 1)).rejects.toBeInstanceOf(Error)
     await expect(api.closeTab(1)).rejects.toBeInstanceOf(Error)
-    await expect(api.closeSidePanel(1)).rejects.toBeInstanceOf(Error)
     expect(api.subscribe(vi.fn())).toBeTypeOf('function')
   })
 })
@@ -1323,7 +1289,7 @@ describe('unavailable Chrome API initialization', () => {
 describe('progressive sticky search toolbar', () => {
   it('keeps one search input mounted while auxiliary controls hide and restore with scroll', async () => {
     const { container } = await renderReadyApp()
-    const scrollContainer = container.querySelector('.drawer-content') as HTMLElement
+    const scrollContainer = container.querySelector('.popup-content') as HTMLElement
     const search = screen.getByRole('searchbox', { name: '搜索标签页' })
     const toolbar = screen.getByRole('toolbar', { name: '标签页工具栏' })
     const auxiliary = toolbar.querySelectorAll<HTMLElement>('.toolbar-auxiliary')
@@ -1354,7 +1320,7 @@ describe('progressive sticky search toolbar', () => {
 
   it('protects focused auxiliary controls and restores the latest scroll state after focus leaves', async () => {
     const { container } = await renderReadyApp()
-    const scrollContainer = container.querySelector('.drawer-content') as HTMLElement
+    const scrollContainer = container.querySelector('.popup-content') as HTMLElement
     const toolbar = screen.getByRole('toolbar', { name: '标签页工具栏' })
     const language = within(toolbar).getByRole('button', { name: '显示语言' })
 
@@ -1372,7 +1338,7 @@ describe('progressive sticky search toolbar', () => {
 
   it('keeps toolbar controls non-interactive when fully hidden', async () => {
     const { container } = await renderReadyApp()
-    const scrollContainer = container.querySelector('.drawer-content') as HTMLElement
+    const scrollContainer = container.querySelector('.popup-content') as HTMLElement
     const toolbar = screen.getByRole('toolbar', { name: '标签页工具栏' })
     scrollContainer.scrollTop = 64
     fireEvent.scroll(scrollContainer)
@@ -1394,7 +1360,7 @@ describe('progressive sticky search toolbar', () => {
     await user.type(search, 'github')
     await user.click(screen.getByRole('button', { name: 'Hide all tab information' }))
 
-    const scrollContainer = container.querySelector('.drawer-content') as HTMLElement
+    const scrollContainer = container.querySelector('.popup-content') as HTMLElement
     scrollContainer.scrollTop = 56
     fireEvent.scroll(scrollContainer)
     await waitFor(() => expect(screen.getByRole('toolbar', { name: 'Tab toolbar' })).toHaveAttribute('data-compact', 'false'))

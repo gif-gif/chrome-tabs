@@ -13,9 +13,6 @@ const unavailableChromeTabsApi: ChromeTabsApi = {
   closeTab: async () => {
     throw new Error(CHROME_API_UNAVAILABLE_MESSAGE)
   },
-  closeSidePanel: async () => {
-    throw new Error(CHROME_API_UNAVAILABLE_MESSAGE)
-  },
   subscribe: () => () => undefined,
 }
 
@@ -168,21 +165,13 @@ export function createChromeTabsApi(
     },
 
     async activateTab(tabId: number, windowId: number): Promise<void> {
-      await chromeApi.tabs.update(tabId, { active: true })
-      await chromeApi.windows.update(windowId, { focused: true })
+      const tabActivation = chromeApi.tabs.update(tabId, { active: true })
+      const windowFocus = chromeApi.windows.update(windowId, { focused: true })
+      await Promise.all([tabActivation, windowFocus])
     },
 
     async closeTab(tabId: number): Promise<void> {
       await chromeApi.tabs.remove(tabId)
-    },
-
-    async closeSidePanel(windowId: number): Promise<void> {
-      const sidePanel = chromeApi.sidePanel
-      if (!sidePanel || typeof sidePanel.close !== 'function') {
-        throw new Error(CHROME_API_UNAVAILABLE_MESSAGE)
-      }
-
-      await sidePanel.close({ windowId })
     },
 
     subscribe(listener: () => void): () => void {

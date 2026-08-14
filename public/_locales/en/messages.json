@@ -3,7 +3,7 @@
     "message": "Tab Manager"
   },
   "extensionDescription": {
-    "message": "Manage and quickly access browser tabs from the Chrome side panel."
+    "message": "Manage and quickly access browser tabs from a compact Chrome toolbar popup."
   },
   "actionTitle": {
     "message": "Open Tab Manager"

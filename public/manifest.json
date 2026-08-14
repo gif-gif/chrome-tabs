@@ -6,16 +6,10 @@
   "description": "__MSG_extensionDescription__",
   "permissions": [
     "tabs",
-    "favicon",
-    "sidePanel"
+    "favicon"
   ],
-  "side_panel": {
-    "default_path": "index.html"
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
   "action": {
+    "default_popup": "index.html",
     "default_title": "__MSG_actionTitle__",
     "default_icon": {
       "16": "icons/icon-16.png",

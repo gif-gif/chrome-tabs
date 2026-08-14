@@ -93,7 +93,7 @@ async function setToolbarScroll(
     fireEvent.blur(activeElement, { relatedTarget: search })
     fireEvent.focus(search)
   }
-  const scrollContainer = container.querySelector('.drawer-content') as HTMLElement
+  const scrollContainer = container.querySelector('.popup-content') as HTMLElement
   scrollContainer.scrollTop = scrollTop
   fireEvent.scroll(scrollContainer)
   await waitFor(() =>
@@ -109,7 +109,6 @@ function createApi(): ChromeTabsApi {
     queryWindows: vi.fn(async () => windows),
     activateTab: vi.fn(async () => undefined),
     closeTab: vi.fn(async () => undefined),
-    closeSidePanel: vi.fn(async () => undefined),
     subscribe: vi.fn(() => () => undefined),
   }
 }
@@ -254,7 +253,7 @@ describe('App internationalization', () => {
     const toolbar = await screen.findByRole('toolbar', { name: 'Tab toolbar' })
     const trigger = within(toolbar).getByRole('button', { name: 'Display language' })
     const search = within(toolbar).getByRole('searchbox', { name: 'Search tabs' })
-    const scrollContainer = container.querySelector('.drawer-content') as HTMLElement
+    const scrollContainer = container.querySelector('.popup-content') as HTMLElement
 
     await user.click(trigger)
     const automaticOption = screen.getByRole('menuitemradio', { name: 'Auto (browser language)' })
@@ -282,8 +281,8 @@ describe('App internationalization', () => {
     const { container } = render(<App api={createApi()} />)
     const toolbar = await screen.findByRole('toolbar', { name: 'Tab toolbar' })
     const trigger = within(toolbar).getByRole('button', { name: 'Display language' })
-    const scrollContainer = container.querySelector('.drawer-content') as HTMLElement
-    const outside = container.querySelector('.drawer-shell') as HTMLElement
+    const scrollContainer = container.querySelector('.popup-content') as HTMLElement
+    const outside = container.querySelector('.popup-shell') as HTMLElement
 
     await user.click(trigger)
     const automaticOption = screen.getByRole('menuitemradio', { name: 'Auto (browser language)' })
@@ -413,9 +412,7 @@ describe('App internationalization', () => {
     await user.click(within(googleGroup).getByRole('button', { name: 'Close 2 tabs in example.com group' }))
     expect(confirm).toHaveBeenCalledWith('Close 2 tabs in this group?')
 
-    api.closeSidePanel = vi.fn(async () => { throw new Error('private') })
-    await user.click(screen.getByRole('button', { name: 'Close side panel' }))
-    expect(await screen.findByRole('status')).toHaveTextContent('Unable to close the side panel. Please try again.')
+    expect(screen.queryByRole('button', { name: 'Close side panel' })).not.toBeInTheDocument()
   })
 
 
@@ -715,9 +712,9 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(toolbarIcons.get('width')).toBe('16px')
     expect(toolbarIcons.get('height')).toBe('16px')
 
-    const drawer = declarationsFor('.drawer-content')
-    expect(drawer.get('overflow-x')).toBe('hidden')
-    expect(drawer.get('overflow-y')).toBe('auto')
+    const popup = declarationsFor('.popup-content')
+    expect(popup.get('overflow-x')).toBe('hidden')
+    expect(popup.get('overflow-y')).toBe('auto')
   })
 
 

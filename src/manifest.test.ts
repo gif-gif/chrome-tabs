@@ -12,13 +12,14 @@ interface ExtensionManifest {
   content_security_policy: {
     extension_pages: string
   }
-  side_panel: {
+  side_panel?: {
     default_path: string
   }
-  background: {
+  background?: {
     service_worker: string
   }
   action: {
+    default_popup: string
     default_title: string
     default_icon: Record<string, string>
   }
@@ -32,43 +33,8 @@ const backgroundPath = resolve(publicDir, 'background.js')
 const readManifest = () =>
   JSON.parse(readFileSync(manifestPath, 'utf8')) as ExtensionManifest
 
-const executeBackground = (
-  setPanelBehavior = vi.fn(() => Promise.resolve()),
-) => {
-  const onInstalledListeners: Array<() => void> = []
-  const onStartupListeners: Array<() => void> = []
-  const consoleError = vi.fn()
-  const chromeMock = {
-    sidePanel: { setPanelBehavior },
-    runtime: {
-      onInstalled: {
-        addListener: vi.fn((listener: () => void) => {
-          onInstalledListeners.push(listener)
-        }),
-      },
-      onStartup: {
-        addListener: vi.fn((listener: () => void) => {
-          onStartupListeners.push(listener)
-        }),
-      },
-    },
-  }
-
-  const backgroundSource = readFileSync(backgroundPath, 'utf8')
-  const runBackground = new Function('chrome', 'console', backgroundSource)
-  runBackground(chromeMock, { error: consoleError })
-
-  return {
-    chromeMock,
-    consoleError,
-    onInstalledListeners,
-    onStartupListeners,
-    setPanelBehavior,
-  }
-}
-
-describe('Manifest V3 side panel wiring', () => {
-  it('declares the supported Chrome version and side panel configuration', () => {
+describe('Manifest V3 action popup wiring', () => {
+  it('opens index.html as the action popup without side panel wiring', () => {
     expect(existsSync(manifestPath), 'public/manifest.json should exist').toBe(
       true,
     )
@@ -77,12 +43,17 @@ describe('Manifest V3 side panel wiring', () => {
 
     expect(manifest.manifest_version).toBe(3)
     expect(manifest.minimum_chrome_version).toBe('141')
-    expect(manifest.permissions).toEqual(['tabs', 'favicon', 'sidePanel'])
+    expect(manifest.permissions).toEqual(['tabs', 'favicon'])
     expect(manifest.host_permissions ?? []).toEqual([])
-    expect(manifest.side_panel.default_path).toBe('index.html')
-    expect(manifest.background.service_worker).toBe('background.js')
+    expect(manifest.action.default_popup).toBe('index.html')
+    expect(existsSync(resolve(publicDir, '..', manifest.action.default_popup))).toBe(true)
+    expect(manifest.side_panel).toBeUndefined()
+    expect(manifest.background).toBeUndefined()
+    expect(
+      existsSync(backgroundPath),
+      'public/background.js should be removed',
+    ).toBe(false)
   })
-
 
   it('uses the local favicon permission without broad host access', () => {
     const manifest = readManifest()
@@ -123,41 +94,6 @@ describe('Manifest V3 side panel wiring', () => {
         `public/${iconPath} should exist`,
       ).toBe(true)
     }
-  })
-
-  it('configures action clicks on installation and browser startup', () => {
-    expect(existsSync(backgroundPath), 'public/background.js should exist').toBe(
-      true,
-    )
-
-    const harness = executeBackground()
-
-    expect(harness.chromeMock.runtime.onInstalled.addListener).toHaveBeenCalledOnce()
-    expect(harness.chromeMock.runtime.onStartup.addListener).toHaveBeenCalledOnce()
-    expect(harness.onInstalledListeners).toHaveLength(1)
-    expect(harness.onStartupListeners).toHaveLength(1)
-
-    harness.onInstalledListeners[0]()
-    harness.onStartupListeners[0]()
-
-    expect(harness.setPanelBehavior).toHaveBeenCalledTimes(2)
-    expect(harness.setPanelBehavior).toHaveBeenNthCalledWith(1, {
-      openPanelOnActionClick: true,
-    })
-    expect(harness.setPanelBehavior).toHaveBeenNthCalledWith(2, {
-      openPanelOnActionClick: true,
-    })
-  })
-
-  it('reports failures while configuring side panel behavior', async () => {
-    const error = new Error('side panel unavailable')
-    const harness = executeBackground(vi.fn(() => Promise.reject(error)))
-
-    harness.onInstalledListeners[0]()
-    await Promise.resolve()
-    await Promise.resolve()
-
-    expect(harness.consoleError).toHaveBeenCalledWith(error)
   })
 })
 

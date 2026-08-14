@@ -55,6 +55,5 @@ export interface ChromeTabsApi {
   queryWindows(): Promise<BrowserWindow[]>
   activateTab(tabId: number, windowId: number): Promise<void>
   closeTab(tabId: number): Promise<void>
-  closeSidePanel(windowId: number): Promise<void>
   subscribe(listener: () => void): () => void
 }

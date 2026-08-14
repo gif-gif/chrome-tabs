@@ -38,9 +38,6 @@ function createEventMock() {
 
 function createChromeMock(windows: unknown = []) {
   return {
-    sidePanel: {
-      close: vi.fn().mockResolvedValue(undefined),
-    },
     tabs: {
       update: vi.fn().mockResolvedValue(undefined),
       remove: vi.fn().mockResolvedValue(undefined),
@@ -264,13 +261,20 @@ describe('createChromeTabsApi queryWindows', () => {
 })
 
 describe('createChromeTabsApi operations', () => {
-  it('activates the tab before focusing its window', async () => {
+  it('starts tab activation and window focus before awaiting either popup-sensitive operation', async () => {
     const chromeApi = createChromeMock()
     let resolveTabUpdate!: () => void
+    let resolveWindowUpdate!: () => void
     chromeApi.tabs.update.mockImplementationOnce(
       () =>
         new Promise<void>((resolve) => {
           resolveTabUpdate = resolve
+        }),
+    )
+    chromeApi.windows.update.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveWindowUpdate = resolve
         }),
     )
     const api = createChromeTabsApi(chromeApi as unknown as typeof chrome)
@@ -278,28 +282,24 @@ describe('createChromeTabsApi operations', () => {
     const activation = api.activateTab(7, 20)
 
     expect(chromeApi.tabs.update).toHaveBeenCalledWith(7, { active: true })
-    expect(chromeApi.windows.update).not.toHaveBeenCalled()
+    expect(chromeApi.windows.update).toHaveBeenCalledWith(20, { focused: true })
 
     resolveTabUpdate()
+    resolveWindowUpdate()
     await activation
-
-    expect(chromeApi.windows.update).toHaveBeenCalledWith(20, { focused: true })
-    expect(chromeApi.tabs.update.mock.invocationCallOrder[0]).toBeLessThan(
-      chromeApi.windows.update.mock.invocationCallOrder[0],
-    )
   })
 
-  it('stops and propagates errors when tab activation fails', async () => {
+  it('starts window focus even when tab activation rejects, then propagates the failure', async () => {
     const chromeApi = createChromeMock()
     const error = new Error('activation failed')
     chromeApi.tabs.update.mockRejectedValueOnce(error)
     const api = createChromeTabsApi(chromeApi as unknown as typeof chrome)
 
     await expect(api.activateTab(7, 20)).rejects.toBe(error)
-    expect(chromeApi.windows.update).not.toHaveBeenCalled()
+    expect(chromeApi.windows.update).toHaveBeenCalledWith(20, { focused: true })
   })
 
-  it('propagates window focus errors after tab activation succeeds', async () => {
+  it('propagates window focus errors while still starting tab activation', async () => {
     const chromeApi = createChromeMock()
     const error = new Error('focus failed')
     chromeApi.windows.update.mockRejectedValueOnce(error)
@@ -323,34 +323,16 @@ describe('createChromeTabsApi operations', () => {
   })
 })
 
-
-  it('closes the side panel for the requested window', async () => {
+describe('ChromeTabsApi surface', () => {
+  it('does not expose side panel controls', () => {
     const chromeApi = createChromeMock()
     const api = createChromeTabsApi(chromeApi as unknown as typeof chrome)
+    const unavailableApi = createSafeChromeTabsApi(undefined)
 
-    await api.closeSidePanel(20)
-
-    expect(chromeApi.sidePanel.close).toHaveBeenCalledWith({ windowId: 20 })
+    expect(api).not.toHaveProperty('closeSidePanel')
+    expect(unavailableApi).not.toHaveProperty('closeSidePanel')
   })
-
-  it('keeps the tabs adapter available when side panel close is unavailable', async () => {
-    const chromeApi = createChromeMock()
-    delete (chromeApi as { sidePanel?: unknown }).sidePanel
-    const api = createChromeTabsApi(chromeApi as unknown as typeof chrome)
-
-    await expect(api.queryWindows()).resolves.toEqual([])
-    await expect(api.closeSidePanel(20)).rejects.toThrow(
-      CHROME_API_UNAVAILABLE_MESSAGE,
-    )
-  })
-
-  it('uses the same stable availability error for the safe unavailable adapter', async () => {
-    const api = createSafeChromeTabsApi(undefined)
-
-    await expect(api.closeSidePanel(20)).rejects.toThrow(
-      CHROME_API_UNAVAILABLE_MESSAGE,
-    )
-  })
+})
 
 describe('createChromeTabsApi subscribe', () => {
   it('registers one safe callback for every event and cleanup is idempotent', () => {
