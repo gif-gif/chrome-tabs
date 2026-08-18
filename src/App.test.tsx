@@ -363,7 +363,7 @@ describe('WindowGroup', () => {
     )
 
     const group = screen.getByRole('region', { name: /当前窗口/ })
-    expect(group).toHaveClass('window-group')
+    expect(group).toHaveClass('window-group', 'window-list-group')
     expect(within(group).getByText('当前窗口')).toBeInTheDocument()
     expect(within(group).getByText('2 个标签页')).toBeInTheDocument()
     expect(within(group).getAllByRole('listitem')).toHaveLength(2)

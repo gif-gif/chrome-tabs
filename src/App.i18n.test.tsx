@@ -740,6 +740,10 @@ describe('compact progressive sticky toolbar CSS contract', () => {
       expect(declarationsFor(selector).get('background')).toBe('transparent')
     }
 
+    expect(declarationsFor('.domain-group-action:hover:not(:disabled),.domain-group-action:focus-visible').get('background')).toBe('var(--color-hover)')
+    expect(declarationsFor('.domain-group-action:active:not(:disabled)').get('background')).toBe('var(--color-pressed)')
+    expect(declarationsFor('.domain-group-action.row-close-action:hover:not(:disabled),.domain-group-action.row-close-action:focus-visible').get('background')).toBe('var(--color-danger-soft)')
+
     const focus = declarationsFor('.row-action-button:focus-visible')
     expect(focus.get('outline')).toBe('2px solid var(--color-focus)')
     expect(focus.get('outline-offset')).toBe('1px')

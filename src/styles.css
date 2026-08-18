@@ -396,11 +396,12 @@ main {
 
 .window-group {
   min-width: 0;
-  margin: 10px var(--panel-gutter) 0;
+  margin: 12px var(--panel-gutter) 0;
   overflow: hidden;
   background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
   border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgb(60 64 67 / 8%);
 }
 
 .window-group h2 {
@@ -412,8 +413,9 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: stretch;
-  background: var(--color-surface-raised);
-  border-bottom: 1px solid var(--color-border-subtle);
+  background: color-mix(in srgb, var(--color-accent-soft) 58%, var(--color-surface-raised));
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 24%, var(--color-border-subtle));
+  border-left: 3px solid var(--color-accent);
 }
 
 .window-toggle {
@@ -422,17 +424,28 @@ main {
   align-items: center;
   width: 100%;
   min-width: 0;
-  min-height: 40px;
+  min-height: 42px;
   gap: 6px;
   padding: 0 10px;
   text-align: left;
   background: var(--color-surface-raised);
   border: 0;
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+}
+
+.window-list-group .window-toggle {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-accent-soft) 42%, var(--color-surface-raised)),
+    var(--color-surface-raised) 38%
+  );
+  border-left: 3px solid color-mix(in srgb, var(--color-accent) 62%, transparent);
 }
 
 .domain-group-heading .window-toggle {
+  background: transparent;
   border-bottom: 0;
+  border-left: 0;
 }
 
 .domain-group-actions {
@@ -443,6 +456,16 @@ main {
 
 .domain-group-action {
   color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+}
+
+.domain-group-action:hover:not(:disabled),
+.domain-group-action:focus-visible {
+  background: var(--color-hover);
+}
+
+.domain-group-action:active:not(:disabled) {
+  background: var(--color-pressed);
 }
 
 .window-toggle:hover {
@@ -478,8 +501,9 @@ main {
 
 .tab-list {
   margin: 0;
-  padding: 0;
+  padding: 4px 0;
   list-style: none;
+  background: color-mix(in srgb, var(--color-bg) 42%, var(--color-surface));
 }
 
 .tab-row {
@@ -489,18 +513,27 @@ main {
   align-items: center;
   min-width: 0;
   min-height: 56px;
+  margin: 0 4px;
   padding: 2px 4px 2px 8px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-subtle);
-  transition: background-color var(--motion-fast) ease;
+  transition: background-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+}
+
+.tab-row:first-child {
+  border-top-left-radius: var(--radius-sm);
+  border-top-right-radius: var(--radius-sm);
 }
 
 .tab-row:last-child {
   border-bottom: 0;
+  border-bottom-right-radius: var(--radius-sm);
+  border-bottom-left-radius: var(--radius-sm);
 }
 
 .tab-row:hover {
   background: var(--color-hover);
+  box-shadow: 0 1px 5px rgb(60 64 67 / 10%);
 }
 
 .tab-row:active {
@@ -508,7 +541,8 @@ main {
 }
 
 .tab-row.is-active {
-  background: var(--color-accent-soft);
+  background: color-mix(in srgb, var(--color-accent-soft) 82%, var(--color-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 18%, transparent);
 }
 
 .tab-row.is-active::before {
@@ -617,6 +651,20 @@ main {
   background: transparent;
   outline: 2px solid var(--color-focus);
   outline-offset: 1px;
+}
+
+.domain-group-action:hover:not(:disabled),
+.domain-group-action:focus-visible {
+  background: var(--color-hover);
+}
+
+.domain-group-action:active:not(:disabled) {
+  background: var(--color-pressed);
+}
+
+.domain-group-action.row-close-action:hover:not(:disabled),
+.domain-group-action.row-close-action:focus-visible {
+  background: var(--color-danger-soft);
 }
 
 .row-privacy-action:hover:not(:disabled),
