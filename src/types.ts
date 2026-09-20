@@ -19,9 +19,12 @@ export interface UiPreferences {
   viewMode: UiViewMode
   language: UiLanguagePreference
   theme: UiTheme
+  pinnedTabIds: number[]
+  pinnedDomainKeys: string[]
+  favoriteUrls: string[]
 }
 
-export type TabFilter = 'all' | 'current-window' | 'active'
+export type TabFilter = 'all' | 'current-window' | 'active' | 'favorites'
 
 export interface BrowserTab {
   id: number
@@ -68,5 +71,6 @@ export interface ChromeTabsApi {
   queryWindows(): Promise<BrowserWindow[]>
   activateTab(tabId: number, windowId: number): Promise<void>
   closeTab(tabId: number): Promise<void>
+  moveTabs(tabIds: number[], windowId: number): Promise<void>
   subscribe(listener: () => void): () => void
 }

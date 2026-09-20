@@ -9,6 +9,10 @@ function assertTranslatorTypeContract(t: Translator) {
   t('allShort')
   t('currentWindowShort')
   t('activeTabsShort')
+  t('favoriteTabs')
+  t('favoritesShort')
+  t('sortTabsByDomain')
+  t('removeDuplicateTabs', { count: 2 })
   t('tabCount', { count: 2 })
   t('closeDomainGroup', { label: 'example.com', count: 2 })
 
@@ -69,10 +73,30 @@ describe('createTranslator', () => {
     expect(en('allShort')).toBe('All')
     expect(en('currentWindowShort')).toBe('Current')
     expect(en('activeTabsShort')).toBe('Active')
+    expect(zh('favoriteTabs')).toBe('收藏标签')
+    expect(zh('favoritesShort')).toBe('收藏')
+    expect(en('favoriteTabs')).toBe('Favorite tabs')
+    expect(en('favoritesShort')).toBe('Saved')
+    expect(zh('addTabToFavorites')).toBe('收藏标签')
+    expect(zh('removeTabFromFavorites')).toBe('取消收藏标签')
+    expect(en('addTabToFavorites')).toBe('Add tab to favorites')
+    expect(en('removeTabFromFavorites')).toBe('Remove tab from favorites')
+    expect(zh('sortTabsByDomain')).toBe('按域名排列标签页')
+    expect(en('sortTabsByDomain')).toBe('Sort tabs by domain')
+    expect(zh('noDuplicateTabs')).toBe('没有重复标签页')
+    expect(en('noDuplicateTabs')).toBe('No duplicate tabs')
     expect(zh('copyTabLink')).toBe('复制标签链接')
     expect(zh('copyLinkError')).toBe('无法复制链接，请重试。')
     expect(en('copyTabLink')).toBe('Copy tab link')
     expect(en('copyLinkError')).toBe('Unable to copy the link. Please try again.')
+    expect(zh('pinTab')).toBe('置顶标签')
+    expect(zh('unpinTab')).toBe('取消置顶标签')
+    expect(zh('pinGroup')).toBe('置顶分组')
+    expect(zh('unpinGroup')).toBe('取消置顶分组')
+    expect(en('pinTab')).toBe('Pin tab')
+    expect(en('unpinTab')).toBe('Unpin tab')
+    expect(en('pinGroup')).toBe('Pin group')
+    expect(en('unpinGroup')).toBe('Unpin group')
     expect(zh('switchToAuroraTheme')).toBe('切换到极光主题')
     expect(zh('switchToSunsetTheme')).toBe('切换到暖阳主题')
     expect(zh('switchToTwilightTheme')).toBe('切换到暮紫主题')
@@ -109,6 +133,18 @@ describe('createTranslator', () => {
     expect(en('closeGroupConfirm', { count: 2 })).toBe(
       'Close 2 tabs in this group?',
     )
+    expect(en('removeDuplicateTabs', { count: 1 })).toBe(
+      'Remove 1 duplicate tab',
+    )
+    expect(en('removeDuplicateTabs', { count: 2 })).toBe(
+      'Remove 2 duplicate tabs',
+    )
+    expect(en('removeDuplicatesConfirm', { count: 1 })).toBe(
+      'Close 1 duplicate tab in this group?',
+    )
+    expect(en('removeDuplicatesConfirm', { count: 2 })).toBe(
+      'Close 2 duplicate tabs in this group?',
+    )
   })
 
   it('fails explicitly when a runtime caller omits a required placeholder value', () => {
@@ -129,6 +165,10 @@ describe('createTranslator', () => {
     expect(zh('maskedDomainGroup', { number: 4 })).toBe('网站分组 4')
     expect(zh('closeDomainGroup', { label: 'google.com', count: 2 })).toBe(
       '关闭 google.com 分组中的 2 个标签页',
+    )
+    expect(zh('removeDuplicateTabs', { count: 2 })).toBe('移除 2 个重复标签页')
+    expect(zh('removeDuplicatesConfirm', { count: 2 })).toBe(
+      '关闭该分组中的 2 个重复标签页？',
     )
   })
 })

@@ -4,9 +4,11 @@ import { createTranslator } from '../i18n/i18n'
 import type { BrowserWindow, DisplayDomainGroup, DisplayTab } from '../types'
 import {
   createDisplayDomainGroups,
+  createDomainSortedTabIds,
   createDisplayWindows,
   createDisplayWindowsPresentationContext,
   filterWindows,
+  findDuplicateTabIds,
   getTabDomainGroupKey,
   resolveMasked,
   resolveSafeFaviconUrl,
@@ -27,7 +29,7 @@ const displayDomainGroupHasAllMasked: DisplayDomainGroupHasAllMasked = true
 const zh = createTranslator('zh-CN')
 
 type CreateDisplayWindowsArguments = Parameters<typeof createDisplayWindows>
-const createDisplayWindowsRequiresContext: CreateDisplayWindowsArguments['length'] extends 5
+const createDisplayWindowsRequiresContext: CreateDisplayWindowsArguments[3] extends object
   ? true
   : false = true
 
@@ -168,6 +170,40 @@ describe('filterWindows', () => {
     ).toEqual([201])
   })
 
+  it('keeps only currently open tabs whose exact non-empty URLs are favorites', () => {
+    const result = filterWindows(windows, {
+      query: '',
+      filter: 'favorites',
+      focusedWindowId: 10,
+      favoriteUrls: new Set([
+        windows[0].tabs[1].url,
+        'https://closed.example.com/favorite',
+        '',
+      ]),
+    })
+
+    expect(result.map((window) => window.id)).toEqual([10])
+    expect(result[0].tabs.map((tab) => tab.id)).toEqual([102])
+  })
+
+  it('combines favorites with search and uses exact URL matching', () => {
+    const favoriteUrl = windows[1].tabs[0].url
+
+    expect(filterWindows(windows, {
+      query: 'documentation',
+      filter: 'favorites',
+      focusedWindowId: 10,
+      favoriteUrls: new Set([favoriteUrl]),
+    }).flatMap((window) => window.tabs.map((tab) => tab.id))).toEqual([201])
+
+    expect(filterWindows(windows, {
+      query: '',
+      filter: 'favorites',
+      focusedWindowId: 10,
+      favoriteUrls: new Set([favoriteUrl.toLocaleUpperCase()]),
+    })).toEqual([])
+  })
+
   it('does not mutate the source windows or tabs', () => {
     const snapshot = structuredClone(windows)
 
@@ -178,6 +214,61 @@ describe('filterWindows', () => {
     })
 
     expect(windows).toEqual(snapshot)
+  })
+})
+
+describe('findDuplicateTabIds', () => {
+  it('keeps the earliest exact non-empty URL and returns every later duplicate', () => {
+    const tabs = [
+      { ...windows[0].tabs[0], id: 1, url: 'https://example.com/path?q=1' },
+      { ...windows[0].tabs[1], id: 2, url: 'https://example.com/path?q=1' },
+      { ...windows[1].tabs[0], id: 3, url: 'https://example.com/path?q=2' },
+      { ...windows[1].tabs[0], id: 4, url: 'https://example.com/path?q=1' },
+    ]
+    const snapshot = structuredClone(tabs)
+
+    expect(findDuplicateTabIds(tabs)).toEqual([2, 4])
+    expect(tabs).toEqual(snapshot)
+  })
+
+  it('treats URL case, path, and query differences as distinct and ignores empty URLs', () => {
+    const base = windows[0].tabs[0]
+    expect(findDuplicateTabIds([
+      { ...base, id: 1, url: '' },
+      { ...base, id: 2, url: '' },
+      { ...base, id: 3, url: 'https://example.com/path?q=1' },
+      { ...base, id: 4, url: 'https://EXAMPLE.com/path?q=1' },
+      { ...base, id: 5, url: 'https://example.com/Path?q=1' },
+      { ...base, id: 6, url: 'https://example.com/path?q=2' },
+    ])).toEqual([])
+  })
+})
+
+describe('createDomainSortedTabIds', () => {
+  it('stably makes first-seen registrable-domain groups contiguous', () => {
+    const base = windows[0].tabs[0]
+    const tabs = [
+      { ...base, id: 1, url: 'https://docs.google.com/a' },
+      { ...base, id: 2, url: 'https://alpha.example.com/a' },
+      { ...base, id: 3, url: 'https://drive.google.com/b' },
+      { ...base, id: 4, url: 'chrome://settings/privacy' },
+      { ...base, id: 5, url: 'https://beta.example.com/b' },
+      { ...base, id: 6, url: 'https://www.google.com/c' },
+    ]
+    const snapshot = structuredClone(tabs)
+
+    expect(createDomainSortedTabIds(tabs)).toEqual([1, 3, 6, 2, 5, 4])
+    expect(tabs).toEqual(snapshot)
+  })
+
+  it('keeps special and invalid URL groups stable', () => {
+    const base = windows[0].tabs[0]
+    expect(createDomainSortedTabIds([
+      { ...base, id: 1, url: 'not valid one' },
+      { ...base, id: 2, url: 'chrome://settings/privacy' },
+      { ...base, id: 3, url: 'not valid two' },
+      { ...base, id: 4, url: 'chrome://settings/search' },
+    ])).toEqual([1, 3, 2, 4])
   })
 })
 
@@ -272,6 +363,20 @@ describe('createDisplayWindows', () => {
       { id: 10, label: '当前窗口' },
       { id: 20, label: '窗口 2' },
     ])
+  })
+
+  it('stably sorts pinned tabs first without changing the remaining tab order', () => {
+    const result = createDisplayWindows(
+      windows,
+      false,
+      new Map(),
+      createDisplayWindowsPresentationContext(windows, 10),
+      zh,
+      new Set([102]),
+    )
+
+    expect(result[0].tabs.map((tab) => tab.id)).toEqual([102, 101])
+    expect(result[1].tabs.map((tab) => tab.id)).toEqual([201])
   })
 
   it('uses window focused state to order and label a different focused window', () => {
@@ -499,6 +604,26 @@ describe('registrable domain grouping', () => {
     expect(result.every((group) => /^domain-group-\d+$/.test(group.key))).toBe(
       true,
     )
+  })
+
+  it('stably sorts pinned groups and pinned tabs first without exposing raw pin keys', () => {
+    const result = createDisplayDomainGroups(
+      windows,
+      true,
+      new Map(),
+      zh,
+      new Set([201]),
+      new Set(['example.com']),
+    )
+
+    expect(result.map((group) => group.tabs.map((tab) => tab.id))).toEqual([
+      [201, 102],
+      [101],
+    ])
+    const serialized = JSON.stringify(result)
+    expect(serialized).not.toContain('example.com')
+    expect(serialized).not.toContain('github.com')
+    expect(serialized).not.toContain('pinnedDomainKeys')
   })
 
   it('exposes whether all effective tabs in a display domain group are masked', () => {

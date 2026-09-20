@@ -41,6 +41,7 @@ function createChromeMock(windows: unknown = []) {
     tabs: {
       update: vi.fn().mockResolvedValue(undefined),
       remove: vi.fn().mockResolvedValue(undefined),
+      move: vi.fn().mockResolvedValue(undefined),
       onCreated: createEventMock(),
       onUpdated: createEventMock(),
       onMoved: createEventMock(),
@@ -310,6 +311,30 @@ describe('createChromeTabsApi operations', () => {
     expect(chromeApi.windows.update).toHaveBeenCalledWith(20, { focused: true })
   })
 
+  it('moves an ordered tab batch to the start of its existing window', async () => {
+    const chromeApi = createChromeMock()
+    const api = createChromeTabsApi(chromeApi as unknown as typeof chrome)
+
+    await api.moveTabs?.([7, 9, 8], 20)
+
+    expect(chromeApi.tabs.move).toHaveBeenCalledWith(
+      [7, 9, 8],
+      { windowId: 20, index: 0 },
+    )
+  })
+
+  it('skips empty move batches and propagates move errors', async () => {
+    const chromeApi = createChromeMock()
+    const api = createChromeTabsApi(chromeApi as unknown as typeof chrome)
+
+    await api.moveTabs?.([], 20)
+    expect(chromeApi.tabs.move).not.toHaveBeenCalled()
+
+    const error = new Error('move failed')
+    chromeApi.tabs.move.mockRejectedValueOnce(error)
+    await expect(api.moveTabs?.([7], 20)).rejects.toBe(error)
+  })
+
   it('closes a tab and propagates removal errors', async () => {
     const chromeApi = createChromeMock()
     const api = createChromeTabsApi(chromeApi as unknown as typeof chrome)
@@ -395,6 +420,20 @@ describe('createChromeTabsApi subscribe', () => {
     events[0].emit({ id: 8 })
     events[1].emit(8, {}, {})
     expect(listener).not.toHaveBeenCalled()
+  })
+
+  it('throws the availability error when tabs.move is absent', () => {
+    const chromeApi = createChromeMock()
+    const incompleteApi = {
+      ...chromeApi,
+      tabs: { ...chromeApi.tabs, move: undefined },
+    }
+
+    const error = captureError(() =>
+      createChromeTabsApi(incompleteApi as unknown as typeof chrome),
+    )
+
+    expect(error.message).toBe(CHROME_API_UNAVAILABLE_MESSAGE)
   })
 
   it('throws the availability error when a required event API is absent', () => {

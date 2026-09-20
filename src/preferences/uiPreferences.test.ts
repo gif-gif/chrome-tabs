@@ -17,6 +17,9 @@ describe('UI preferences', () => {
       viewMode: 'list',
       language: 'auto',
       theme: 'classic',
+      pinnedTabIds: [],
+      pinnedDomainKeys: [],
+      favoriteUrls: [],
     })
   })
 
@@ -36,6 +39,9 @@ describe('UI preferences', () => {
       viewMode: 'domain',
       language: 'auto',
       theme: 'classic',
+      pinnedTabIds: [],
+      pinnedDomainKeys: [],
+      favoriteUrls: [],
     })
   })
 
@@ -54,6 +60,9 @@ describe('UI preferences', () => {
       viewMode: 'domain',
       language: 'en',
       theme: 'classic',
+      pinnedTabIds: [],
+      pinnedDomainKeys: [],
+      favoriteUrls: [],
     })
 
     localStorage.setItem(
@@ -70,6 +79,49 @@ describe('UI preferences', () => {
       viewMode: 'domain',
       language: 'auto',
       theme: 'classic',
+      pinnedTabIds: [],
+      pinnedDomainKeys: [],
+      favoriteUrls: [],
+    })
+  })
+
+  it('loads valid pin and favorite arrays, removes duplicates, and rejects malformed arrays', () => {
+    localStorage.setItem(
+      UI_PREFERENCES_KEY,
+      JSON.stringify({
+        version: 1,
+        globalMasked: false,
+        viewMode: 'list',
+        pinnedTabIds: [102, 102, 201],
+        pinnedDomainKeys: ['example.com', 'example.com', 'google.com'],
+        favoriteUrls: [
+          'https://example.com/a',
+          'https://example.com/a',
+          'https://example.com/b',
+        ],
+      }),
+    )
+    expect(loadUiPreferences()).toMatchObject({
+      pinnedTabIds: [102, 201],
+      pinnedDomainKeys: ['example.com', 'google.com'],
+      favoriteUrls: ['https://example.com/a', 'https://example.com/b'],
+    })
+
+    localStorage.setItem(
+      UI_PREFERENCES_KEY,
+      JSON.stringify({
+        version: 1,
+        globalMasked: false,
+        viewMode: 'list',
+        pinnedTabIds: [0, '102'],
+        pinnedDomainKeys: ['example.com', ''],
+        favoriteUrls: ['https://example.com/a', '   '],
+      }),
+    )
+    expect(loadUiPreferences()).toMatchObject({
+      pinnedTabIds: [],
+      pinnedDomainKeys: [],
+      favoriteUrls: [],
     })
   })
 
@@ -147,6 +199,9 @@ describe('UI preferences', () => {
       viewMode: 'domain',
       language: 'zh-CN',
       theme: 'aurora',
+      pinnedTabIds: [102],
+      pinnedDomainKeys: ['example.com'],
+      favoriteUrls: ['https://example.com/favorite'],
     })
 
     expect(UI_PREFERENCES_KEY).toBe('chrome-tabs.ui-preferences.v1')
@@ -156,6 +211,9 @@ describe('UI preferences', () => {
       viewMode: 'domain',
       language: 'zh-CN',
       theme: 'aurora',
+      pinnedTabIds: [102],
+      pinnedDomainKeys: ['example.com'],
+      favoriteUrls: ['https://example.com/favorite'],
     })
   })
 

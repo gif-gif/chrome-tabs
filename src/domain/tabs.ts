@@ -80,6 +80,7 @@ interface FilterWindowsOptions {
   query: string
   filter: TabFilter
   focusedWindowId: number
+  favoriteUrls?: ReadonlySet<string>
 }
 
 export function sortWindowsCurrentFirst(
@@ -103,7 +104,7 @@ export function sortWindowsCurrentFirst(
 
 export function filterWindows(
   windows: BrowserWindow[],
-  { query, filter, focusedWindowId }: FilterWindowsOptions,
+  { query, filter, focusedWindowId, favoriteUrls = new Set() }: FilterWindowsOptions,
 ): BrowserWindow[] {
   const normalizedQuery = query.trim().toLocaleLowerCase()
 
@@ -114,6 +115,10 @@ export function filterWindows(
 
     const tabs = window.tabs.filter((tab) => {
       if (filter === 'active' && !tab.active) {
+        return false
+      }
+
+      if (filter === 'favorites' && (tab.url.length === 0 || !favoriteUrls.has(tab.url))) {
         return false
       }
 
@@ -129,6 +134,52 @@ export function filterWindows(
 
     return tabs.length > 0 ? [{ ...window, tabs: [...tabs] }] : []
   })
+}
+
+
+/**
+ * Returns every later tab whose non-empty URL exactly matches an earlier tab.
+ * Input order defines which tab is retained and is never mutated.
+ */
+export function findDuplicateTabIds(tabs: readonly BrowserTab[]): number[] {
+  const seenUrls = new Set<string>()
+  const duplicateIds: number[] = []
+
+  for (const tab of tabs) {
+    if (tab.url.length === 0) {
+      continue
+    }
+
+    if (seenUrls.has(tab.url)) {
+      duplicateIds.push(tab.id)
+    } else {
+      seenUrls.add(tab.url)
+    }
+  }
+
+  return duplicateIds
+}
+
+/**
+ * Creates a stable native-tab order that makes equal registrable-domain groups
+ * contiguous. Domain groups and tabs within each group retain first-seen order.
+ */
+export function createDomainSortedTabIds(
+  tabs: readonly BrowserTab[],
+): number[] {
+  const groups = new Map<string, number[]>()
+
+  for (const tab of tabs) {
+    const domainKey = getTabDomainGroupKey(tab.url)
+    const group = groups.get(domainKey)
+    if (group) {
+      group.push(tab.id)
+    } else {
+      groups.set(domainKey, [tab.id])
+    }
+  }
+
+  return [...groups.values()].flat()
 }
 
 export function resolveMasked(
@@ -192,6 +243,8 @@ export function createDisplayDomainGroups(
   globalMasked: boolean,
   overrides: ReadonlyMap<number, boolean>,
   t: Translator,
+  pinnedTabIds: ReadonlySet<number> = new Set(),
+  pinnedDomainKeys: ReadonlySet<string> = new Set(),
 ): DisplayDomainGroup[] {
   const groups = new Map<string, BrowserTab[]>()
 
@@ -207,8 +260,26 @@ export function createDisplayDomainGroups(
     }
   }
 
-  return [...groups.entries()].map(([domainKey, tabs], index) => {
-    const displayTabs = tabs.map((tab) =>
+  return [...groups.entries()]
+    .map((entry, originalIndex) => ({ entry, originalIndex }))
+    .sort((left, right) => {
+      const leftPinned = pinnedDomainKeys.has(left.entry[0])
+      const rightPinned = pinnedDomainKeys.has(right.entry[0])
+      return leftPinned === rightPinned
+        ? left.originalIndex - right.originalIndex
+        : leftPinned ? -1 : 1
+    })
+    .map(({ entry: [domainKey, tabs] }, index) => {
+    const displayTabs = tabs
+      .map((tab, originalIndex) => ({ tab, originalIndex }))
+      .sort((left, right) => {
+        const leftPinned = pinnedTabIds.has(left.tab.id)
+        const rightPinned = pinnedTabIds.has(right.tab.id)
+        return leftPinned === rightPinned
+          ? left.originalIndex - right.originalIndex
+          : leftPinned ? -1 : 1
+      })
+      .map(({ tab }) =>
       createDisplayTab(tab, globalMasked, overrides, t),
     )
     const allTabsMasked = displayTabs.every((tab) => tab.masked)
@@ -249,6 +320,7 @@ export function createDisplayWindows(
   overrides: ReadonlyMap<number, boolean>,
   presentationContext: DisplayWindowsPresentationContext,
   t: Translator,
+  pinnedTabIds: ReadonlySet<number> = new Set(),
 ): DisplayWindow[] {
   const { focusedWindowId, sortedWindowIds } = presentationContext
   const defaultSortedWindows = sortWindowsCurrentFirst(windows, focusedWindowId)
@@ -287,9 +359,16 @@ export function createDisplayWindows(
       label: window.id === focusedWindowId
         ? t('currentWindow')
         : t('numberedWindow', { number: labelIndex + 1 }),
-      tabs: window.tabs.map((tab) =>
-        createDisplayTab(tab, globalMasked, overrides, t),
-      ),
+      tabs: window.tabs
+        .map((tab, originalIndex) => ({ tab, originalIndex }))
+        .sort((left, right) => {
+          const leftPinned = pinnedTabIds.has(left.tab.id)
+          const rightPinned = pinnedTabIds.has(right.tab.id)
+          return leftPinned === rightPinned
+            ? left.originalIndex - right.originalIndex
+            : leftPinned ? -1 : 1
+        })
+        .map(({ tab }) => createDisplayTab(tab, globalMasked, overrides, t)),
     }
   })
 }

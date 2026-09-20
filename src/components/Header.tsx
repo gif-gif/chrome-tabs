@@ -3,21 +3,26 @@ import type { Translator } from '../i18n/i18n'
 import type { TabFilter } from '../types'
 import { Icon, type IconName } from './Icon'
 
+type HeaderFilter = TabFilter | 'favorites'
+
 interface HeaderProps {
   count: number
   filter: TabFilter
   globalMasked: boolean
   onFilterChange: (filter: TabFilter) => void
   onToggleMask: () => void
+  onSortTabs?: () => void
+  sortingTabs?: boolean
   t: Translator
   beforeMaskAction?: ReactNode
   afterMaskAction?: ReactNode
 }
 
-const filterIcons: Record<TabFilter, IconName> = {
+const filterIcons: Record<HeaderFilter, IconName> = {
   all: 'all-tabs',
   'current-window': 'window',
   active: 'active-tab',
+  favorites: 'star',
 }
 
 export function Header({
@@ -26,14 +31,17 @@ export function Header({
   globalMasked,
   onFilterChange,
   onToggleMask,
+  onSortTabs,
+  sortingTabs = false,
   t,
   beforeMaskAction,
   afterMaskAction,
 }: HeaderProps) {
   const actionLabel = globalMasked ? t('showAllInformation') : t('hideAllInformation')
+  const sortLabel = sortingTabs ? t('sortingTabsByDomain') : t('sortTabsByDomain')
   const countLabel = t('tabCount', { count })
   const filters: Array<{
-    value: TabFilter
+    value: HeaderFilter
     label: string
     accessibleLabel: string
   }> = [
@@ -47,6 +55,11 @@ export function Header({
       value: 'active',
       label: t('activeTabsShort'),
       accessibleLabel: t('activeTabs'),
+    },
+    {
+      value: 'favorites',
+      label: t('favoritesShort'),
+      accessibleLabel: t('favoriteTabs'),
     },
   ]
 
@@ -66,7 +79,7 @@ export function Header({
               aria-label={option.accessibleLabel}
               aria-pressed={selected}
               title={option.accessibleLabel}
-              onClick={() => onFilterChange(option.value)}
+              onClick={() => onFilterChange(option.value as TabFilter)}
             >
               <Icon name={filterIcons[option.value]} width={16} height={16} />
               <span className="compact-filter-label">{option.label}</span>
@@ -75,6 +88,19 @@ export function Header({
         })}
       </div>
       <div className="app-header-actions">
+        {onSortTabs ? (
+          <button
+            type="button"
+            className="compact-icon-button sort-tabs-button"
+            aria-label={sortLabel}
+            title={sortLabel}
+            disabled={sortingTabs}
+            aria-busy={sortingTabs || undefined}
+            onClick={onSortTabs}
+          >
+            <Icon name="sort-domain" width={16} height={16} />
+          </button>
+        ) : null}
         {beforeMaskAction}
         <button type="button" className="compact-icon-button global-mask-button" aria-label={actionLabel} title={actionLabel} onClick={onToggleMask}>
           <Icon name={globalMasked ? 'eye' : 'eye-off'} width={16} height={16} />

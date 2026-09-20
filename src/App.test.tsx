@@ -81,6 +81,7 @@ describe('Icon', () => {
       'search',
       'close',
       'copy',
+      'pin',
       'eye',
       'eye-off',
       'chevron',
@@ -99,6 +100,9 @@ describe('Icon', () => {
       'collapse-all',
       'expand-all',
       'check',
+      'star',
+      'deduplicate',
+      'sort-domain',
     ]
 
     const { container } = render(
@@ -301,6 +305,7 @@ describe('TabRow', () => {
   it('renders unmasked content and isolates row, privacy, and close actions', async () => {
     const user = userEvent.setup()
     const onActivate = vi.fn()
+    const onTogglePin = vi.fn()
     const onToggleMask = vi.fn()
     const onCopy = vi.fn()
     const onClose = vi.fn()
@@ -309,6 +314,7 @@ describe('TabRow', () => {
       <TabRow t={zh}
         tab={unmaskedTab}
         onActivate={onActivate}
+        onTogglePin={onTogglePin}
         onToggleMask={onToggleMask}
         onCopy={onCopy}
         onClose={onClose}
@@ -340,16 +346,23 @@ describe('TabRow', () => {
     await user.click(screen.getByRole('button', { name: `${originalTitle}，当前标签` }))
     expect(onActivate).toHaveBeenCalledTimes(1)
 
+    const pinButton = screen.getByRole('button', { name: '置顶标签' })
     const privacyButton = screen.getByRole('button', { name: '隐藏此标签信息' })
     const copyButton = screen.getByRole('button', { name: '复制标签链接' })
     const closeButton = screen.getByRole('button', { name: '关闭标签页' })
+    expect(pinButton).toHaveClass('row-action-button', 'row-pin-action')
+    expect(pinButton).toHaveAttribute('aria-pressed', 'false')
     expect(privacyButton).toHaveClass('row-action-button', 'row-privacy-action')
     expect(copyButton).toHaveClass('row-action-button', 'row-copy-action')
     expect(closeButton).toHaveClass('row-action-button', 'row-close-action')
-    for (const button of [privacyButton, copyButton, closeButton]) {
+    for (const button of [pinButton, privacyButton, copyButton, closeButton]) {
       expect(button.querySelector('svg')).toHaveAttribute('width', '15')
       expect(button.querySelector('svg')).toHaveAttribute('height', '15')
     }
+
+    await user.click(pinButton)
+    expect(onTogglePin).toHaveBeenCalledWith(unmaskedTab)
+    expect(onActivate).toHaveBeenCalledTimes(1)
 
     await user.click(privacyButton)
     expect(onToggleMask).toHaveBeenCalledTimes(1)
@@ -474,11 +487,13 @@ function createTestApi(
   queryWindows: ReturnType<typeof vi.fn<ChromeTabsApi['queryWindows']>>
   activateTab: ReturnType<typeof vi.fn<ChromeTabsApi['activateTab']>>
   closeTab: ReturnType<typeof vi.fn<ChromeTabsApi['closeTab']>>
+  moveTabs: ReturnType<typeof vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>>
 } {
   return {
     queryWindows: vi.fn(queryWindows),
     activateTab: vi.fn<ChromeTabsApi['activateTab']>(async () => undefined),
     closeTab: vi.fn<ChromeTabsApi['closeTab']>(async () => undefined),
+    moveTabs: vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>(async () => undefined),
     subscribe: vi.fn(() => () => undefined),
   }
 }
@@ -519,7 +534,7 @@ describe('action popup shell CSS contract', () => {
     )
     expect(stylesSource).not.toMatch(/\.drawer-rail|\.drawer-toggle|\.drawer-shell|\.drawer-content/)
     expect(stylesSource).toMatch(
-      /\.tab-row\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) repeat\(3, var\(--row-action-size\)\);/,
+      /\.tab-row\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) repeat\(5, var\(--row-action-size\)\);/,
     )
   })
 
@@ -611,6 +626,9 @@ describe('App integration', () => {
         viewMode: 'list',
         language: 'auto',
         theme: 'classic',
+        pinnedTabIds: [],
+        pinnedDomainKeys: [],
+        favoriteUrls: [],
       }),
     )
   })
@@ -751,6 +769,66 @@ describe('App integration', () => {
       'true',
     )
     expect(screen.getByRole('region', { name: /github\.com/ })).toBeInTheDocument()
+  })
+
+  it('pins and unpins tabs at the top of their window and persists the choice', async () => {
+    storeUiPreferences(false)
+    const api = createTestApi()
+    const user = userEvent.setup()
+    const firstView = render(<App api={api} />)
+
+    await screen.findByText('GitHub - Chrome Tabs')
+    const currentWindow = screen.getByRole('region', { name: /当前窗口/ })
+    let rows = within(currentWindow).getAllByRole('listitem')
+    expect(within(rows[0]).getByText('GitHub - Chrome Tabs')).toBeInTheDocument()
+
+    await user.click(within(rows[1]).getByRole('button', { name: '置顶标签' }))
+    rows = within(currentWindow).getAllByRole('listitem')
+    expect(within(rows[0]).getByText('Mail Inbox')).toBeInTheDocument()
+    expect(within(rows[0]).getByRole('button', { name: '取消置顶标签' })).toHaveAttribute('aria-pressed', 'true')
+    await waitFor(() => expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '')).toMatchObject({
+      pinnedTabIds: [102],
+    }))
+
+    firstView.unmount()
+    render(<App api={api} />)
+    await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
+    const restoredWindow = screen.getByRole('region', { name: /当前窗口/ })
+    rows = within(restoredWindow).getAllByRole('listitem')
+    expect(within(rows[0]).getByText('Mail Inbox')).toBeInTheDocument()
+
+    await user.click(within(rows[0]).getByRole('button', { name: '取消置顶标签' }))
+    rows = within(restoredWindow).getAllByRole('listitem')
+    expect(within(rows[0]).getByText('GitHub - Chrome Tabs')).toBeInTheDocument()
+  })
+
+  it('pins domain groups first, persists the choice, and keeps masked markup private', async () => {
+    storeUiPreferences(false)
+    const api = createTestApi()
+    const user = userEvent.setup()
+    const firstView = render(<App api={api} />)
+
+    await screen.findByText('GitHub - Chrome Tabs')
+    await user.click(screen.getByRole('button', { name: '域名分组视图' }))
+    const exampleGroup = screen.getByRole('region', { name: /example\.com/ })
+    await user.click(within(exampleGroup).getByRole('button', { name: '置顶分组' }))
+    let groups = [...document.querySelectorAll<HTMLElement>('.domain-group')]
+    expect(groups[0]).toHaveTextContent('example.com')
+    expect(within(groups[0]).getByRole('button', { name: '取消置顶分组' })).toHaveAttribute('aria-pressed', 'true')
+    await waitFor(() => expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '')).toMatchObject({
+      pinnedDomainKeys: ['example.com'],
+    }))
+
+    firstView.unmount()
+    const restored = render(<App api={api} />)
+    await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
+    groups = [...restored.container.querySelectorAll<HTMLElement>('.domain-group')]
+    expect(groups[0]).toHaveTextContent('example.com')
+
+    await user.click(screen.getByRole('button', { name: '隐藏全部标签信息' }))
+    expect(restored.container.innerHTML).not.toContain('example.com')
+    expect(restored.container.innerHTML).not.toContain('github.com')
+    expect(screen.getByRole('button', { name: '取消置顶分组' })).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('groups current filtered results across windows and keeps domain groups collapsible', async () => {
@@ -954,6 +1032,7 @@ describe('App integration', () => {
     expect(headerActions).toContainElement(globalMaskButton)
     expect(headerActions).toContainElement(toggleAllButton)
     expect(Array.from(headerActions!.children)).toEqual([
+      screen.getByRole('button', { name: '按域名排列标签页' }),
       screen.getByRole('button', { name: '显示语言' }).closest('.language-menu-root'),
       screen.getByRole('button', { name: '切换到极光主题' }),
       globalMaskButton,
@@ -1137,6 +1216,9 @@ describe('App integration', () => {
         viewMode: 'list',
         language: 'auto',
         theme: 'classic',
+        pinnedTabIds: [],
+        pinnedDomainKeys: [],
+        favoriteUrls: [],
       }),
     )
 
@@ -1171,6 +1253,9 @@ describe('App integration', () => {
       viewMode: 'list',
       language: 'auto',
       theme: 'classic',
+      pinnedTabIds: [],
+      pinnedDomainKeys: [],
+      favoriteUrls: [],
     })
   })
 
@@ -1564,4 +1649,106 @@ describe('progressive sticky search toolbar', () => {
     expect(screen.getByRole('searchbox', { name: 'Search tabs' })).toHaveValue('github')
     expect(screen.getByText('Information hidden')).toBeInTheDocument()
   })
+  it('favorites tabs by URL, persists the choice, and filters to open favorites', async () => {
+    storeUiPreferences(false)
+    const api = createTestApi()
+    const user = userEvent.setup()
+    render(<App api={api} />)
+
+    await screen.findByText('GitHub - Chrome Tabs')
+    const mailRow = screen.getByText('Mail Inbox').closest('.tab-row')
+    expect(mailRow).toBeInTheDocument()
+    await user.click(within(mailRow as HTMLElement).getByRole('button', { name: '收藏标签' }))
+
+    expect(api.activateTab).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: '取消收藏标签' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await waitFor(() =>
+      expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '').favoriteUrls).toEqual([
+        'https://mail.example.com/inbox?TOKEN=SECRET',
+      ]),
+    )
+
+    await user.click(within(screen.getByRole('group', { name: '标签页筛选' })).getByRole('button', { name: '收藏标签' }))
+    expect(screen.getByText('Mail Inbox')).toBeInTheDocument()
+    expect(screen.queryByText('GitHub - Chrome Tabs')).not.toBeInTheDocument()
+    expect(screen.queryByText('Project Documentation')).not.toBeInTheDocument()
+  })
+
+  it('removes later exact-URL duplicates from the full domain group after confirmation', async () => {
+    storeUiPreferences(false)
+    const duplicateUrl = 'https://docs.google.com/document/d/exact'
+    const groupedWindows: BrowserWindow[] = [
+      {
+        id: 10,
+        focused: true,
+        tabs: [
+          { ...fixtureWindows[0].tabs[0], id: 1, index: 0, url: duplicateUrl, title: 'First copy' },
+          { ...fixtureWindows[0].tabs[1], id: 2, index: 1, url: 'https://drive.google.com/unique', title: 'Unique' },
+          { ...fixtureWindows[0].tabs[1], id: 3, index: 2, url: duplicateUrl, title: 'Second copy' },
+          { ...fixtureWindows[0].tabs[1], id: 4, index: 3, url: `${duplicateUrl}?different=1`, title: 'Different query' },
+        ],
+      },
+    ]
+    const api = createTestApi(async () => groupedWindows)
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true)
+    const user = userEvent.setup()
+    render(<App api={api} />)
+
+    await screen.findByText('First copy')
+    await user.click(screen.getByRole('button', { name: '域名分组视图' }))
+    await user.type(screen.getByRole('searchbox', { name: '搜索标签页' }), 'First')
+    const googleGroup = screen.getByRole('region', { name: /google\.com/ })
+    const deduplicateButton = within(googleGroup).getByRole('button', {
+      name: '移除 1 个重复标签页',
+    })
+
+    await user.click(deduplicateButton)
+    expect(confirm).toHaveBeenCalledWith('关闭该分组中的 1 个重复标签页？')
+    expect(api.closeTab).not.toHaveBeenCalled()
+
+    await user.click(deduplicateButton)
+    await waitFor(() => expect(api.closeTab).toHaveBeenCalledTimes(1))
+    expect(api.closeTab).toHaveBeenCalledWith(3)
+    expect(api.closeTab).not.toHaveBeenCalledWith(1)
+    expect(api.closeTab).not.toHaveBeenCalledWith(4)
+  })
+
+  it('sorts native tabs into stable domain groups independently in each window', async () => {
+    storeUiPreferences(false)
+    const unsortedWindows: BrowserWindow[] = [
+      {
+        id: 10,
+        focused: true,
+        tabs: [
+          { ...fixtureWindows[0].tabs[0], id: 1, index: 0, url: 'https://docs.google.com/a' },
+          { ...fixtureWindows[0].tabs[1], id: 2, index: 1, url: 'https://example.com/a' },
+          { ...fixtureWindows[0].tabs[1], id: 3, index: 2, url: 'https://drive.google.com/b' },
+          { ...fixtureWindows[0].tabs[1], id: 4, index: 3, url: 'https://example.com/b' },
+        ],
+      },
+      {
+        id: 20,
+        focused: false,
+        tabs: [
+          { ...fixtureWindows[1].tabs[0], id: 5, windowId: 20, index: 0, url: 'https://github.com/a' },
+          { ...fixtureWindows[1].tabs[0], id: 6, windowId: 20, index: 1, url: 'https://github.com/b' },
+        ],
+      },
+    ]
+    const api = createTestApi(async () => unsortedWindows)
+    const user = userEvent.setup()
+    render(<App api={api} />)
+
+    await screen.findByLabelText('6 个标签页')
+    await user.click(screen.getByRole('button', { name: '按域名排列标签页' }))
+
+    await waitFor(() => expect(api.moveTabs).toHaveBeenCalledTimes(1))
+    expect(api.moveTabs).toHaveBeenCalledWith([1, 3, 2, 4], 10)
+    expect(api.moveTabs).not.toHaveBeenCalledWith(expect.anything(), 20)
+    await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
+  })
+
 })

@@ -719,6 +719,7 @@ main {
 }
 
 .global-mask-button,
+.sort-tabs-button,
 .domain-collapse-all-button,
 .language-menu-trigger,
 .theme-toggle {
@@ -947,7 +948,7 @@ main {
 .tab-row {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(3, var(--row-action-size));
+  grid-template-columns: minmax(0, 1fr) repeat(5, var(--row-action-size));
   align-items: center;
   min-width: 0;
   min-height: 56px;
@@ -1108,6 +1109,38 @@ main {
 .row-privacy-action:hover:not(:disabled),
 .row-privacy-action:focus-visible {
   color: var(--color-text);
+}
+
+.row-pin-action:hover:not(:disabled),
+.row-pin-action:focus-visible,
+.row-pin-action.is-pinned {
+  color: var(--color-accent);
+}
+
+.row-pin-action.is-pinned svg {
+  fill: currentColor;
+}
+
+.row-favorite-action:hover:not(:disabled),
+.row-favorite-action:focus-visible,
+.row-favorite-action.is-favorite {
+  color: var(--color-accent);
+}
+
+.row-favorite-action.is-favorite svg {
+  fill: currentColor;
+}
+
+.row-deduplicate-action:hover:not(:disabled),
+.row-deduplicate-action:focus-visible {
+  color: var(--color-accent);
+}
+
+.sort-tabs-button:disabled,
+.row-favorite-action:disabled,
+.row-deduplicate-action:disabled {
+  cursor: default;
+  opacity: 0.4;
 }
 
 .row-copy-action:hover:not(:disabled),

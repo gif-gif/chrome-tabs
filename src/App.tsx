@@ -10,9 +10,12 @@ import { StatusView, type StatusViewState } from './components/StatusView'
 import { WindowGroup } from './components/WindowGroup'
 import {
   createDisplayDomainGroups,
+  createDomainSortedTabIds,
   createDisplayWindows,
   createDisplayWindowsPresentationContext,
   filterWindows,
+  findDuplicateTabIds,
+  getTabDomainGroupKey,
   sortWindowsCurrentFirst,
 } from './domain/tabs'
 import { useChromeTabs } from './hooks/useChromeTabs'
@@ -62,6 +65,16 @@ export function App({ api }: AppProps) {
   )
   const [viewMode, setViewMode] = useState(initialPreferences.viewMode)
   const [theme, setTheme] = useState(initialPreferences.theme)
+  const [pinnedTabIds, setPinnedTabIds] = useState<Set<number>>(
+    () => new Set(initialPreferences.pinnedTabIds),
+  )
+  const [pinnedDomainKeys, setPinnedDomainKeys] = useState<Set<string>>(
+    () => new Set(initialPreferences.pinnedDomainKeys),
+  )
+  const [favoriteUrls, setFavoriteUrls] = useState<Set<string>>(
+    () => new Set(initialPreferences.favoriteUrls),
+  )
+  const [sortingTabs, setSortingTabs] = useState(false)
   const [tabMaskOverrides, setTabMaskOverrides] = useState<Map<number, boolean>>(
     () => new Map(),
   )
@@ -86,8 +99,16 @@ export function App({ api }: AppProps) {
   )
 
   useEffect(() => {
-    saveUiPreferences({ globalMasked, viewMode, language, theme })
-  }, [globalMasked, language, theme, viewMode])
+    saveUiPreferences({
+      globalMasked,
+      viewMode,
+      language,
+      theme,
+      pinnedTabIds: [...pinnedTabIds],
+      pinnedDomainKeys: [...pinnedDomainKeys],
+      favoriteUrls: [...favoriteUrls],
+    })
+  }, [favoriteUrls, globalMasked, language, pinnedDomainKeys, pinnedTabIds, theme, viewMode])
 
   useEffect(() => {
     document.documentElement.lang = locale
@@ -112,6 +133,27 @@ export function App({ api }: AppProps) {
     () => new Set(windows.flatMap((window) => window.tabs.map((tab) => tab.id))),
     [windows],
   )
+  const rawTabsById = useMemo(
+    () => new Map(windows.flatMap((window) => window.tabs.map((tab) => [tab.id, tab] as const))),
+    [windows],
+  )
+  const favoriteTabIds = useMemo(
+    () => new Set([...rawTabsById].filter(([, tab]) => tab.url.length > 0 && favoriteUrls.has(tab.url)).map(([tabId]) => tabId)),
+    [favoriteUrls, rawTabsById],
+  )
+  const tabIdToDomainKey = useMemo(
+    () => new Map(
+      windows.flatMap((window) => window.tabs.map((tab) => [
+        tab.id,
+        getTabDomainGroupKey(tab.url),
+      ] as const)),
+    ),
+    [windows],
+  )
+  const existingRawDomainKeys = useMemo(
+    () => new Set(tabIdToDomainKey.values()),
+    [tabIdToDomainKey],
+  )
 
   useEffect(() => {
     setCollapsedWindowIds((current) => {
@@ -130,13 +172,23 @@ export function App({ api }: AppProps) {
       const next = new Set([...current].filter((tabId) => existingTabIds.has(tabId)))
       return next.size === current.size ? current : next
     })
+    if (!loading) {
+      setPinnedTabIds((current) => {
+        const next = new Set([...current].filter((tabId) => existingTabIds.has(tabId)))
+        return next.size === current.size ? current : next
+      })
+      setPinnedDomainKeys((current) => {
+        const next = new Set([...current].filter((domainKey) => existingRawDomainKeys.has(domainKey)))
+        return next.size === current.size ? current : next
+      })
+    }
     for (const [tabId, timer] of copiedResetTimersRef.current) {
       if (!existingTabIds.has(tabId)) {
         clearTimeout(timer)
         copiedResetTimersRef.current.delete(tabId)
       }
     }
-  }, [existingTabIds, existingWindowIds])
+  }, [existingRawDomainKeys, existingTabIds, existingWindowIds, loading])
 
   const effectiveFocusedWindowId =
     focusedWindowId ?? windows.find((window) => window.focused)?.id ?? -1
@@ -150,8 +202,9 @@ export function App({ api }: AppProps) {
         query,
         filter,
         focusedWindowId: effectiveFocusedWindowId,
+        favoriteUrls,
       }),
-    [effectiveFocusedWindowId, filter, query, sortedWindows],
+    [effectiveFocusedWindowId, favoriteUrls, filter, query, sortedWindows],
   )
   const presentationContext = useMemo(
     () =>
@@ -169,8 +222,9 @@ export function App({ api }: AppProps) {
         tabMaskOverrides,
         presentationContext,
         t,
+        pinnedTabIds,
       ),
-    [filteredWindows, globalMasked, presentationContext, t, tabMaskOverrides],
+    [filteredWindows, globalMasked, pinnedTabIds, presentationContext, t, tabMaskOverrides],
   )
   const displayDomainGroups = useMemo(
     () =>
@@ -179,8 +233,10 @@ export function App({ api }: AppProps) {
         globalMasked,
         tabMaskOverrides,
         t,
+        pinnedTabIds,
+        pinnedDomainKeys,
       ),
-    [filteredWindows, globalMasked, t, tabMaskOverrides],
+    [filteredWindows, globalMasked, pinnedDomainKeys, pinnedTabIds, t, tabMaskOverrides],
   )
   const allDomainGroups = useMemo(
     () =>
@@ -189,8 +245,10 @@ export function App({ api }: AppProps) {
         globalMasked,
         tabMaskOverrides,
         t,
+        pinnedTabIds,
+        pinnedDomainKeys,
       ),
-    [globalMasked, sortedWindows, t, tabMaskOverrides],
+    [globalMasked, pinnedDomainKeys, pinnedTabIds, sortedWindows, t, tabMaskOverrides],
   )
   const existingDomainGroupKeys = useMemo(
     () => new Set(allDomainGroups.map((group) => group.key)),
@@ -231,6 +289,54 @@ export function App({ api }: AppProps) {
     setTabMaskOverrides((current) => {
       const next = new Map(current)
       next.set(tab.id, !tab.masked)
+      return next
+    })
+  }
+
+  function handleTabPinToggle(tab: DisplayTab) {
+    setPinnedTabIds((current) => {
+      const next = new Set(current)
+      if (next.has(tab.id)) {
+        next.delete(tab.id)
+      } else {
+        next.add(tab.id)
+      }
+      return next
+    })
+  }
+
+  function handleTabFavoriteToggle(tab: DisplayTab) {
+    const url = rawTabsById.get(tab.id)?.url
+    if (!url) {
+      return
+    }
+
+    setFavoriteUrls((current) => {
+      const next = new Set(current)
+      if (next.has(url)) {
+        next.delete(url)
+      } else {
+        next.add(url)
+      }
+      return next
+    })
+  }
+
+  function handleDomainGroupPinToggle(group: DisplayDomainGroup) {
+    const domainKey = group.tabs[0]
+      ? tabIdToDomainKey.get(group.tabs[0].id)
+      : undefined
+    if (!domainKey) {
+      return
+    }
+
+    setPinnedDomainKeys((current) => {
+      const next = new Set(current)
+      if (next.has(domainKey)) {
+        next.delete(domainKey)
+      } else {
+        next.add(domainKey)
+      }
       return next
     })
   }
@@ -413,6 +519,14 @@ export function App({ api }: AppProps) {
         next.delete(tab.id)
         return next
       })
+      setPinnedTabIds((current) => {
+        if (!current.has(tab.id)) {
+          return current
+        }
+        const next = new Set(current)
+        next.delete(tab.id)
+        return next
+      })
       if (operationSequence === operationSequenceRef.current) {
         setOperationMessage(null)
       }
@@ -423,6 +537,103 @@ export function App({ api }: AppProps) {
       await refresh()
     } finally {
       finishOperation(tab.id)
+    }
+  }
+
+  function getRawGroupTabs(group: DisplayDomainGroup) {
+    const domainKey = group.tabs[0]
+      ? tabIdToDomainKey.get(group.tabs[0].id)
+      : undefined
+    if (!domainKey) {
+      return []
+    }
+
+    return sortedWindows.flatMap((window) =>
+      window.tabs.filter((tab) => getTabDomainGroupKey(tab.url) === domainKey),
+    )
+  }
+
+  function removeClosedTabState(closedTabIds: readonly number[]) {
+    setTabMaskOverrides((current) => {
+      if (!closedTabIds.some((tabId) => current.has(tabId))) {
+        return current
+      }
+      const next = new Map(current)
+      for (const tabId of closedTabIds) next.delete(tabId)
+      return next
+    })
+    setPinnedTabIds((current) => {
+      if (!closedTabIds.some((tabId) => current.has(tabId))) {
+        return current
+      }
+      const next = new Set(current)
+      for (const tabId of closedTabIds) next.delete(tabId)
+      return next
+    })
+  }
+
+  async function handleRemoveDuplicates(group: DisplayDomainGroup) {
+    const duplicateTabIds = findDuplicateTabIds(getRawGroupTabs(group))
+    if (duplicateTabIds.length === 0 ||
+      !window.confirm(t('removeDuplicatesConfirm', { count: duplicateTabIds.length }))) {
+      return
+    }
+
+    const operationSequence = beginGroupOperation(duplicateTabIds)
+    if (operationSequence === null) return
+
+    try {
+      const results = await Promise.allSettled(
+        duplicateTabIds.map((tabId) => resolvedApi.closeTab(tabId)),
+      )
+      const closedTabIds = duplicateTabIds.filter(
+        (_, index) => results[index]?.status === 'fulfilled',
+      )
+      removeClosedTabState(closedTabIds)
+
+      if (results.some((result) => result.status === 'rejected')) {
+        if (operationSequence === operationSequenceRef.current) {
+          setOperationMessage('removeDuplicatesError')
+        }
+        await refresh()
+      } else if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage(null)
+      }
+    } catch {
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage('removeDuplicatesError')
+      }
+      await refresh()
+    } finally {
+      finishGroupOperation(duplicateTabIds)
+    }
+  }
+
+  async function handleSortTabs() {
+    if (sortingTabs) return
+    setSortingTabs(true)
+    const operationSequence = ++operationSequenceRef.current
+
+    try {
+      const moves = windows.flatMap((window) => {
+        const currentIds = window.tabs.map((tab) => tab.id)
+        const sortedIds = createDomainSortedTabIds(window.tabs)
+        return currentIds.every((tabId, index) => tabId === sortedIds[index])
+          ? []
+          : [resolvedApi.moveTabs(sortedIds, window.id)]
+      })
+      await Promise.all(moves)
+      await refresh()
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage(null)
+      }
+    } catch {
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage('sortTabsError')
+      }
+      await refresh()
+    } finally {
+      setSortingTabs(false)
     }
   }
 
@@ -449,16 +660,7 @@ export function App({ api }: AppProps) {
         (_, index) => results[index]?.status === 'fulfilled',
       )
 
-      setTabMaskOverrides((current) => {
-        if (!closedTabIds.some((tabId) => current.has(tabId))) {
-          return current
-        }
-        const next = new Map(current)
-        for (const tabId of closedTabIds) {
-          next.delete(tabId)
-        }
-        return next
-      })
+      removeClosedTabState(closedTabIds)
 
       if (results.some((result) => result.status === 'rejected')) {
         if (operationSequence === operationSequenceRef.current) {
@@ -512,6 +714,8 @@ export function App({ api }: AppProps) {
               globalMasked={globalMasked}
               onFilterChange={setFilter}
               onToggleMask={handleGlobalMaskToggle}
+              onSortTabs={() => void handleSortTabs()}
+              sortingTabs={sortingTabs}
               t={t}
               beforeMaskAction={
                 <>
@@ -577,9 +781,13 @@ export function App({ api }: AppProps) {
                   collapsed={collapsedWindowIds.has(window.id)}
                   onToggleCollapse={handleCollapseToggle}
                   onActivate={(tab) => void handleActivate(tab)}
+                  onTogglePin={handleTabPinToggle}
+                  onToggleFavorite={handleTabFavoriteToggle}
                   onToggleMask={handleTabMaskToggle}
                   onCopy={(tab) => void handleCopy(tab)}
                   onClose={(tab) => void handleClose(tab)}
+                  pinnedTabIds={pinnedTabIds}
+                  favoriteTabIds={favoriteTabIds}
                   pendingTabIds={pendingTabIds}
                   copiedTabIds={copiedTabIds}
                   t={t}
@@ -589,14 +797,24 @@ export function App({ api }: AppProps) {
                 <DomainGroup
                   key={group.key}
                   group={group}
+                  pinned={pinnedDomainKeys.has(
+                    group.tabs[0] ? tabIdToDomainKey.get(group.tabs[0].id) ?? '' : '',
+                  )}
                   collapsed={collapsedDomainGroupKeys.has(group.key)}
                   onToggleCollapse={handleDomainGroupCollapseToggle}
+                  onToggleGroupPin={handleDomainGroupPinToggle}
+                  duplicateCount={findDuplicateTabIds(getRawGroupTabs(group)).length}
+                  onRemoveDuplicates={(domainGroup) => void handleRemoveDuplicates(domainGroup)}
                   onToggleGroupMask={handleDomainGroupMaskToggle}
                   onCloseGroup={(domainGroup) => void handleCloseDomainGroup(domainGroup)}
                   onActivate={(tab) => void handleActivate(tab)}
+                  onTogglePin={handleTabPinToggle}
+                  onToggleFavorite={handleTabFavoriteToggle}
                   onToggleMask={handleTabMaskToggle}
                   onCopy={(tab) => void handleCopy(tab)}
                   onClose={(tab) => void handleClose(tab)}
+                  pinnedTabIds={pinnedTabIds}
+                  favoriteTabIds={favoriteTabIds}
                   pendingTabIds={pendingTabIds}
                   copiedTabIds={copiedTabIds}
                   t={t}

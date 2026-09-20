@@ -9,6 +9,9 @@ export const defaultUiPreferences: UiPreferences = {
   viewMode: 'list',
   language: 'auto',
   theme: 'classic',
+  pinnedTabIds: [],
+  pinnedDomainKeys: [],
+  favoriteUrls: [],
 }
 
 interface PreferencesStorage {
@@ -22,6 +25,9 @@ interface StoredUiPreferences {
   viewMode: UiViewMode
   language?: UiLanguagePreference
   theme?: UiTheme
+  pinnedTabIds?: number[]
+  pinnedDomainKeys?: string[]
+  favoriteUrls?: string[]
 }
 
 function isViewMode(value: unknown): value is UiViewMode {
@@ -30,6 +36,18 @@ function isViewMode(value: unknown): value is UiViewMode {
 
 function isLanguage(value: unknown): value is UiLanguagePreference {
   return value === 'auto' || value === 'zh-CN' || value === 'en'
+}
+
+function isPositiveIntegerArray(value: unknown): value is number[] {
+  return Array.isArray(value) && value.every(
+    (item) => Number.isInteger(item) && item > 0,
+  )
+}
+
+function isNonEmptyStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(
+    (item) => typeof item === 'string' && item.trim().length > 0,
+  )
 }
 
 function isTheme(value: unknown): value is UiTheme {
@@ -64,6 +82,15 @@ function parseStoredPreferences(value: string): UiPreferences | null {
       viewMode: candidate.viewMode,
       language: isLanguage(candidate.language) ? candidate.language : 'auto',
       theme: isTheme(candidate.theme) ? candidate.theme : 'classic',
+      pinnedTabIds: isPositiveIntegerArray(candidate.pinnedTabIds)
+        ? [...new Set(candidate.pinnedTabIds)]
+        : [],
+      pinnedDomainKeys: isNonEmptyStringArray(candidate.pinnedDomainKeys)
+        ? [...new Set(candidate.pinnedDomainKeys)]
+        : [],
+      favoriteUrls: isNonEmptyStringArray(candidate.favoriteUrls)
+        ? [...new Set(candidate.favoriteUrls)]
+        : [],
     }
   } catch {
     return null
@@ -99,6 +126,9 @@ export function saveUiPreferences(
     viewMode: preferences.viewMode,
     language: preferences.language,
     theme: preferences.theme,
+    pinnedTabIds: preferences.pinnedTabIds,
+    pinnedDomainKeys: preferences.pinnedDomainKeys,
+    favoriteUrls: preferences.favoriteUrls,
   }
   try { storage.setItem(UI_PREFERENCES_KEY, JSON.stringify(storedPreferences)) } catch {
     // Preferences are best-effort and must never prevent the panel from loading.
