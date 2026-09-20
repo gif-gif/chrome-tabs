@@ -16,6 +16,7 @@ describe('UI preferences', () => {
       globalMasked: false,
       viewMode: 'list',
       language: 'auto',
+      theme: 'classic',
     })
   })
 
@@ -34,6 +35,7 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'auto',
+      theme: 'classic',
     })
   })
 
@@ -51,6 +53,7 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'en',
+      theme: 'classic',
     })
 
     localStorage.setItem(
@@ -66,7 +69,39 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'auto',
+      theme: 'classic',
     })
+  })
+
+  it.each(['aurora', 'sunset', 'twilight'] as const)(
+    'restores the supported %s theme',
+    (theme) => {
+    localStorage.setItem(
+      UI_PREFERENCES_KEY,
+      JSON.stringify({
+        version: 1,
+        globalMasked: false,
+        viewMode: 'list',
+        language: 'en',
+        theme,
+      }),
+    )
+    expect(loadUiPreferences()).toMatchObject({ theme })
+    },
+  )
+
+  it('falls back only an invalid theme field', () => {
+    localStorage.setItem(
+      UI_PREFERENCES_KEY,
+      JSON.stringify({
+        version: 1,
+        globalMasked: false,
+        viewMode: 'list',
+        language: 'en',
+        theme: 'unknown',
+      }),
+    )
+    expect(loadUiPreferences()).toMatchObject({ theme: 'classic' })
   })
 
   it.each([
@@ -100,6 +135,7 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'zh-CN',
+      theme: 'aurora',
     })
 
     expect(UI_PREFERENCES_KEY).toBe('chrome-tabs.ui-preferences.v1')
@@ -108,6 +144,7 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'zh-CN',
+      theme: 'aurora',
     })
   })
 

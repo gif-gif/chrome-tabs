@@ -1,5 +1,5 @@
 import type { UiLanguagePreference } from '../i18n/i18n'
-import type { UiPreferences, UiViewMode } from '../types'
+import type { UiPreferences, UiTheme, UiViewMode } from '../types'
 
 export const UI_PREFERENCES_KEY = 'chrome-tabs.ui-preferences.v1'
 const UI_PREFERENCES_VERSION = 1
@@ -8,6 +8,7 @@ export const defaultUiPreferences: UiPreferences = {
   globalMasked: false,
   viewMode: 'list',
   language: 'auto',
+  theme: 'classic',
 }
 
 interface PreferencesStorage {
@@ -20,6 +21,7 @@ interface StoredUiPreferences {
   globalMasked: boolean
   viewMode: UiViewMode
   language?: UiLanguagePreference
+  theme?: UiTheme
 }
 
 function isViewMode(value: unknown): value is UiViewMode {
@@ -28,6 +30,15 @@ function isViewMode(value: unknown): value is UiViewMode {
 
 function isLanguage(value: unknown): value is UiLanguagePreference {
   return value === 'auto' || value === 'zh-CN' || value === 'en'
+}
+
+function isTheme(value: unknown): value is UiTheme {
+  return (
+    value === 'classic' ||
+    value === 'aurora' ||
+    value === 'sunset' ||
+    value === 'twilight'
+  )
 }
 
 function parseStoredPreferences(value: string): UiPreferences | null {
@@ -45,6 +56,7 @@ function parseStoredPreferences(value: string): UiPreferences | null {
       globalMasked: candidate.globalMasked,
       viewMode: candidate.viewMode,
       language: isLanguage(candidate.language) ? candidate.language : 'auto',
+      theme: isTheme(candidate.theme) ? candidate.theme : 'classic',
     }
   } catch {
     return null
@@ -79,6 +91,7 @@ export function saveUiPreferences(
     globalMasked: preferences.globalMasked,
     viewMode: preferences.viewMode,
     language: preferences.language,
+    theme: preferences.theme,
   }
   try { storage.setItem(UI_PREFERENCES_KEY, JSON.stringify(storedPreferences)) } catch {
     // Preferences are best-effort and must never prevent the panel from loading.

@@ -3,6 +3,7 @@ import { createSafeChromeTabsApi } from './chrome/chromeTabs'
 import { DomainGroup } from './components/DomainGroup'
 import { Header } from './components/Header'
 import { LanguageMenu } from './components/LanguageMenu'
+import { ThemeToggle } from './components/ThemeToggle'
 import { Icon } from './components/Icon'
 import { SearchFilters } from './components/SearchFilters'
 import { StatusView, type StatusViewState } from './components/StatusView'
@@ -60,6 +61,7 @@ export function App({ api }: AppProps) {
     initialPreferences.globalMasked,
   )
   const [viewMode, setViewMode] = useState(initialPreferences.viewMode)
+  const [theme, setTheme] = useState(initialPreferences.theme)
   const [tabMaskOverrides, setTabMaskOverrides] = useState<Map<number, boolean>>(
     () => new Map(),
   )
@@ -82,12 +84,16 @@ export function App({ api }: AppProps) {
   )
 
   useEffect(() => {
-    saveUiPreferences({ globalMasked, viewMode, language })
-  }, [globalMasked, language, viewMode])
+    saveUiPreferences({ globalMasked, viewMode, language, theme })
+  }, [globalMasked, language, theme, viewMode])
 
   useEffect(() => {
     document.documentElement.lang = locale
   }, [locale])
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+  }, [theme])
 
   const existingWindowIds = useMemo(
     () => new Set(windows.map((window) => window.id)),
@@ -438,18 +444,21 @@ export function App({ api }: AppProps) {
               onToggleMask={handleGlobalMaskToggle}
               t={t}
               beforeMaskAction={
-                <LanguageMenu
-                  open={languageMenuOpen}
-                  value={language}
-                  onOpenChange={(open, reason) => {
-                    setLanguageMenuOpen(open)
-                    if (!open && reason === 'outside-pointer') {
-                      setAuxiliaryControlsFocused(false)
-                    }
-                  }}
-                  onChange={setLanguage}
-                  t={t}
-                />
+                <>
+                  <LanguageMenu
+                    open={languageMenuOpen}
+                    value={language}
+                    onOpenChange={(open, reason) => {
+                      setLanguageMenuOpen(open)
+                      if (!open && reason === 'outside-pointer') {
+                        setAuxiliaryControlsFocused(false)
+                      }
+                    }}
+                    onChange={setLanguage}
+                    t={t}
+                  />
+                  <ThemeToggle theme={theme} onChange={setTheme} t={t} />
+                </>
               }
               afterMaskAction={
                 viewMode === 'domain' && displayDomainGroups.length > 0 ? (

@@ -57,6 +57,10 @@ const messages = {
     autoLanguage: '自动（浏览器语言）',
     chineseLanguage: '中文',
     englishLanguage: 'English',
+    switchToAuroraTheme: '切换到极光主题',
+    switchToSunsetTheme: '切换到暖阳主题',
+    switchToTwilightTheme: '切换到暮紫主题',
+    switchToClassicTheme: '切换到经典主题',
   },
   en: {
     informationHidden: 'Information hidden',
@@ -113,6 +117,10 @@ const messages = {
     autoLanguage: 'Auto (browser language)',
     chineseLanguage: '中文',
     englishLanguage: 'English',
+    switchToAuroraTheme: 'Switch to Aurora theme',
+    switchToSunsetTheme: 'Switch to Sunset theme',
+    switchToTwilightTheme: 'Switch to Twilight theme',
+    switchToClassicTheme: 'Switch to Classic theme',
   },
 } as const
 

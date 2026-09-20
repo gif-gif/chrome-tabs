@@ -90,6 +90,7 @@ describe('Icon', () => {
       'window',
       'active-tab',
       'globe',
+      'palette',
       'list',
       'group',
       'collapse-all',
@@ -494,6 +495,31 @@ describe('action popup shell CSS contract', () => {
     )
     expect(stylesSource).not.toMatch(/\.drawer-rail|\.drawer-toggle|\.drawer-shell|\.drawer-content/)
   })
+
+  it('keeps classic as the default and defines light and dark alternate palettes', () => {
+    expect(stylesSource).toMatch(/:root\s*\{[^}]*--color-accent:\s*#1a73e8;/)
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="aurora"\]\s*\{[^}]*--color-bg:\s*#eef9f7;[^}]*--color-accent:\s*#0f766e;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="aurora"\]\s*\{[^}]*--color-bg:\s*#102523;[^}]*--color-accent:\s*#6ee7d4;/,
+    )
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="sunset"\]\s*\{[^}]*--color-bg:\s*#fff8ed;[^}]*--color-accent:\s*#c2410c;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="sunset"\]\s*\{[^}]*--color-bg:\s*#241812;[^}]*--color-accent:\s*#fb923c;/,
+    )
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="twilight"\]\s*\{[^}]*--color-bg:\s*#f7f3ff;[^}]*--color-accent:\s*#6d28d9;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="twilight"\]\s*\{[^}]*--color-bg:\s*#171322;[^}]*--color-accent:\s*#c4b5fd;/,
+    )
+    expect(stylesSource).toMatch(
+      /\.theme-toggle\[aria-pressed="true"\]\s*\{[^}]*color:\s*var\(--color-accent\);[^}]*background:\s*var\(--color-accent-soft\);/,
+    )
+  })
 })
 
 describe('App integration', () => {
@@ -515,6 +541,7 @@ describe('App integration', () => {
         globalMasked: false,
         viewMode: 'list',
         language: 'auto',
+        theme: 'classic',
       }),
     )
   })
@@ -859,9 +886,55 @@ describe('App integration', () => {
     expect(headerActions).toContainElement(toggleAllButton)
     expect(Array.from(headerActions!.children)).toEqual([
       screen.getByRole('button', { name: '显示语言' }).closest('.language-menu-root'),
+      screen.getByRole('button', { name: '切换到极光主题' }),
       globalMaskButton,
       toggleAllButton,
     ])
+  })
+
+  it('switches themes beside the language control and restores the choice after remount', async () => {
+    storeUiPreferences(false)
+    const api = createTestApi()
+    const user = userEvent.setup()
+    const firstView = render(<App api={api} />)
+
+    await screen.findByText('GitHub - Chrome Tabs')
+    const languageButton = screen.getByRole('button', { name: '显示语言' })
+    const themeButton = screen.getByRole('button', { name: '切换到极光主题' })
+    expect(languageButton.closest('.language-menu-root')?.nextElementSibling).toBe(themeButton)
+    expect(document.documentElement).toHaveAttribute('data-theme', 'classic')
+
+    await user.click(themeButton)
+    expect(document.documentElement).toHaveAttribute('data-theme', 'aurora')
+    expect(screen.getByRole('button', { name: '切换到暖阳主题' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+
+    await user.click(screen.getByRole('button', { name: '切换到暖阳主题' }))
+    expect(document.documentElement).toHaveAttribute('data-theme', 'sunset')
+    expect(screen.getByRole('button', { name: '切换到暮紫主题' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+
+    await user.click(screen.getByRole('button', { name: '切换到暮紫主题' }))
+    expect(document.documentElement).toHaveAttribute('data-theme', 'twilight')
+    expect(screen.getByRole('button', { name: '切换到经典主题' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await waitFor(() =>
+      expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '')).toMatchObject({
+        theme: 'twilight',
+      }),
+    )
+
+    firstView.unmount()
+    render(<App api={api} />)
+    await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
+    expect(document.documentElement).toHaveAttribute('data-theme', 'twilight')
+    expect(screen.getByRole('button', { name: '切换到经典主题' })).toBeInTheDocument()
   })
 
   it('toggles all visible domain groups between collapsed and expanded with one toolbar button', async () => {
@@ -994,6 +1067,7 @@ describe('App integration', () => {
         globalMasked: true,
         viewMode: 'list',
         language: 'auto',
+        theme: 'classic',
       }),
     )
 
@@ -1027,6 +1101,7 @@ describe('App integration', () => {
       globalMasked: false,
       viewMode: 'list',
       language: 'auto',
+      theme: 'classic',
     })
   })
 

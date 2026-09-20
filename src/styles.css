@@ -53,6 +53,136 @@
   }
 }
 
+/* Aurora keeps the same compact layout while shifting the visual hierarchy to
+   cool mint surfaces and a teal accent. Classic remains the default above. */
+:root[data-theme="aurora"] {
+  --color-bg: #eef9f7;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fafffe;
+  --color-text: #173a3b;
+  --color-text-muted: #526f70;
+  --color-border: #b8d9d4;
+  --color-border-subtle: #d7ebe7;
+  --color-accent: #0f766e;
+  --color-accent-hover: #0b655f;
+  --color-accent-soft: #d5f2ec;
+  --color-hover: #e1f2ef;
+  --color-pressed: #cce8e3;
+  --color-danger: #b4234d;
+  --color-danger-soft: #fde7ee;
+  --color-focus: #6d3ed1;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(15 118 110 / 18%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="aurora"] {
+    --color-bg: #102523;
+    --color-surface: #17302d;
+    --color-surface-raised: #1c3935;
+    --color-text: #e2f5f1;
+    --color-text-muted: #a8c9c3;
+    --color-border: #416b65;
+    --color-border-subtle: #294b46;
+    --color-accent: #6ee7d4;
+    --color-accent-hover: #99f6e4;
+    --color-accent-soft: #244f49;
+    --color-hover: #21413d;
+    --color-pressed: #2b504a;
+    --color-danger: #f8a4bd;
+    --color-danger-soft: #61263a;
+    --color-focus: #c4b5fd;
+    --color-on-accent: #102523;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 48%);
+  }
+}
+
+/* Sunset uses warm paper-like surfaces with an orange accent. */
+:root[data-theme="sunset"] {
+  --color-bg: #fff8ed;
+  --color-surface: #fffdf9;
+  --color-surface-raised: #fffdfa;
+  --color-text: #3f2d22;
+  --color-text-muted: #735b4a;
+  --color-border: #e8cfb8;
+  --color-border-subtle: #f3e3d2;
+  --color-accent: #c2410c;
+  --color-accent-hover: #9a3412;
+  --color-accent-soft: #ffead5;
+  --color-hover: #f8eadc;
+  --color-pressed: #f2dbc6;
+  --color-danger: #b42318;
+  --color-danger-soft: #fee4e2;
+  --color-focus: #9a3412;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(194 65 12 / 16%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="sunset"] {
+    --color-bg: #241812;
+    --color-surface: #302019;
+    --color-surface-raised: #39251c;
+    --color-text: #f8eadf;
+    --color-text-muted: #d2b8a6;
+    --color-border: #72503c;
+    --color-border-subtle: #4a3327;
+    --color-accent: #fb923c;
+    --color-accent-hover: #fdba74;
+    --color-accent-soft: #5a331f;
+    --color-hover: #3d2a21;
+    --color-pressed: #4a3328;
+    --color-danger: #fca5a5;
+    --color-danger-soft: #642d2d;
+    --color-focus: #fdba74;
+    --color-on-accent: #27140b;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 48%);
+  }
+}
+
+/* Twilight adds a calm violet skin without changing spacing or structure. */
+:root[data-theme="twilight"] {
+  --color-bg: #f7f3ff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fcfaff;
+  --color-text: #2f2546;
+  --color-text-muted: #675b7d;
+  --color-border: #d7cbed;
+  --color-border-subtle: #ebe4f6;
+  --color-accent: #6d28d9;
+  --color-accent-hover: #5b21b6;
+  --color-accent-soft: #ede5ff;
+  --color-hover: #f0ebf8;
+  --color-pressed: #e4dcf0;
+  --color-danger: #b4234d;
+  --color-danger-soft: #fde7ee;
+  --color-focus: #6d28d9;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(109 40 217 / 16%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="twilight"] {
+    --color-bg: #171322;
+    --color-surface: #211b30;
+    --color-surface-raised: #292139;
+    --color-text: #f0eafa;
+    --color-text-muted: #c3b7d5;
+    --color-border: #594b72;
+    --color-border-subtle: #392f4b;
+    --color-accent: #c4b5fd;
+    --color-accent-hover: #ddd6fe;
+    --color-accent-soft: #40345c;
+    --color-hover: #302741;
+    --color-pressed: #3a304c;
+    --color-danger: #f9a8d4;
+    --color-danger-soft: #602a46;
+    --color-focus: #ddd6fe;
+    --color-on-accent: #1f1830;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 50%);
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -288,8 +418,14 @@ main {
 
 .global-mask-button,
 .domain-collapse-all-button,
-.language-menu-trigger {
+.language-menu-trigger,
+.theme-toggle {
   color: var(--color-text-muted);
+}
+
+.theme-toggle[aria-pressed="true"] {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
 }
 
 .language-menu-root {
