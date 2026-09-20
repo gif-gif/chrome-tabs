@@ -3,6 +3,7 @@ import type { SVGProps } from 'react'
 export type IconName =
   | 'search'
   | 'close'
+  | 'copy'
   | 'eye'
   | 'eye-off'
   | 'chevron'
@@ -34,6 +35,12 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   close: <path d="m6 6 12 12M18 6 6 18" />,
+  copy: (
+    <>
+      <rect x="8" y="8" width="11" height="11" rx="2" />
+      <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+    </>
+  ),
   eye: (
     <>
       <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />

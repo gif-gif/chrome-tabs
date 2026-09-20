@@ -73,7 +73,18 @@ describe('UI preferences', () => {
     })
   })
 
-  it.each(['aurora', 'sunset', 'twilight'] as const)(
+  it.each([
+    'aurora',
+    'sunset',
+    'twilight',
+    'ocean',
+    'forest',
+    'sakura',
+    'graphite',
+    'lemon',
+    'coffee',
+    'midnight',
+  ] as const)(
     'restores the supported %s theme',
     (theme) => {
     localStorage.setItem(

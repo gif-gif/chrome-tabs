@@ -12,7 +12,14 @@ const themeCycle: Record<UiTheme, UiTheme> = {
   classic: 'aurora',
   aurora: 'sunset',
   sunset: 'twilight',
-  twilight: 'classic',
+  twilight: 'ocean',
+  ocean: 'forest',
+  forest: 'sakura',
+  sakura: 'graphite',
+  graphite: 'lemon',
+  lemon: 'coffee',
+  coffee: 'midnight',
+  midnight: 'classic',
 }
 
 const themeLabels = {
@@ -20,6 +27,13 @@ const themeLabels = {
   aurora: 'switchToAuroraTheme',
   sunset: 'switchToSunsetTheme',
   twilight: 'switchToTwilightTheme',
+  ocean: 'switchToOceanTheme',
+  forest: 'switchToForestTheme',
+  sakura: 'switchToSakuraTheme',
+  graphite: 'switchToGraphiteTheme',
+  lemon: 'switchToLemonTheme',
+  coffee: 'switchToCoffeeTheme',
+  midnight: 'switchToMidnightTheme',
 } as const
 
 export function ThemeToggle({ theme, onChange, t }: ThemeToggleProps) {

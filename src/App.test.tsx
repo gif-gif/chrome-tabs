@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, vi } from 'vitest'
 import type { BrowserWindow, ChromeTabsApi, DisplayTab, DisplayWindow } from './types'
@@ -17,6 +17,7 @@ import { createTranslator } from './i18n/i18n'
 const UI_PREFERENCES_KEY = 'chrome-tabs.ui-preferences.v1'
 const stylesSource = readFileSync('src/styles.css', 'utf8')
 const zh = createTranslator('zh-CN')
+let clipboardWriteText: ReturnType<typeof vi.fn>
 
 function storeUiPreferences(globalMasked: boolean) {
   localStorage.setItem(
@@ -32,6 +33,7 @@ function storeUiPreferences(globalMasked: boolean) {
 
 beforeEach(() => {
   localStorage.clear()
+  clipboardWriteText = vi.fn().mockResolvedValue(undefined)
   vi.spyOn(window.navigator, 'languages', 'get').mockReturnValue(['zh-CN'])
 })
 
@@ -78,6 +80,7 @@ describe('Icon', () => {
     const names: IconName[] = [
       'search',
       'close',
+      'copy',
       'eye',
       'eye-off',
       'chevron',
@@ -210,6 +213,7 @@ describe('TabRow favicon safety', () => {
         tab={{ ...unmaskedTab, displayFavIconUrl: remoteFaviconUrl }}
         onActivate={vi.fn()}
         onToggleMask={vi.fn()}
+        onCopy={vi.fn()}
         onClose={vi.fn()}
       />,
     )
@@ -226,6 +230,7 @@ describe('TabRow favicon safety', () => {
         tab={{ ...unmaskedTab, displayFavIconUrl: dataFaviconUrl }}
         onActivate={vi.fn()}
         onToggleMask={vi.fn()}
+        onCopy={vi.fn()}
         onClose={vi.fn()}
       />,
     )
@@ -240,6 +245,7 @@ describe('TabRow favicon safety', () => {
         }}
         onActivate={vi.fn()}
         onToggleMask={vi.fn()}
+        onCopy={vi.fn()}
         onClose={vi.fn()}
       />,
     )
@@ -256,6 +262,7 @@ describe('TabRow', () => {
         tab={{ ...maskedTab, active: true }}
         onActivate={vi.fn()}
         onToggleMask={vi.fn()}
+        onCopy={vi.fn()}
         onClose={vi.fn()}
       />,
     )
@@ -282,6 +289,9 @@ describe('TabRow', () => {
     expect(
       screen.getByRole('button', { name: '显示此标签信息' }),
     ).not.toHaveAttribute('title')
+    expect(
+      screen.getByRole('button', { name: '复制标签链接' }),
+    ).toBeInTheDocument()
 
     for (const button of container.querySelectorAll('button')) {
       expect(button.querySelector('button')).toBeNull()
@@ -292,6 +302,7 @@ describe('TabRow', () => {
     const user = userEvent.setup()
     const onActivate = vi.fn()
     const onToggleMask = vi.fn()
+    const onCopy = vi.fn()
     const onClose = vi.fn()
 
     render(
@@ -299,6 +310,7 @@ describe('TabRow', () => {
         tab={unmaskedTab}
         onActivate={onActivate}
         onToggleMask={onToggleMask}
+        onCopy={onCopy}
         onClose={onClose}
       />,
     )
@@ -329,16 +341,22 @@ describe('TabRow', () => {
     expect(onActivate).toHaveBeenCalledTimes(1)
 
     const privacyButton = screen.getByRole('button', { name: '隐藏此标签信息' })
+    const copyButton = screen.getByRole('button', { name: '复制标签链接' })
     const closeButton = screen.getByRole('button', { name: '关闭标签页' })
     expect(privacyButton).toHaveClass('row-action-button', 'row-privacy-action')
+    expect(copyButton).toHaveClass('row-action-button', 'row-copy-action')
     expect(closeButton).toHaveClass('row-action-button', 'row-close-action')
-    for (const button of [privacyButton, closeButton]) {
+    for (const button of [privacyButton, copyButton, closeButton]) {
       expect(button.querySelector('svg')).toHaveAttribute('width', '15')
       expect(button.querySelector('svg')).toHaveAttribute('height', '15')
     }
 
     await user.click(privacyButton)
     expect(onToggleMask).toHaveBeenCalledTimes(1)
+    expect(onActivate).toHaveBeenCalledTimes(1)
+
+    await user.click(copyButton)
+    expect(onCopy).toHaveBeenCalledTimes(1)
     expect(onActivate).toHaveBeenCalledTimes(1)
 
     await user.click(closeButton)
@@ -359,6 +377,7 @@ describe('WindowGroup', () => {
         onToggleCollapse={onToggleCollapse}
         onActivate={vi.fn()}
         onToggleMask={vi.fn()}
+        onCopy={vi.fn()}
         onClose={vi.fn()}
       />,
     )
@@ -386,6 +405,7 @@ describe('WindowGroup', () => {
         onToggleCollapse={onToggleCollapse}
         onActivate={vi.fn()}
         onToggleMask={vi.fn()}
+        onCopy={vi.fn()}
         onClose={vi.fn()}
       />,
     )
@@ -466,6 +486,10 @@ function createTestApi(
 async function renderReadyApp(api = createTestApi()) {
   storeUiPreferences(true)
   const user = userEvent.setup()
+  Object.defineProperty(window.navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: clipboardWriteText },
+  })
   const view = render(<App api={api} />)
   await screen.findByLabelText('3 个标签页')
   await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(1))
@@ -494,6 +518,9 @@ describe('action popup shell CSS contract', () => {
       /\.popup-content\s*\{[^}]*height:\s*100%;[^}]*overflow-x:\s*hidden;[^}]*overflow-y:\s*auto;/,
     )
     expect(stylesSource).not.toMatch(/\.drawer-rail|\.drawer-toggle|\.drawer-shell|\.drawer-content/)
+    expect(stylesSource).toMatch(
+      /\.tab-row\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) repeat\(3, var\(--row-action-size\)\);/,
+    )
   })
 
   it('keeps classic as the default and defines light and dark alternate palettes', () => {
@@ -515,6 +542,48 @@ describe('action popup shell CSS contract', () => {
     )
     expect(stylesSource).toMatch(
       /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="twilight"\]\s*\{[^}]*--color-bg:\s*#171322;[^}]*--color-accent:\s*#c4b5fd;/,
+    )
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="ocean"\]\s*\{[^}]*--color-bg:\s*#eef7ff;[^}]*--color-accent:\s*#0369a1;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="ocean"\]\s*\{[^}]*--color-bg:\s*#0b1f2a;[^}]*--color-accent:\s*#7dd3fc;/,
+    )
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="forest"\]\s*\{[^}]*--color-bg:\s*#f3f8ef;[^}]*--color-accent:\s*#3f6212;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="forest"\]\s*\{[^}]*--color-bg:\s*#121d12;[^}]*--color-accent:\s*#bef264;/,
+    )
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="sakura"\]\s*\{[^}]*--color-bg:\s*#fff5f8;[^}]*--color-accent:\s*#be185d;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="sakura"\]\s*\{[^}]*--color-bg:\s*#26151e;[^}]*--color-accent:\s*#f9a8d4;/,
+    )
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="graphite"\]\s*\{[^}]*--color-bg:\s*#f1f3f5;[^}]*--color-accent:\s*#374151;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="graphite"\]\s*\{[^}]*--color-bg:\s*#111418;[^}]*--color-accent:\s*#d1d5db;/,
+    )
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="lemon"\]\s*\{[^}]*--color-bg:\s*#fffde8;[^}]*--color-accent:\s*#854d0e;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="lemon"\]\s*\{[^}]*--color-bg:\s*#211e0c;[^}]*--color-accent:\s*#fde047;/,
+    )
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="coffee"\]\s*\{[^}]*--color-bg:\s*#f7f1eb;[^}]*--color-accent:\s*#7c3f20;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="coffee"\]\s*\{[^}]*--color-bg:\s*#1f1712;[^}]*--color-accent:\s*#d6a06d;/,
+    )
+    expect(stylesSource).toMatch(
+      /:root\[data-theme="midnight"\]\s*\{[^}]*--color-bg:\s*#eef2ff;[^}]*--color-accent:\s*#3730a3;/,
+    )
+    expect(stylesSource).toMatch(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="midnight"\]\s*\{[^}]*--color-bg:\s*#080f24;[^}]*--color-accent:\s*#60a5fa;/,
     )
     expect(stylesSource).toMatch(
       /\.theme-toggle\[aria-pressed="true"\]\s*\{[^}]*color:\s*var\(--color-accent\);[^}]*background:\s*var\(--color-accent-soft\);/,
@@ -904,36 +973,36 @@ describe('App integration', () => {
     expect(languageButton.closest('.language-menu-root')?.nextElementSibling).toBe(themeButton)
     expect(document.documentElement).toHaveAttribute('data-theme', 'classic')
 
-    await user.click(themeButton)
-    expect(document.documentElement).toHaveAttribute('data-theme', 'aurora')
-    expect(screen.getByRole('button', { name: '切换到暖阳主题' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    const themeSequence = [
+      ['aurora', '切换到暖阳主题'],
+      ['sunset', '切换到暮紫主题'],
+      ['twilight', '切换到海洋主题'],
+      ['ocean', '切换到森林主题'],
+      ['forest', '切换到樱花主题'],
+      ['sakura', '切换到石墨主题'],
+      ['graphite', '切换到柠檬主题'],
+      ['lemon', '切换到咖啡主题'],
+      ['coffee', '切换到午夜主题'],
+      ['midnight', '切换到经典主题'],
+    ] as const
 
-    await user.click(screen.getByRole('button', { name: '切换到暖阳主题' }))
-    expect(document.documentElement).toHaveAttribute('data-theme', 'sunset')
-    expect(screen.getByRole('button', { name: '切换到暮紫主题' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-
-    await user.click(screen.getByRole('button', { name: '切换到暮紫主题' }))
-    expect(document.documentElement).toHaveAttribute('data-theme', 'twilight')
-    expect(screen.getByRole('button', { name: '切换到经典主题' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    let currentButton = themeButton
+    for (const [expectedTheme, nextThemeLabel] of themeSequence) {
+      await user.click(currentButton)
+      expect(document.documentElement).toHaveAttribute('data-theme', expectedTheme)
+      currentButton = screen.getByRole('button', { name: nextThemeLabel })
+      expect(currentButton).toHaveAttribute('aria-pressed', 'true')
+    }
     await waitFor(() =>
       expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '')).toMatchObject({
-        theme: 'twilight',
+        theme: 'midnight',
       }),
     )
 
     firstView.unmount()
     render(<App api={api} />)
     await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
-    expect(document.documentElement).toHaveAttribute('data-theme', 'twilight')
+    expect(document.documentElement).toHaveAttribute('data-theme', 'midnight')
     expect(screen.getByRole('button', { name: '切换到经典主题' })).toBeInTheDocument()
   })
 
@@ -1166,6 +1235,42 @@ describe('App integration', () => {
     expect(await screen.findByText('没有找到匹配的标签页')).toBeInTheDocument()
   })
 
+  it('shows a three-second checkmark after copying without revealing masked values or showing success text', async () => {
+    const api = createTestApi()
+    const { container, user } = await renderReadyApp(api)
+    const timeoutSpy = vi.spyOn(globalThis, 'setTimeout')
+    const copyButtons = screen.getAllByRole('button', { name: '复制标签链接' })
+    const originalIconMarkup = copyButtons[1].innerHTML
+
+    await user.click(copyButtons[1])
+    expect(clipboardWriteText).toHaveBeenCalledWith(
+      'https://mail.example.com/inbox?TOKEN=SECRET',
+    )
+    expect(api.activateTab).not.toHaveBeenCalled()
+    await waitFor(() => expect(copyButtons[1]).toHaveAttribute('data-copied', 'true'))
+    expect(copyButtons[1]).toHaveClass('is-copied')
+    expect(copyButtons[1].innerHTML).not.toBe(originalIconMarkup)
+    expect(screen.queryByText('链接已复制。')).not.toBeInTheDocument()
+    expect(container.innerHTML).not.toContain('TOKEN=SECRET')
+
+    const resetCall = timeoutSpy.mock.calls.find(([, delay]) => delay === 3000)
+    expect(resetCall).toBeDefined()
+    act(() => {
+      ;(resetCall?.[0] as () => void)()
+    })
+    expect(copyButtons[1]).not.toHaveAttribute('data-copied')
+    expect(copyButtons[1]).not.toHaveClass('is-copied')
+    expect(copyButtons[1].innerHTML).toBe(originalIconMarkup)
+
+    clipboardWriteText.mockRejectedValueOnce(new Error('private clipboard failure'))
+    await user.click(copyButtons[0])
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      '无法复制链接，请重试。',
+    )
+    expect(screen.getByRole('status')).toHaveClass('is-error')
+    expect(container.innerHTML).not.toContain('private clipboard failure')
+  })
+
   it('runs activate and close operations, sanitizes failures, refreshes after rejection, and clears messages on success', async () => {
     const refreshedWindows: BrowserWindow[] = [
       {
@@ -1276,13 +1381,17 @@ describe('App integration', () => {
       name: /切换到隐藏的标签页/,
     })
     const closeButtons = screen.getAllByRole('button', { name: '关闭标签页' })
+    const copyButtons = screen.getAllByRole('button', { name: '复制标签链接' })
 
     await user.click(activationButtons[0])
     expect(activationButtons[0]).toBeDisabled()
+    expect(copyButtons[0]).toBeDisabled()
     expect(closeButtons[0]).toBeDisabled()
     await user.click(activationButtons[0])
+    await user.click(copyButtons[0])
     await user.click(closeButtons[0])
     expect(api.activateTab).toHaveBeenCalledTimes(1)
+    expect(clipboardWriteText).not.toHaveBeenCalled()
     expect(api.closeTab).not.toHaveBeenCalled()
 
     await user.click(activationButtons[1])

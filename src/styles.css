@@ -183,6 +183,308 @@
   }
 }
 
+
+/* Ocean pairs airy blue surfaces with a deep, accessible marine accent. */
+:root[data-theme="ocean"] {
+  --color-bg: #eef7ff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f8fcff;
+  --color-text: #17324d;
+  --color-text-muted: #536f86;
+  --color-border: #bfd8e8;
+  --color-border-subtle: #dcebf4;
+  --color-accent: #0369a1;
+  --color-accent-hover: #075985;
+  --color-accent-soft: #d9effc;
+  --color-hover: #e3f2fb;
+  --color-pressed: #d2e8f5;
+  --color-danger: #be123c;
+  --color-danger-soft: #ffe4e6;
+  --color-focus: #0369a1;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(3 105 161 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="ocean"] {
+    --color-bg: #0b1f2a;
+    --color-surface: #102b39;
+    --color-surface-raised: #153545;
+    --color-text: #e0f2fe;
+    --color-text-muted: #a6c9dc;
+    --color-border: #35647a;
+    --color-border-subtle: #204659;
+    --color-accent: #7dd3fc;
+    --color-accent-hover: #bae6fd;
+    --color-accent-soft: #174c65;
+    --color-hover: #173b4b;
+    --color-pressed: #20495b;
+    --color-danger: #fda4af;
+    --color-danger-soft: #622b38;
+    --color-focus: #bae6fd;
+    --color-on-accent: #08202d;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 50%);
+  }
+}
+
+/* Forest uses soft botanical neutrals and a grounded leaf-green accent. */
+:root[data-theme="forest"] {
+  --color-bg: #f3f8ef;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fbfdf9;
+  --color-text: #26351f;
+  --color-text-muted: #5d7053;
+  --color-border: #cbdcbc;
+  --color-border-subtle: #e1ecd8;
+  --color-accent: #3f6212;
+  --color-accent-hover: #365314;
+  --color-accent-soft: #e3f2cf;
+  --color-hover: #eaf3e2;
+  --color-pressed: #dce9d2;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fee2e2;
+  --color-focus: #3f6212;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(63 98 18 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="forest"] {
+    --color-bg: #121d12;
+    --color-surface: #192819;
+    --color-surface-raised: #203220;
+    --color-text: #ecfccb;
+    --color-text-muted: #bbd39a;
+    --color-border: #4e6b3d;
+    --color-border-subtle: #30482b;
+    --color-accent: #bef264;
+    --color-accent-hover: #d9f99d;
+    --color-accent-soft: #354f25;
+    --color-hover: #263c24;
+    --color-pressed: #30482b;
+    --color-danger: #fca5a5;
+    --color-danger-soft: #5f2929;
+    --color-focus: #d9f99d;
+    --color-on-accent: #17230d;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 48%);
+  }
+}
+
+/* Sakura adds a restrained blossom-pink palette that stays readable. */
+:root[data-theme="sakura"] {
+  --color-bg: #fff5f8;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fffafd;
+  --color-text: #442637;
+  --color-text-muted: #7d586b;
+  --color-border: #e8c5d4;
+  --color-border-subtle: #f4dfe8;
+  --color-accent: #be185d;
+  --color-accent-hover: #9d174d;
+  --color-accent-soft: #fce1ec;
+  --color-hover: #f9e9f0;
+  --color-pressed: #f2dbe5;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fee2e2;
+  --color-focus: #be185d;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(190 24 93 / 16%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="sakura"] {
+    --color-bg: #26151e;
+    --color-surface: #321c27;
+    --color-surface-raised: #3d2330;
+    --color-text: #fce7f3;
+    --color-text-muted: #ddb4c8;
+    --color-border: #75445d;
+    --color-border-subtle: #4f2d3e;
+    --color-accent: #f9a8d4;
+    --color-accent-hover: #fbcfe8;
+    --color-accent-soft: #5c2942;
+    --color-hover: #452737;
+    --color-pressed: #532f41;
+    --color-danger: #fca5a5;
+    --color-danger-soft: #622b32;
+    --color-focus: #fbcfe8;
+    --color-on-accent: #351321;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 50%);
+  }
+}
+
+/* Graphite is a neutral monochrome skin with a crisp slate accent. */
+:root[data-theme="graphite"] {
+  --color-bg: #f1f3f5;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fafbfc;
+  --color-text: #1f2933;
+  --color-text-muted: #59636f;
+  --color-border: #c8cdd3;
+  --color-border-subtle: #e1e4e8;
+  --color-accent: #374151;
+  --color-accent-hover: #1f2937;
+  --color-accent-soft: #e2e6eb;
+  --color-hover: #e8ebee;
+  --color-pressed: #d9dde2;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fee2e2;
+  --color-focus: #374151;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(31 41 51 / 18%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="graphite"] {
+    --color-bg: #111418;
+    --color-surface: #1b1f24;
+    --color-surface-raised: #23282e;
+    --color-text: #f1f3f5;
+    --color-text-muted: #b8c0c8;
+    --color-border: #525b65;
+    --color-border-subtle: #343b43;
+    --color-accent: #d1d5db;
+    --color-accent-hover: #f3f4f6;
+    --color-accent-soft: #3b424a;
+    --color-hover: #292f35;
+    --color-pressed: #343b43;
+    --color-danger: #fca5a5;
+    --color-danger-soft: #5b2929;
+    --color-focus: #f3f4f6;
+    --color-on-accent: #171a1f;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 55%);
+  }
+}
+
+/* Lemon uses warm citrus highlights without sacrificing text contrast. */
+:root[data-theme="lemon"] {
+  --color-bg: #fffde8;
+  --color-surface: #fffef8;
+  --color-surface-raised: #fffffb;
+  --color-text: #3c3519;
+  --color-text-muted: #716844;
+  --color-border: #dfd39a;
+  --color-border-subtle: #eee7bd;
+  --color-accent: #854d0e;
+  --color-accent-hover: #713f12;
+  --color-accent-soft: #f8edb2;
+  --color-hover: #f6efc8;
+  --color-pressed: #ece2ad;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fee2e2;
+  --color-focus: #854d0e;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(133 77 14 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="lemon"] {
+    --color-bg: #211e0c;
+    --color-surface: #2b2710;
+    --color-surface-raised: #353016;
+    --color-text: #fef9c3;
+    --color-text-muted: #d5cb8f;
+    --color-border: #6b602d;
+    --color-border-subtle: #49421f;
+    --color-accent: #fde047;
+    --color-accent-hover: #fef08a;
+    --color-accent-soft: #554b19;
+    --color-hover: #3b3519;
+    --color-pressed: #49421f;
+    --color-danger: #fca5a5;
+    --color-danger-soft: #5e2b26;
+    --color-focus: #fef08a;
+    --color-on-accent: #292307;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 50%);
+  }
+}
+
+/* Coffee combines cream surfaces with roasted brown accents. */
+:root[data-theme="coffee"] {
+  --color-bg: #f7f1eb;
+  --color-surface: #fffdfb;
+  --color-surface-raised: #fffaf5;
+  --color-text: #382920;
+  --color-text-muted: #715c4e;
+  --color-border: #d9c4b4;
+  --color-border-subtle: #ebddd2;
+  --color-accent: #7c3f20;
+  --color-accent-hover: #653018;
+  --color-accent-soft: #eedbca;
+  --color-hover: #efe2d7;
+  --color-pressed: #e4d3c5;
+  --color-danger: #b42318;
+  --color-danger-soft: #fee4e2;
+  --color-focus: #7c3f20;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(124 63 32 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="coffee"] {
+    --color-bg: #1f1712;
+    --color-surface: #2a1f18;
+    --color-surface-raised: #34271e;
+    --color-text: #f5e8dc;
+    --color-text-muted: #ceb5a2;
+    --color-border: #6b4d3b;
+    --color-border-subtle: #463329;
+    --color-accent: #d6a06d;
+    --color-accent-hover: #edc49f;
+    --color-accent-soft: #533722;
+    --color-hover: #3a2b22;
+    --color-pressed: #473429;
+    --color-danger: #fca5a5;
+    --color-danger-soft: #602c29;
+    --color-focus: #edc49f;
+    --color-on-accent: #2b190d;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Midnight uses inky indigo foundations and a luminous blue accent. */
+:root[data-theme="midnight"] {
+  --color-bg: #eef2ff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f8f9ff;
+  --color-text: #222b4d;
+  --color-text-muted: #5b6485;
+  --color-border: #c5cbed;
+  --color-border-subtle: #e0e4f6;
+  --color-accent: #3730a3;
+  --color-accent-hover: #312e81;
+  --color-accent-soft: #e0e7ff;
+  --color-hover: #e8ebf8;
+  --color-pressed: #d9def0;
+  --color-danger: #be123c;
+  --color-danger-soft: #ffe4e6;
+  --color-focus: #3730a3;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(55 48 163 / 18%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="midnight"] {
+    --color-bg: #080f24;
+    --color-surface: #0e1833;
+    --color-surface-raised: #142044;
+    --color-text: #e8eeff;
+    --color-text-muted: #a9b6dc;
+    --color-border: #405286;
+    --color-border-subtle: #24345f;
+    --color-accent: #60a5fa;
+    --color-accent-hover: #93c5fd;
+    --color-accent-soft: #203d70;
+    --color-hover: #19294f;
+    --color-pressed: #233660;
+    --color-danger: #fda4af;
+    --color-danger-soft: #5c2636;
+    --color-focus: #93c5fd;
+    --color-on-accent: #09152d;
+    --shadow-sticky: 0 1px 6px rgb(0 0 0 / 60%);
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -645,7 +947,7 @@ main {
 .tab-row {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--row-action-size) var(--row-action-size);
+  grid-template-columns: minmax(0, 1fr) repeat(3, var(--row-action-size));
   align-items: center;
   min-width: 0;
   min-height: 56px;
@@ -806,6 +1108,12 @@ main {
 .row-privacy-action:hover:not(:disabled),
 .row-privacy-action:focus-visible {
   color: var(--color-text);
+}
+
+.row-copy-action:hover:not(:disabled),
+.row-copy-action:focus-visible,
+.row-copy-action.is-copied {
+  color: var(--color-accent);
 }
 
 .row-close-action:hover:not(:disabled),

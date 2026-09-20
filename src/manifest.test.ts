@@ -43,7 +43,7 @@ describe('Manifest V3 action popup wiring', () => {
 
     expect(manifest.manifest_version).toBe(3)
     expect(manifest.minimum_chrome_version).toBe('141')
-    expect(manifest.permissions).toEqual(['tabs', 'favicon'])
+    expect(manifest.permissions).toEqual(['tabs', 'favicon', 'clipboardWrite'])
     expect(manifest.host_permissions ?? []).toEqual([])
     expect(manifest.action.default_popup).toBe('index.html')
     expect(existsSync(resolve(publicDir, '..', manifest.action.default_popup))).toBe(true)
@@ -59,6 +59,7 @@ describe('Manifest V3 action popup wiring', () => {
     const manifest = readManifest()
 
     expect(manifest.permissions).toContain('favicon')
+    expect(manifest.permissions).toContain('clipboardWrite')
     expect(manifest.host_permissions ?? []).toEqual([])
   })
 

@@ -67,7 +67,9 @@ export function App({ api }: AppProps) {
   )
   const [operationMessage, setOperationMessage] = useState<PlainTranslationKey | null>(null)
   const [pendingTabIds, setPendingTabIds] = useState<Set<number>>(() => new Set())
+  const [copiedTabIds, setCopiedTabIds] = useState<Set<number>>(() => new Set())
   const pendingTabIdsRef = useRef(new Set<number>())
+  const copiedResetTimersRef = useRef(new Map<number, ReturnType<typeof setTimeout>>())
   const operationSequenceRef = useRef(0)
   const [scrollContainer, setScrollContainer] = useState<HTMLElement | null>(null)
   const [stickyToolbar, setStickyToolbar] = useState<HTMLElement | null>(null)
@@ -95,6 +97,13 @@ export function App({ api }: AppProps) {
     document.documentElement.dataset.theme = theme
   }, [theme])
 
+  useEffect(() => () => {
+    for (const timer of copiedResetTimersRef.current.values()) {
+      clearTimeout(timer)
+    }
+    copiedResetTimersRef.current.clear()
+  }, [])
+
   const existingWindowIds = useMemo(
     () => new Set(windows.map((window) => window.id)),
     [windows],
@@ -117,6 +126,16 @@ export function App({ api }: AppProps) {
       )
       return next.size === current.size ? current : next
     })
+    setCopiedTabIds((current) => {
+      const next = new Set([...current].filter((tabId) => existingTabIds.has(tabId)))
+      return next.size === current.size ? current : next
+    })
+    for (const [tabId, timer] of copiedResetTimersRef.current) {
+      if (!existingTabIds.has(tabId)) {
+        clearTimeout(timer)
+        copiedResetTimersRef.current.delete(tabId)
+      }
+    }
   }, [existingTabIds, existingWindowIds])
 
   const effectiveFocusedWindowId =
@@ -306,6 +325,29 @@ export function App({ api }: AppProps) {
     setPendingTabIds(new Set(pendingTabIdsRef.current))
   }
 
+  function showCopiedCheckmark(tabId: number) {
+    const existingTimer = copiedResetTimersRef.current.get(tabId)
+    if (existingTimer) {
+      clearTimeout(existingTimer)
+    }
+
+    setCopiedTabIds((current) => new Set(current).add(tabId))
+    copiedResetTimersRef.current.set(
+      tabId,
+      setTimeout(() => {
+        copiedResetTimersRef.current.delete(tabId)
+        setCopiedTabIds((current) => {
+          if (!current.has(tabId)) {
+            return current
+          }
+          const next = new Set(current)
+          next.delete(tabId)
+          return next
+        })
+      }, 3000),
+    )
+  }
+
   async function handleActivate(tab: DisplayTab) {
     const operationSequence = beginOperation(tab.id)
     if (operationSequence === null) {
@@ -322,6 +364,34 @@ export function App({ api }: AppProps) {
         setOperationMessage('activateError')
       }
       await refresh()
+    } finally {
+      finishOperation(tab.id)
+    }
+  }
+
+  async function handleCopy(tab: DisplayTab) {
+    const operationSequence = beginOperation(tab.id)
+    if (operationSequence === null) {
+      return
+    }
+
+    try {
+      const sourceTab = windows
+        .flatMap((window) => window.tabs)
+        .find((candidate) => candidate.id === tab.id)
+      if (!sourceTab?.url || !globalThis.navigator?.clipboard?.writeText) {
+        throw new Error('Clipboard unavailable')
+      }
+
+      await globalThis.navigator.clipboard.writeText(sourceTab.url)
+      showCopiedCheckmark(tab.id)
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage(null)
+      }
+    } catch {
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage('copyLinkError')
+      }
     } finally {
       finishOperation(tab.id)
     }
@@ -508,8 +578,10 @@ export function App({ api }: AppProps) {
                   onToggleCollapse={handleCollapseToggle}
                   onActivate={(tab) => void handleActivate(tab)}
                   onToggleMask={handleTabMaskToggle}
+                  onCopy={(tab) => void handleCopy(tab)}
                   onClose={(tab) => void handleClose(tab)}
                   pendingTabIds={pendingTabIds}
+                  copiedTabIds={copiedTabIds}
                   t={t}
                 />
               ))
@@ -523,8 +595,10 @@ export function App({ api }: AppProps) {
                   onCloseGroup={(domainGroup) => void handleCloseDomainGroup(domainGroup)}
                   onActivate={(tab) => void handleActivate(tab)}
                   onToggleMask={handleTabMaskToggle}
+                  onCopy={(tab) => void handleCopy(tab)}
                   onClose={(tab) => void handleClose(tab)}
                   pendingTabIds={pendingTabIds}
+                  copiedTabIds={copiedTabIds}
                   t={t}
                 />
               ))

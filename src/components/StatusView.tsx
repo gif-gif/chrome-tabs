@@ -11,6 +11,6 @@ export function StatusView(props: StatusViewProps) {
     {props.state === 'loading' ? <p className="status-message" role="status" aria-live="polite">{t('loading')}</p> : null}
     {props.state === 'empty' ? <div className="status-panel empty-state"><p>{t('emptyTitle')}</p><p>{t('emptyHint')}</p></div> : null}
     {props.state === 'error' ? <div className="status-panel error-state" role="alert"><p>{props.errorMessage}</p><button className="retry-button" type="button" onClick={props.onRetry}><Icon name="refresh" />{t('retry')}</button></div> : null}
-    {operationMessage ? <p className="status-message operation-message" role="status" aria-live="polite">{operationMessage}</p> : null}
+    {operationMessage ? <p className="status-message operation-message is-error" role="status" aria-live="polite">{operationMessage}</p> : null}
   </>
 }

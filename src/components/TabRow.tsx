@@ -3,8 +3,8 @@ import { isSafeFaviconUrl } from '../domain/tabs'
 import type { Translator } from '../i18n/i18n'
 import type { DisplayTab } from '../types'
 import { Icon } from './Icon'
-interface TabRowProps { tab: DisplayTab; onActivate: (tab: DisplayTab) => void; onToggleMask: (tab: DisplayTab) => void; onClose: (tab: DisplayTab) => void; t: Translator; pending?: boolean }
-export function TabRow({ tab, onActivate, onToggleMask, onClose, t, pending = false }: TabRowProps) {
+interface TabRowProps { tab: DisplayTab; onActivate: (tab: DisplayTab) => void; onToggleMask: (tab: DisplayTab) => void; onCopy: (tab: DisplayTab) => void; onClose: (tab: DisplayTab) => void; t: Translator; pending?: boolean; copied?: boolean }
+export function TabRow({ tab, onActivate, onToggleMask, onCopy, onClose, t, pending = false, copied = false }: TabRowProps) {
   const rowClassName = tab.active ? 'tab-row is-active' : 'tab-row'
   const currentSuffix = tab.active ? t('currentTabSuffix') : ''
   const activationLabel = tab.masked ? t('activateMaskedTab', { current: currentSuffix }) : `${tab.displayTitle}${currentSuffix}`
@@ -17,6 +17,7 @@ export function TabRow({ tab, onActivate, onToggleMask, onClose, t, pending = fa
       <span className="tab-copy"><span className="tab-title">{tab.displayTitle}</span>{!tab.masked && tab.displayUrl ? <span className="tab-url">{tab.displayUrl}</span> : null}{tab.active ? <span className="current-label">{t('currentTab')}</span> : null}</span>
     </button>
     <button type="button" className="icon-button tab-action row-action-button row-privacy-action" aria-label={privacyLabel} onClick={(event) => isolateAction(event, onToggleMask)}><Icon name={tab.masked ? 'eye' : 'eye-off'} width={15} height={15} /></button>
+    <button type="button" className={`icon-button tab-action row-action-button row-copy-action${copied ? ' is-copied' : ''}`} aria-label={t('copyTabLink')} data-copied={copied || undefined} disabled={pending} onClick={(event) => isolateAction(event, onCopy)}><Icon name={copied ? 'check' : 'copy'} width={15} height={15} /></button>
     <button type="button" className="icon-button tab-action close-button row-action-button row-close-action" aria-label={t('closeTab')} disabled={pending} onClick={(event) => isolateAction(event, onClose)}><Icon name="close" width={15} height={15} /></button>
   </li>
 }

@@ -6,7 +6,8 @@
   "description": "__MSG_extensionDescription__",
   "permissions": [
     "tabs",
-    "favicon"
+    "favicon",
+    "clipboardWrite"
   ],
   "action": {
     "default_popup": "index.html",

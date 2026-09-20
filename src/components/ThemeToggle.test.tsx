@@ -8,6 +8,13 @@ const labels = {
   switchToAuroraTheme: 'Switch to Aurora theme',
   switchToSunsetTheme: 'Switch to Sunset theme',
   switchToTwilightTheme: 'Switch to Twilight theme',
+  switchToOceanTheme: 'Switch to Ocean theme',
+  switchToForestTheme: 'Switch to Forest theme',
+  switchToSakuraTheme: 'Switch to Sakura theme',
+  switchToGraphiteTheme: 'Switch to Graphite theme',
+  switchToLemonTheme: 'Switch to Lemon theme',
+  switchToCoffeeTheme: 'Switch to Coffee theme',
+  switchToMidnightTheme: 'Switch to Midnight theme',
   switchToClassicTheme: 'Switch to Classic theme',
 }
 
@@ -34,7 +41,14 @@ it('offers Aurora from the classic theme and switches on click', async () => {
 it.each([
   ['aurora', 'Switch to Sunset theme', 'sunset'],
   ['sunset', 'Switch to Twilight theme', 'twilight'],
-  ['twilight', 'Switch to Classic theme', 'classic'],
+  ['twilight', 'Switch to Ocean theme', 'ocean'],
+  ['ocean', 'Switch to Forest theme', 'forest'],
+  ['forest', 'Switch to Sakura theme', 'sakura'],
+  ['sakura', 'Switch to Graphite theme', 'graphite'],
+  ['graphite', 'Switch to Lemon theme', 'lemon'],
+  ['lemon', 'Switch to Coffee theme', 'coffee'],
+  ['coffee', 'Switch to Midnight theme', 'midnight'],
+  ['midnight', 'Switch to Classic theme', 'classic'],
 ] as const)('cycles from %s to the next theme', async (theme, label, nextTheme) => {
   const user = userEvent.setup()
   const onChange = vi.fn()

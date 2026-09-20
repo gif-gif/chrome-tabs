@@ -407,6 +407,7 @@ describe('App internationalization', () => {
     expect(screen.getByRole('button', { name: 'All tabs' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Current window' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Active tabs' })).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Copy tab link' })).toHaveLength(3)
     await user.click(screen.getByRole('button', { name: 'Group by domain view' }))
     const googleGroup = screen.getByRole('region', { name: /example.com/ })
     await user.click(within(googleGroup).getByRole('button', { name: 'Close 2 tabs in example.com group' }))

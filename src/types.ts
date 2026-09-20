@@ -1,7 +1,18 @@
 import type { UiLanguagePreference } from './i18n/i18n'
 
 export type UiViewMode = 'list' | 'domain'
-export type UiTheme = 'classic' | 'aurora' | 'sunset' | 'twilight'
+export type UiTheme =
+  | 'classic'
+  | 'aurora'
+  | 'sunset'
+  | 'twilight'
+  | 'ocean'
+  | 'forest'
+  | 'sakura'
+  | 'graphite'
+  | 'lemon'
+  | 'coffee'
+  | 'midnight'
 
 export interface UiPreferences {
   globalMasked: boolean

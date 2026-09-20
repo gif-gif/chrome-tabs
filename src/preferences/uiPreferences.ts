@@ -37,7 +37,14 @@ function isTheme(value: unknown): value is UiTheme {
     value === 'classic' ||
     value === 'aurora' ||
     value === 'sunset' ||
-    value === 'twilight'
+    value === 'twilight' ||
+    value === 'ocean' ||
+    value === 'forest' ||
+    value === 'sakura' ||
+    value === 'graphite' ||
+    value === 'lemon' ||
+    value === 'coffee' ||
+    value === 'midnight'
   )
 }
 
