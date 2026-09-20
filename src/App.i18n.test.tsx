@@ -144,25 +144,26 @@ describe('App internationalization', () => {
     expect(screen.queryByText('41 tabs')).not.toBeInTheDocument()
 
     const allButton = screen.getByRole('button', { name: 'All tabs' })
-    const currentButton = screen.getByRole('button', { name: 'Current window' })
     const activeButton = screen.getByRole('button', { name: 'Active tabs' })
+    const favoritesButton = screen.getByRole('button', { name: 'Favorite tabs' })
     expect(allButton.querySelector('.compact-filter-label')).toHaveTextContent(/^All$/)
-    expect(currentButton.querySelector('.compact-filter-label')).toHaveTextContent(/^Current$/)
     expect(activeButton.querySelector('.compact-filter-label')).toHaveTextContent(/^Active$/)
+    expect(favoritesButton.querySelector('.compact-filter-label')).toHaveTextContent(/^Saved$/)
     expect(allButton).toHaveAttribute('title', 'All tabs')
-    expect(currentButton).toHaveAttribute('title', 'Current window')
     expect(activeButton).toHaveAttribute('title', 'Active tabs')
+    expect(favoritesButton).toHaveAttribute('title', 'Favorite tabs')
     expect(allButton).toHaveAttribute('aria-pressed', 'true')
-    expect(currentButton).toHaveAttribute('aria-pressed', 'false')
     expect(activeButton).toHaveAttribute('aria-pressed', 'false')
+    expect(favoritesButton).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByRole('button', { name: 'Current window' })).not.toBeInTheDocument()
 
     await user.click(allButton)
-    await user.click(currentButton)
     await user.click(activeButton)
+    await user.click(favoritesButton)
     expect(onFilterChange.mock.calls).toEqual([
       ['all'],
-      ['current-window'],
       ['active'],
+      ['favorites'],
     ])
   })
 
@@ -347,7 +348,7 @@ describe('App internationalization', () => {
 
     const search = screen.getByRole('searchbox', { name: 'Search tabs' })
     await user.type(search, 'example')
-    await user.click(screen.getByRole('button', { name: 'Current window' }))
+    expect(screen.queryByRole('button', { name: 'Current window' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Group by domain view' }))
     const exampleGroupBeforeMask = screen.getByRole('region', { name: /example\.com/ })
     const mailRow = within(exampleGroupBeforeMask).getByText('Mail Inbox').closest('li')
@@ -366,7 +367,8 @@ describe('App internationalization', () => {
     expect(screen.getByRole('searchbox', { name: '搜索标签页' })).toHaveValue('example')
     await setToolbarScroll(container, 0, '标签页工具栏')
 
-    expect(screen.getByRole('button', { name: '当前窗口' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByRole('button', { name: '当前窗口' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '全部标签页' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '域名分组视图' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '显示全部标签信息' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '显示语言' })).toHaveAttribute('aria-expanded', 'false')
@@ -406,7 +408,7 @@ describe('App internationalization', () => {
 
     expect(screen.getByPlaceholderText('Search titles or URLs…')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'All tabs' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Current window' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Current window' })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Active tabs' })).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Copy tab link' })).toHaveLength(3)
     await user.click(screen.getByRole('button', { name: 'Group by domain view' }))
@@ -836,6 +838,12 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     const viewModeSelected = declarationsFor('.view-mode-switch button[aria-pressed="true"]')
     expect(viewModeSelected.get('background')).toBe('var(--color-accent-soft)')
 
+    const activeTab = declarationsFor('.tab-row.is-active')
+    expect(activeTab.get('background')).toContain('var(--color-accent-soft)')
+    expect(activeTab.has('border')).toBe(false)
+    expect(activeTab.has('box-shadow')).toBe(false)
+    expect(cssRules.some((rule) => rule.selector === '.tab-row.is-active::before')).toBe(false)
+
     const actions = declarationsFor('.app-header-actions')
     expect(actions.get('position')).toBe('relative')
     expect(actions.get('margin-left')).toBe('auto')
@@ -879,7 +887,7 @@ describe('compact progressive sticky toolbar CSS contract', () => {
 
     const availableHeaderWidth = 280 - (2 * 8)
     const threeDigitCountWidth = Math.max(28, (3 * 7.2) + (2 * 5))
-    const englishFilterTextWidth = ('All'.length + 'Current'.length + 'Active'.length) * 7.2
+    const englishFilterTextWidth = ('All'.length + 'Active'.length + 'Saved'.length) * 7.2
     const filterButtonPaddingWidth = 3 * (2 * 3)
     const filterGroupWidth = 3 + 1 + englishFilterTextWidth + filterButtonPaddingWidth + 1
     const actionButtonsWidth = 3 * 24

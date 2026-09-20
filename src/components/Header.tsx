@@ -3,7 +3,7 @@ import type { Translator } from '../i18n/i18n'
 import type { TabFilter } from '../types'
 import { Icon, type IconName } from './Icon'
 
-type HeaderFilter = TabFilter | 'favorites'
+type HeaderFilter = Exclude<TabFilter, 'current-window'>
 
 interface HeaderProps {
   count: number
@@ -12,6 +12,7 @@ interface HeaderProps {
   onFilterChange: (filter: TabFilter) => void
   onToggleMask: () => void
   onSortTabs?: () => void
+  sortDirection?: 'asc' | 'desc'
   sortingTabs?: boolean
   t: Translator
   beforeMaskAction?: ReactNode
@@ -20,7 +21,6 @@ interface HeaderProps {
 
 const filterIcons: Record<HeaderFilter, IconName> = {
   all: 'all-tabs',
-  'current-window': 'window',
   active: 'active-tab',
   favorites: 'star',
 }
@@ -32,13 +32,16 @@ export function Header({
   onFilterChange,
   onToggleMask,
   onSortTabs,
+  sortDirection = 'asc',
   sortingTabs = false,
   t,
   beforeMaskAction,
   afterMaskAction,
 }: HeaderProps) {
   const actionLabel = globalMasked ? t('showAllInformation') : t('hideAllInformation')
-  const sortLabel = sortingTabs ? t('sortingTabsByDomain') : t('sortTabsByDomain')
+  const sortLabel = sortDirection === 'asc'
+    ? sortingTabs ? t('sortingTabsByDomainAscending') : t('sortTabsByDomainAscending')
+    : sortingTabs ? t('sortingTabsByDomainDescending') : t('sortTabsByDomainDescending')
   const countLabel = t('tabCount', { count })
   const filters: Array<{
     value: HeaderFilter
@@ -46,11 +49,6 @@ export function Header({
     accessibleLabel: string
   }> = [
     { value: 'all', label: t('allShort'), accessibleLabel: t('allTabs') },
-    {
-      value: 'current-window',
-      label: t('currentWindowShort'),
-      accessibleLabel: t('currentWindowFilter'),
-    },
     {
       value: 'active',
       label: t('activeTabsShort'),
@@ -79,7 +77,7 @@ export function Header({
               aria-label={option.accessibleLabel}
               aria-pressed={selected}
               title={option.accessibleLabel}
-              onClick={() => onFilterChange(option.value as TabFilter)}
+              onClick={() => onFilterChange(option.value)}
             >
               <Icon name={filterIcons[option.value]} width={16} height={16} />
               <span className="compact-filter-label">{option.label}</span>
@@ -98,7 +96,11 @@ export function Header({
             aria-busy={sortingTabs || undefined}
             onClick={onSortTabs}
           >
-            <Icon name="sort-domain" width={16} height={16} />
+            <Icon
+              name={sortDirection === 'asc' ? 'sort-ascending' : 'sort-descending'}
+              width={16}
+              height={16}
+            />
           </button>
         ) : null}
         {beforeMaskAction}

@@ -166,6 +166,7 @@ export function findDuplicateTabIds(tabs: readonly BrowserTab[]): number[] {
  */
 export function createDomainSortedTabIds(
   tabs: readonly BrowserTab[],
+  direction: 'asc' | 'desc' = 'asc',
 ): number[] {
   const groups = new Map<string, number[]>()
 
@@ -179,7 +180,14 @@ export function createDomainSortedTabIds(
     }
   }
 
-  return [...groups.values()].flat()
+  return [...groups.entries()]
+    .sort(([leftDomain], [rightDomain]) => {
+      const comparison = leftDomain.localeCompare(rightDomain, 'en', {
+        sensitivity: 'base',
+      })
+      return direction === 'asc' ? comparison : -comparison
+    })
+    .flatMap(([, tabIds]) => tabIds)
 }
 
 export function resolveMasked(

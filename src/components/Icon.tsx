@@ -7,7 +7,8 @@ export type IconName =
   | 'pin'
   | 'star'
   | 'deduplicate'
-  | 'sort-domain'
+  | 'sort-ascending'
+  | 'sort-descending'
   | 'eye'
   | 'eye-off'
   | 'chevron'
@@ -52,7 +53,13 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M9 19h8a2 2 0 0 0 2-2V9M8 9l4 4M12 9l-4 4" />
     </>
   ),
-  'sort-domain': (
+  'sort-ascending': (
+    <>
+      <path d="M4 6h10M4 12h7M4 18h4" />
+      <path d="M17 19V5m0 0-3 3m3-3 3 3" />
+    </>
+  ),
+  'sort-descending': (
     <>
       <path d="M4 6h10M4 12h7M4 18h4" />
       <path d="M17 5v14m0 0-3-3m3 3 3-3" />

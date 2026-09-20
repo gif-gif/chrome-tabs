@@ -245,7 +245,7 @@ describe('findDuplicateTabIds', () => {
 })
 
 describe('createDomainSortedTabIds', () => {
-  it('stably makes first-seen registrable-domain groups contiguous', () => {
+  it('sorts registrable-domain groups ascending while keeping tabs within each group stable', () => {
     const base = windows[0].tabs[0]
     const tabs = [
       { ...base, id: 1, url: 'https://docs.google.com/a' },
@@ -257,8 +257,17 @@ describe('createDomainSortedTabIds', () => {
     ]
     const snapshot = structuredClone(tabs)
 
-    expect(createDomainSortedTabIds(tabs)).toEqual([1, 3, 6, 2, 5, 4])
+    expect(createDomainSortedTabIds(tabs, 'asc')).toEqual([4, 2, 5, 1, 3, 6])
+    expect(createDomainSortedTabIds(tabs, 'desc')).toEqual([1, 3, 6, 2, 5, 4])
     expect(tabs).toEqual(snapshot)
+  })
+
+  it('defaults to ascending order', () => {
+    const base = windows[0].tabs[0]
+    expect(createDomainSortedTabIds([
+      { ...base, id: 1, url: 'https://zeta.com' },
+      { ...base, id: 2, url: 'https://alpha.com' },
+    ])).toEqual([2, 1])
   })
 
   it('keeps special and invalid URL groups stable', () => {
@@ -268,7 +277,7 @@ describe('createDomainSortedTabIds', () => {
       { ...base, id: 2, url: 'chrome://settings/privacy' },
       { ...base, id: 3, url: 'not valid two' },
       { ...base, id: 4, url: 'chrome://settings/search' },
-    ])).toEqual([1, 3, 2, 4])
+    ])).toEqual([2, 4, 1, 3])
   })
 })
 

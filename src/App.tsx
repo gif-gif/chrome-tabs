@@ -74,6 +74,7 @@ export function App({ api }: AppProps) {
   const [favoriteUrls, setFavoriteUrls] = useState<Set<string>>(
     () => new Set(initialPreferences.favoriteUrls),
   )
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [sortingTabs, setSortingTabs] = useState(false)
   const [tabMaskOverrides, setTabMaskOverrides] = useState<Map<number, boolean>>(
     () => new Map(),
@@ -617,7 +618,7 @@ export function App({ api }: AppProps) {
     try {
       const moves = windows.flatMap((window) => {
         const currentIds = window.tabs.map((tab) => tab.id)
-        const sortedIds = createDomainSortedTabIds(window.tabs)
+        const sortedIds = createDomainSortedTabIds(window.tabs, sortDirection)
         return currentIds.every((tabId, index) => tabId === sortedIds[index])
           ? []
           : [resolvedApi.moveTabs(sortedIds, window.id)]
@@ -626,6 +627,7 @@ export function App({ api }: AppProps) {
       await refresh()
       if (operationSequence === operationSequenceRef.current) {
         setOperationMessage(null)
+        setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')
       }
     } catch {
       if (operationSequence === operationSequenceRef.current) {
@@ -715,6 +717,7 @@ export function App({ api }: AppProps) {
               onFilterChange={setFilter}
               onToggleMask={handleGlobalMaskToggle}
               onSortTabs={() => void handleSortTabs()}
+              sortDirection={sortDirection}
               sortingTabs={sortingTabs}
               t={t}
               beforeMaskAction={

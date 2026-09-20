@@ -102,7 +102,8 @@ describe('Icon', () => {
       'check',
       'star',
       'deduplicate',
-      'sort-domain',
+      'sort-ascending',
+      'sort-descending',
     ]
 
     const { container } = render(
@@ -148,7 +149,7 @@ describe('Header', () => {
     expect(revealIcon).toHaveAttribute('width', '16')
     expect(revealIcon).toHaveAttribute('height', '16')
 
-    for (const name of ['全部标签页', '当前窗口', '活动标签']) {
+    for (const name of ['全部标签页', '活动标签', '收藏标签']) {
       const filterButton = screen.getByRole('button', { name })
       expect(filterButton.querySelector('svg')).toHaveAttribute('width', '16')
       expect(filterButton.querySelector('svg')).toHaveAttribute('height', '16')
@@ -677,26 +678,27 @@ describe('App integration', () => {
 
     const filterGroup = screen.getByRole('group', { name: '标签页筛选' })
     const allButton = within(filterGroup).getByRole('button', { name: '全部标签页' })
-    const currentWindowButton = within(filterGroup).getByRole('button', { name: '当前窗口' })
     const activeButton = within(filterGroup).getByRole('button', { name: '活动标签' })
+    const favoritesButton = within(filterGroup).getByRole('button', { name: '收藏标签' })
 
     expect(allButton.querySelector('.compact-filter-label')).toHaveTextContent(/^全部$/)
-    expect(currentWindowButton.querySelector('.compact-filter-label')).toHaveTextContent(/^当前$/)
     expect(activeButton.querySelector('.compact-filter-label')).toHaveTextContent(/^活动$/)
+    expect(favoritesButton.querySelector('.compact-filter-label')).toHaveTextContent(/^收藏$/)
     expect(allButton).toHaveAttribute('title', '全部标签页')
-    expect(currentWindowButton).toHaveAttribute('title', '当前窗口')
     expect(activeButton).toHaveAttribute('title', '活动标签')
+    expect(favoritesButton).toHaveAttribute('title', '收藏标签')
     expect(allButton).toHaveAttribute('aria-pressed', 'true')
-    expect(currentWindowButton).toHaveAttribute('aria-pressed', 'false')
     expect(activeButton).toHaveAttribute('aria-pressed', 'false')
+    expect(favoritesButton).toHaveAttribute('aria-pressed', 'false')
+    expect(within(filterGroup).queryByRole('button', { name: '当前窗口' })).not.toBeInTheDocument()
 
     await user.click(allButton)
-    await user.click(currentWindowButton)
     await user.click(activeButton)
+    await user.click(favoritesButton)
     expect(onFilterChange.mock.calls).toEqual([
       ['all'],
-      ['current-window'],
       ['active'],
+      ['favorites'],
     ])
   })
 
@@ -1032,7 +1034,7 @@ describe('App integration', () => {
     expect(headerActions).toContainElement(globalMaskButton)
     expect(headerActions).toContainElement(toggleAllButton)
     expect(Array.from(headerActions!.children)).toEqual([
-      screen.getByRole('button', { name: '按域名排列标签页' }),
+      screen.getByRole('button', { name: '按域名升序排列标签页' }),
       screen.getByRole('button', { name: '显示语言' }).closest('.language-menu-root'),
       screen.getByRole('button', { name: '切换到极光主题' }),
       globalMaskButton,
@@ -1277,13 +1279,11 @@ describe('App integration', () => {
     await user.click(screen.getByRole('button', { name: '活动标签' }))
     expect(screen.getAllByText('内容已隐藏')).toHaveLength(2)
 
-    await user.click(screen.getByRole('button', { name: '当前窗口' }))
-    expect(screen.getAllByText('内容已隐藏')).toHaveLength(2)
-    expect(screen.queryByText('窗口 2')).not.toBeInTheDocument()
-
+    await user.click(screen.getByRole('button', { name: '全部标签页' }))
     const disclosure = screen.getByRole('button', { name: /当前窗口.*2 个标签页/ })
     await user.click(disclosure)
     expect(disclosure).toHaveAttribute('aria-expanded', 'false')
+    await user.click(screen.getByRole('button', { name: '活动标签' }))
     await user.click(screen.getByRole('button', { name: '全部标签页' }))
     expect(screen.getByRole('button', { name: /当前窗口.*2 个标签页/ })).toHaveAttribute(
       'aria-expanded',
@@ -1716,7 +1716,7 @@ describe('progressive sticky search toolbar', () => {
     expect(api.closeTab).not.toHaveBeenCalledWith(4)
   })
 
-  it('sorts native tabs into stable domain groups independently in each window', async () => {
+  it('sorts native tabs by domain ascending and descending independently in each window', async () => {
     storeUiPreferences(false)
     const unsortedWindows: BrowserWindow[] = [
       {
@@ -1743,12 +1743,25 @@ describe('progressive sticky search toolbar', () => {
     render(<App api={api} />)
 
     await screen.findByLabelText('6 个标签页')
-    await user.click(screen.getByRole('button', { name: '按域名排列标签页' }))
+    await user.click(screen.getByRole('button', { name: '按域名升序排列标签页' }))
 
     await waitFor(() => expect(api.moveTabs).toHaveBeenCalledTimes(1))
-    expect(api.moveTabs).toHaveBeenCalledWith([1, 3, 2, 4], 10)
+    expect(api.moveTabs).toHaveBeenNthCalledWith(1, [2, 4, 1, 3], 10)
     expect(api.moveTabs).not.toHaveBeenCalledWith(expect.anything(), 20)
     await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
+
+    const descendingButton = screen.getByRole('button', {
+      name: '按域名降序排列标签页',
+    })
+    expect(descendingButton.querySelector('svg')).toBeInTheDocument()
+    await user.click(descendingButton)
+
+    await waitFor(() => expect(api.moveTabs).toHaveBeenCalledTimes(2))
+    expect(api.moveTabs).toHaveBeenNthCalledWith(2, [1, 3, 2, 4], 10)
+    await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(3))
+    expect(screen.getByRole('button', {
+      name: '按域名升序排列标签页',
+    })).toBeInTheDocument()
   })
 
 })
