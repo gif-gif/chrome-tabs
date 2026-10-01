@@ -20,6 +20,7 @@ describe('UI preferences', () => {
       pinnedTabIds: [],
       pinnedDomainKeys: [],
       favoriteUrls: [],
+      filter: 'all',
     })
   })
 
@@ -42,6 +43,7 @@ describe('UI preferences', () => {
       pinnedTabIds: [],
       pinnedDomainKeys: [],
       favoriteUrls: [],
+      filter: 'all',
     })
   })
 
@@ -63,6 +65,7 @@ describe('UI preferences', () => {
       pinnedTabIds: [],
       pinnedDomainKeys: [],
       favoriteUrls: [],
+      filter: 'all',
     })
 
     localStorage.setItem(
@@ -82,6 +85,7 @@ describe('UI preferences', () => {
       pinnedTabIds: [],
       pinnedDomainKeys: [],
       favoriteUrls: [],
+      filter: 'all',
     })
   })
 
@@ -125,6 +129,39 @@ describe('UI preferences', () => {
     })
   })
 
+  it.each(['all', 'active', 'favorites'] as const)(
+    'restores the supported %s tab filter',
+    (filter) => {
+      localStorage.setItem(
+        UI_PREFERENCES_KEY,
+        JSON.stringify({
+          version: 1,
+          globalMasked: false,
+          viewMode: 'list',
+          filter,
+        }),
+      )
+
+      expect(loadUiPreferences()).toMatchObject({ filter })
+    },
+  )
+
+  it('falls back to all for missing or invalid stored tab filters', () => {
+    for (const filter of [undefined, 'current-window', 'unknown']) {
+      localStorage.setItem(
+        UI_PREFERENCES_KEY,
+        JSON.stringify({
+          version: 1,
+          globalMasked: false,
+          viewMode: 'list',
+          ...(filter === undefined ? {} : { filter }),
+        }),
+      )
+
+      expect(loadUiPreferences()).toMatchObject({ filter: 'all' })
+    }
+  })
+
   it.each([
     'aurora',
     'sunset',
@@ -136,6 +173,21 @@ describe('UI preferences', () => {
     'lemon',
     'coffee',
     'midnight',
+    'lavender',
+    'mint',
+    'coral',
+    'sky',
+    'amber',
+    'teal',
+    'ruby',
+    'plum',
+    'sand',
+    'ice',
+    'moss',
+    'peach',
+    'cobalt',
+    'orchid',
+    'crimson',
   ] as const)(
     'restores the supported %s theme',
     (theme) => {
@@ -202,6 +254,7 @@ describe('UI preferences', () => {
       pinnedTabIds: [102],
       pinnedDomainKeys: ['example.com'],
       favoriteUrls: ['https://example.com/favorite'],
+      filter: 'favorites',
     })
 
     expect(UI_PREFERENCES_KEY).toBe('chrome-tabs.ui-preferences.v1')
@@ -214,6 +267,7 @@ describe('UI preferences', () => {
       pinnedTabIds: [102],
       pinnedDomainKeys: ['example.com'],
       favoriteUrls: ['https://example.com/favorite'],
+      filter: 'favorites',
     })
   })
 

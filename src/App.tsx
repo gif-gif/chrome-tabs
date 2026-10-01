@@ -53,7 +53,7 @@ export function App({ api }: AppProps) {
   )
   const t = useMemo(() => createTranslator(locale), [locale])
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState<TabFilter>('all')
+  const [filter, setFilter] = useState<TabFilter>(initialPreferences.filter)
   const [collapsedWindowIds, setCollapsedWindowIds] = useState<Set<number>>(
     () => new Set(),
   )
@@ -108,8 +108,9 @@ export function App({ api }: AppProps) {
       pinnedTabIds: [...pinnedTabIds],
       pinnedDomainKeys: [...pinnedDomainKeys],
       favoriteUrls: [...favoriteUrls],
+      filter: filter === 'current-window' ? 'all' : filter,
     })
-  }, [favoriteUrls, globalMasked, language, pinnedDomainKeys, pinnedTabIds, theme, viewMode])
+  }, [favoriteUrls, filter, globalMasked, language, pinnedDomainKeys, pinnedTabIds, theme, viewMode])
 
   useEffect(() => {
     document.documentElement.lang = locale

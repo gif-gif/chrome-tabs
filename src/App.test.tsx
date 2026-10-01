@@ -601,6 +601,38 @@ describe('action popup shell CSS contract', () => {
     expect(stylesSource).toMatch(
       /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\[data-theme="midnight"\]\s*\{[^}]*--color-bg:\s*#080f24;[^}]*--color-accent:\s*#60a5fa;/,
     )
+
+    const additionalThemes = [
+      ['lavender', '#f8f4ff', '#7c3aed', '#171123', '#c4b5fd'],
+      ['mint', '#effcf6', '#047857', '#0b2117', '#6ee7b7'],
+      ['coral', '#fff4f1', '#c2413b', '#281411', '#fb9a8f'],
+      ['sky', '#eff8ff', '#2563eb', '#0b1c31', '#7dd3fc'],
+      ['amber', '#fff9e8', '#a16207', '#241b08', '#fbbf24'],
+      ['teal', '#edfbfa', '#0f766e', '#092022', '#5eead4'],
+      ['ruby', '#fff2f4', '#be123c', '#280d15', '#fb7185'],
+      ['plum', '#fcf2ff', '#86198f', '#241026', '#e879f9'],
+      ['sand', '#fbf7ef', '#8a5a2b', '#211a13', '#d6a76d'],
+      ['ice', '#f1fbff', '#0e7490', '#081d26', '#67e8f9'],
+      ['moss', '#f4f7ed', '#4d7c0f', '#151c0c', '#a3e635'],
+      ['peach', '#fff4eb', '#b45309', '#27170f', '#fb923c'],
+      ['cobalt', '#eef3ff', '#1d4ed8', '#09152f', '#60a5fa'],
+      ['orchid', '#fff3ff', '#a21caf', '#241025', '#f0abfc'],
+      ['crimson', '#fff1f2', '#9f1239', '#260b14', '#fb7185'],
+    ] as const
+
+    for (const [theme, lightBg, lightAccent, darkBg, darkAccent] of additionalThemes) {
+      expect(stylesSource).toMatch(
+        new RegExp(
+          `:root\\[data-theme="${theme}"\\]\\s*\\{[^}]*--color-bg:\\s*${lightBg};[^}]*--color-accent:\\s*${lightAccent};`,
+        ),
+      )
+      expect(stylesSource).toMatch(
+        new RegExp(
+          `@media\\s*\\(prefers-color-scheme:\\s*dark\\)\\s*\\{\\s*:root\\[data-theme="${theme}"\\]\\s*\\{[^}]*--color-bg:\\s*${darkBg};[^}]*--color-accent:\\s*${darkAccent};`,
+        ),
+      )
+    }
+
     expect(stylesSource).toMatch(
       /\.theme-toggle\[aria-pressed="true"\]\s*\{[^}]*color:\s*var\(--color-accent\);[^}]*background:\s*var\(--color-accent-soft\);/,
     )
@@ -630,9 +662,39 @@ describe('App integration', () => {
         pinnedTabIds: [],
         pinnedDomainKeys: [],
         favoriteUrls: [],
+        filter: 'all',
       }),
     )
   })
+
+  it.each([
+    { filter: 'all', label: '全部标签页', prepareLabels: ['活动标签', '全部标签页'] },
+    { filter: 'active', label: '活动标签', prepareLabels: ['活动标签'] },
+    { filter: 'favorites', label: '收藏标签', prepareLabels: ['收藏标签'] },
+  ] as const)(
+    'restores the $filter filter after the popup is reopened',
+    async ({ filter, label, prepareLabels }) => {
+      storeUiPreferences(false)
+      const api = createTestApi()
+      const user = userEvent.setup()
+      const firstPopup = render(<App api={api} />)
+      await screen.findByText('GitHub - Chrome Tabs')
+
+      const filterGroup = screen.getByRole('group', { name: '标签页筛选' })
+      for (const prepareLabel of prepareLabels) {
+        await user.click(within(filterGroup).getByRole('button', { name: prepareLabel }))
+      }
+      await waitFor(() =>
+        expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '').filter).toBe(filter),
+      )
+
+      firstPopup.unmount()
+      render(<App api={api} />)
+      await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
+
+      expect(screen.getByRole('button', { name: label })).toHaveAttribute('aria-pressed', 'true')
+    },
+  )
 
   it('keeps count, privacy, search, filters, and the view switch inside one sticky toolbar', async () => {
     const { container } = await renderReadyApp()
@@ -1064,7 +1126,22 @@ describe('App integration', () => {
       ['graphite', '切换到柠檬主题'],
       ['lemon', '切换到咖啡主题'],
       ['coffee', '切换到午夜主题'],
-      ['midnight', '切换到经典主题'],
+      ['midnight', '切换到薰衣草主题'],
+      ['lavender', '切换到薄荷主题'],
+      ['mint', '切换到珊瑚主题'],
+      ['coral', '切换到天空主题'],
+      ['sky', '切换到琥珀主题'],
+      ['amber', '切换到青碧主题'],
+      ['teal', '切换到红宝石主题'],
+      ['ruby', '切换到梅紫主题'],
+      ['plum', '切换到沙丘主题'],
+      ['sand', '切换到冰川主题'],
+      ['ice', '切换到苔藓主题'],
+      ['moss', '切换到蜜桃主题'],
+      ['peach', '切换到钴蓝主题'],
+      ['cobalt', '切换到兰花主题'],
+      ['orchid', '切换到绯红主题'],
+      ['crimson', '切换到经典主题'],
     ] as const
 
     let currentButton = themeButton
@@ -1076,14 +1153,14 @@ describe('App integration', () => {
     }
     await waitFor(() =>
       expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '')).toMatchObject({
-        theme: 'midnight',
+        theme: 'crimson',
       }),
     )
 
     firstView.unmount()
     render(<App api={api} />)
     await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
-    expect(document.documentElement).toHaveAttribute('data-theme', 'midnight')
+    expect(document.documentElement).toHaveAttribute('data-theme', 'crimson')
     expect(screen.getByRole('button', { name: '切换到经典主题' })).toBeInTheDocument()
   })
 
@@ -1221,6 +1298,7 @@ describe('App integration', () => {
         pinnedTabIds: [],
         pinnedDomainKeys: [],
         favoriteUrls: [],
+        filter: 'all',
       }),
     )
 
@@ -1258,6 +1336,7 @@ describe('App integration', () => {
       pinnedTabIds: [],
       pinnedDomainKeys: [],
       favoriteUrls: [],
+      filter: 'all',
     })
   })
 

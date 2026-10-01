@@ -485,6 +485,592 @@
   }
 }
 
+/* Lavender pairs soft violet surfaces with a confident purple accent. */
+:root[data-theme="lavender"] {
+  --color-bg: #f8f4ff;
+  --color-surface: #fefcff;
+  --color-surface-raised: #fbf8ff;
+  --color-text: #2f2347;
+  --color-text-muted: #6b5e80;
+  --color-border: #d8cbee;
+  --color-border-subtle: #ebe4f5;
+  --color-accent: #7c3aed;
+  --color-accent-hover: #6d28d9;
+  --color-accent-soft: #ede9fe;
+  --color-hover: #f0eafb;
+  --color-pressed: #e3d9f4;
+  --color-focus: #7c3aed;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(124 58 237 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="lavender"] {
+    --color-bg: #171123;
+    --color-surface: #21182f;
+    --color-surface-raised: #2a1f3b;
+    --color-text: #f3e8ff;
+    --color-text-muted: #c9b7db;
+    --color-border: #604d77;
+    --color-border-subtle: #3b2d4d;
+    --color-accent: #c4b5fd;
+    --color-accent-hover: #ddd6fe;
+    --color-accent-soft: #493568;
+    --color-hover: #302342;
+    --color-pressed: #3d2d51;
+    --color-focus: #ddd6fe;
+    --color-on-accent: #221437;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Mint uses fresh green surfaces and an emerald accent. */
+:root[data-theme="mint"] {
+  --color-bg: #effcf6;
+  --color-surface: #fbfffd;
+  --color-surface-raised: #f7fffb;
+  --color-text: #173c2b;
+  --color-text-muted: #557565;
+  --color-border: #b8decc;
+  --color-border-subtle: #d9eee4;
+  --color-accent: #047857;
+  --color-accent-hover: #046c4e;
+  --color-accent-soft: #d7f7e8;
+  --color-hover: #e4f5ec;
+  --color-pressed: #d3ebdf;
+  --color-focus: #047857;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(4 120 87 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="mint"] {
+    --color-bg: #0b2117;
+    --color-surface: #12301f;
+    --color-surface-raised: #183a27;
+    --color-text: #e5fff1;
+    --color-text-muted: #a8cfb8;
+    --color-border: #3f7054;
+    --color-border-subtle: #294b39;
+    --color-accent: #6ee7b7;
+    --color-accent-hover: #a7f3d0;
+    --color-accent-soft: #214f37;
+    --color-hover: #1c402d;
+    --color-pressed: #28543a;
+    --color-focus: #a7f3d0;
+    --color-on-accent: #0b291b;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Coral balances warm red-orange accents with gentle cream surfaces. */
+:root[data-theme="coral"] {
+  --color-bg: #fff4f1;
+  --color-surface: #fffdfc;
+  --color-surface-raised: #fff9f7;
+  --color-text: #472822;
+  --color-text-muted: #7b5a52;
+  --color-border: #e6c1b8;
+  --color-border-subtle: #f2ddd8;
+  --color-accent: #c2413b;
+  --color-accent-hover: #a93632;
+  --color-accent-soft: #fde3dc;
+  --color-hover: #f9e8e3;
+  --color-pressed: #f1d8d2;
+  --color-focus: #c2413b;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(194 65 59 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="coral"] {
+    --color-bg: #281411;
+    --color-surface: #351c18;
+    --color-surface-raised: #40231d;
+    --color-text: #ffebe6;
+    --color-text-muted: #deb8ae;
+    --color-border: #7c4a40;
+    --color-border-subtle: #503028;
+    --color-accent: #fb9a8f;
+    --color-accent-hover: #fdbaad;
+    --color-accent-soft: #64342e;
+    --color-hover: #472822;
+    --color-pressed: #573028;
+    --color-focus: #fdbaad;
+    --color-on-accent: #2b0d0a;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Sky brings clear blue accents to airy cool surfaces. */
+:root[data-theme="sky"] {
+  --color-bg: #eff8ff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f8fcff;
+  --color-text: #1d3555;
+  --color-text-muted: #58708e;
+  --color-border: #bfd5ed;
+  --color-border-subtle: #dce9f6;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-soft: #dbeafe;
+  --color-hover: #e7f1fb;
+  --color-pressed: #d6e6f5;
+  --color-focus: #2563eb;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(37 99 235 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="sky"] {
+    --color-bg: #0b1c31;
+    --color-surface: #102742;
+    --color-surface-raised: #173251;
+    --color-text: #e8f3ff;
+    --color-text-muted: #adc6df;
+    --color-border: #41698f;
+    --color-border-subtle: #294866;
+    --color-accent: #7dd3fc;
+    --color-accent-hover: #bae6fd;
+    --color-accent-soft: #1d4c6a;
+    --color-hover: #193958;
+    --color-pressed: #234867;
+    --color-focus: #bae6fd;
+    --color-on-accent: #092033;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Amber adds golden warmth while retaining strong text contrast. */
+:root[data-theme="amber"] {
+  --color-bg: #fff9e8;
+  --color-surface: #fffef8;
+  --color-surface-raised: #fffcf2;
+  --color-text: #443313;
+  --color-text-muted: #75633f;
+  --color-border: #e4cf91;
+  --color-border-subtle: #f2e5bc;
+  --color-accent: #a16207;
+  --color-accent-hover: #854d0e;
+  --color-accent-soft: #fef3c7;
+  --color-hover: #f8edcf;
+  --color-pressed: #eee0ba;
+  --color-focus: #a16207;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(161 98 7 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="amber"] {
+    --color-bg: #241b08;
+    --color-surface: #30250d;
+    --color-surface-raised: #3b2e12;
+    --color-text: #fff6d6;
+    --color-text-muted: #d8c58b;
+    --color-border: #79652c;
+    --color-border-subtle: #4d421f;
+    --color-accent: #fbbf24;
+    --color-accent-hover: #fcd34d;
+    --color-accent-soft: #5a4515;
+    --color-hover: #403314;
+    --color-pressed: #4c3d18;
+    --color-focus: #fde68a;
+    --color-on-accent: #2a1d02;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Teal emphasizes calm blue-green controls and crisp surfaces. */
+:root[data-theme="teal"] {
+  --color-bg: #edfbfa;
+  --color-surface: #fbffff;
+  --color-surface-raised: #f7fffe;
+  --color-text: #163c40;
+  --color-text-muted: #527479;
+  --color-border: #aed9d8;
+  --color-border-subtle: #d4eceb;
+  --color-accent: #0f766e;
+  --color-accent-hover: #0d625d;
+  --color-accent-soft: #ccfbf1;
+  --color-hover: #dcf3f0;
+  --color-pressed: #cae8e5;
+  --color-focus: #0f766e;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(15 118 110 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="teal"] {
+    --color-bg: #092022;
+    --color-surface: #0f2c2e;
+    --color-surface-raised: #153638;
+    --color-text: #e2fbf8;
+    --color-text-muted: #a3cbc8;
+    --color-border: #3e7170;
+    --color-border-subtle: #254c4d;
+    --color-accent: #5eead4;
+    --color-accent-hover: #99f6e4;
+    --color-accent-soft: #1c514c;
+    --color-hover: #183f3e;
+    --color-pressed: #20504e;
+    --color-focus: #99f6e4;
+    --color-on-accent: #082825;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Ruby uses jewel-red accents with restrained blush surfaces. */
+:root[data-theme="ruby"] {
+  --color-bg: #fff2f4;
+  --color-surface: #fffdfd;
+  --color-surface-raised: #fff8f9;
+  --color-text: #4b202b;
+  --color-text-muted: #7e5360;
+  --color-border: #e6bcc7;
+  --color-border-subtle: #f3dbe1;
+  --color-accent: #be123c;
+  --color-accent-hover: #9f1239;
+  --color-accent-soft: #ffe4e6;
+  --color-hover: #f9e8ec;
+  --color-pressed: #f1d6dd;
+  --color-focus: #be123c;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(190 18 60 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="ruby"] {
+    --color-bg: #280d15;
+    --color-surface: #35121d;
+    --color-surface-raised: #411824;
+    --color-text: #ffe7ed;
+    --color-text-muted: #ddb2bd;
+    --color-border: #804052;
+    --color-border-subtle: #532936;
+    --color-accent: #fb7185;
+    --color-accent-hover: #fda4af;
+    --color-accent-soft: #642638;
+    --color-hover: #48202c;
+    --color-pressed: #572431;
+    --color-focus: #fda4af;
+    --color-on-accent: #300811;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Plum offers saturated magenta-purple accents and soft mauve surfaces. */
+:root[data-theme="plum"] {
+  --color-bg: #fcf2ff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fff9ff;
+  --color-text: #452047;
+  --color-text-muted: #765377;
+  --color-border: #dfbce2;
+  --color-border-subtle: #efdcef;
+  --color-accent: #86198f;
+  --color-accent-hover: #701a75;
+  --color-accent-soft: #fae8ff;
+  --color-hover: #f6e8f7;
+  --color-pressed: #ecd7ed;
+  --color-focus: #86198f;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(134 25 143 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="plum"] {
+    --color-bg: #241026;
+    --color-surface: #301633;
+    --color-surface-raised: #3a1d3d;
+    --color-text: #fce7ff;
+    --color-text-muted: #d6b4d9;
+    --color-border: #744579;
+    --color-border-subtle: #4c2a50;
+    --color-accent: #e879f9;
+    --color-accent-hover: #f0abfc;
+    --color-accent-soft: #5a2861;
+    --color-hover: #432047;
+    --color-pressed: #512456;
+    --color-focus: #f0abfc;
+    --color-on-accent: #2c0b30;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Sand creates a quiet neutral palette with earthy brown accents. */
+:root[data-theme="sand"] {
+  --color-bg: #fbf7ef;
+  --color-surface: #fffdf9;
+  --color-surface-raised: #fffaf3;
+  --color-text: #3d3024;
+  --color-text-muted: #716354;
+  --color-border: #d9c9b3;
+  --color-border-subtle: #eae0d2;
+  --color-accent: #8a5a2b;
+  --color-accent-hover: #70451e;
+  --color-accent-soft: #f1e2cf;
+  --color-hover: #f2e8da;
+  --color-pressed: #e6d8c6;
+  --color-focus: #8a5a2b;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(138 90 43 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="sand"] {
+    --color-bg: #211a13;
+    --color-surface: #2b2219;
+    --color-surface-raised: #352a1f;
+    --color-text: #f4eadf;
+    --color-text-muted: #cbbbaa;
+    --color-border: #6a5540;
+    --color-border-subtle: #45382b;
+    --color-accent: #d6a76d;
+    --color-accent-hover: #edc99f;
+    --color-accent-soft: #533d28;
+    --color-hover: #3b3025;
+    --color-pressed: #48392b;
+    --color-focus: #edc99f;
+    --color-on-accent: #271708;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Ice uses pale cyan surfaces and luminous aqua accents. */
+:root[data-theme="ice"] {
+  --color-bg: #f1fbff;
+  --color-surface: #fcfeff;
+  --color-surface-raised: #f8fdff;
+  --color-text: #173b4a;
+  --color-text-muted: #557580;
+  --color-border: #b4dbe7;
+  --color-border-subtle: #d8edf3;
+  --color-accent: #0e7490;
+  --color-accent-hover: #0c6278;
+  --color-accent-soft: #cffafe;
+  --color-hover: #e2f5f8;
+  --color-pressed: #d2ebf0;
+  --color-focus: #0e7490;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(14 116 144 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="ice"] {
+    --color-bg: #081d26;
+    --color-surface: #0d2934;
+    --color-surface-raised: #123541;
+    --color-text: #e6faff;
+    --color-text-muted: #add3dc;
+    --color-border: #3a7181;
+    --color-border-subtle: #24505d;
+    --color-accent: #67e8f9;
+    --color-accent-hover: #a5f3fc;
+    --color-accent-soft: #194b58;
+    --color-hover: #163c48;
+    --color-pressed: #1d4b57;
+    --color-focus: #a5f3fc;
+    --color-on-accent: #05252c;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Moss combines muted natural surfaces with a lively leaf accent. */
+:root[data-theme="moss"] {
+  --color-bg: #f4f7ed;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fafcf6;
+  --color-text: #2e3b1b;
+  --color-text-muted: #65734f;
+  --color-border: #ccd7b1;
+  --color-border-subtle: #e3ead2;
+  --color-accent: #4d7c0f;
+  --color-accent-hover: #3f6212;
+  --color-accent-soft: #ecfccb;
+  --color-hover: #edf3df;
+  --color-pressed: #dfe8cd;
+  --color-focus: #4d7c0f;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(77 124 15 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="moss"] {
+    --color-bg: #151c0c;
+    --color-surface: #1e2811;
+    --color-surface-raised: #273216;
+    --color-text: #f0fbdc;
+    --color-text-muted: #bdcda0;
+    --color-border: #617643;
+    --color-border-subtle: #3c4c29;
+    --color-accent: #a3e635;
+    --color-accent-hover: #bef264;
+    --color-accent-soft: #3a531d;
+    --color-hover: #2d3e1d;
+    --color-pressed: #374923;
+    --color-focus: #d9f99d;
+    --color-on-accent: #1c2a05;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Peach softens warm orange accents with creamy surfaces. */
+:root[data-theme="peach"] {
+  --color-bg: #fff4eb;
+  --color-surface: #fffdfa;
+  --color-surface-raised: #fff9f5;
+  --color-text: #472d20;
+  --color-text-muted: #7a5b4b;
+  --color-border: #e6c7b5;
+  --color-border-subtle: #f3e0d5;
+  --color-accent: #b45309;
+  --color-accent-hover: #92400e;
+  --color-accent-soft: #ffedd5;
+  --color-hover: #f9e9dc;
+  --color-pressed: #f1dacc;
+  --color-focus: #b45309;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(180 83 9 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="peach"] {
+    --color-bg: #27170f;
+    --color-surface: #342016;
+    --color-surface-raised: #3e281c;
+    --color-text: #ffede1;
+    --color-text-muted: #d9b7a3;
+    --color-border: #7b5039;
+    --color-border-subtle: #503426;
+    --color-accent: #fb923c;
+    --color-accent-hover: #fdba74;
+    --color-accent-soft: #60371f;
+    --color-hover: #452c20;
+    --color-pressed: #533326;
+    --color-focus: #fdba74;
+    --color-on-accent: #2c1204;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Cobalt delivers a focused deep-blue palette for high clarity. */
+:root[data-theme="cobalt"] {
+  --color-bg: #eef3ff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f8faff;
+  --color-text: #1e3157;
+  --color-text-muted: #576b92;
+  --color-border: #bdcbed;
+  --color-border-subtle: #dce4f6;
+  --color-accent: #1d4ed8;
+  --color-accent-hover: #1e40af;
+  --color-accent-soft: #dbeafe;
+  --color-hover: #e7edfa;
+  --color-pressed: #d7e0f3;
+  --color-focus: #1d4ed8;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(29 78 216 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="cobalt"] {
+    --color-bg: #09152f;
+    --color-surface: #101f3e;
+    --color-surface-raised: #17294d;
+    --color-text: #e8efff;
+    --color-text-muted: #aebddd;
+    --color-border: #3d5b91;
+    --color-border-subtle: #263e68;
+    --color-accent: #60a5fa;
+    --color-accent-hover: #93c5fd;
+    --color-accent-soft: #1d4274;
+    --color-hover: #182f57;
+    --color-pressed: #203b67;
+    --color-focus: #93c5fd;
+    --color-on-accent: #091a38;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Orchid adds expressive violet-pink accents without overwhelming content. */
+:root[data-theme="orchid"] {
+  --color-bg: #fff3ff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fff9ff;
+  --color-text: #452144;
+  --color-text-muted: #795477;
+  --color-border: #e2bde0;
+  --color-border-subtle: #f0dcf0;
+  --color-accent: #a21caf;
+  --color-accent-hover: #86198f;
+  --color-accent-soft: #fae8ff;
+  --color-hover: #f7e9f6;
+  --color-pressed: #ecd8eb;
+  --color-focus: #a21caf;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(162 28 175 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="orchid"] {
+    --color-bg: #241025;
+    --color-surface: #301531;
+    --color-surface-raised: #3b1c3a;
+    --color-text: #fde9ff;
+    --color-text-muted: #d8b5d6;
+    --color-border: #774476;
+    --color-border-subtle: #4d294d;
+    --color-accent: #f0abfc;
+    --color-accent-hover: #f5d0fe;
+    --color-accent-soft: #5e2860;
+    --color-hover: #442047;
+    --color-pressed: #522554;
+    --color-focus: #f5d0fe;
+    --color-on-accent: #2b0b2e;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+/* Crimson closes the collection with a deep editorial red palette. */
+:root[data-theme="crimson"] {
+  --color-bg: #fff1f2;
+  --color-surface: #fffdfd;
+  --color-surface-raised: #fff7f8;
+  --color-text: #4c1d2b;
+  --color-text-muted: #80505e;
+  --color-border: #e8b8c5;
+  --color-border-subtle: #f5d7df;
+  --color-accent: #9f1239;
+  --color-accent-hover: #881337;
+  --color-accent-soft: #ffe4e6;
+  --color-hover: #f9e6ea;
+  --color-pressed: #f0d2da;
+  --color-focus: #9f1239;
+  --color-on-accent: #ffffff;
+  --shadow-sticky: 0 1px 4px rgb(159 18 57 / 17%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="crimson"] {
+    --color-bg: #260b14;
+    --color-surface: #340f1b;
+    --color-surface-raised: #401522;
+    --color-text: #ffe8ee;
+    --color-text-muted: #ddb1bd;
+    --color-border: #813e52;
+    --color-border-subtle: #532534;
+    --color-accent: #fb7185;
+    --color-accent-hover: #fda4af;
+    --color-accent-soft: #622337;
+    --color-hover: #471c29;
+    --color-pressed: #56202f;
+    --color-focus: #fda4af;
+    --color-on-accent: #2e0710;
+    --shadow-sticky: 0 1px 5px rgb(0 0 0 / 52%);
+  }
+}
+
+
 * {
   box-sizing: border-box;
 }

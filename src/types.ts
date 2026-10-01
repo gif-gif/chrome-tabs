@@ -1,18 +1,37 @@
 import type { UiLanguagePreference } from './i18n/i18n'
 
 export type UiViewMode = 'list' | 'domain'
-export type UiTheme =
-  | 'classic'
-  | 'aurora'
-  | 'sunset'
-  | 'twilight'
-  | 'ocean'
-  | 'forest'
-  | 'sakura'
-  | 'graphite'
-  | 'lemon'
-  | 'coffee'
-  | 'midnight'
+export type PersistedTabFilter = 'all' | 'active' | 'favorites'
+export const UI_THEMES = [
+  'classic',
+  'aurora',
+  'sunset',
+  'twilight',
+  'ocean',
+  'forest',
+  'sakura',
+  'graphite',
+  'lemon',
+  'coffee',
+  'midnight',
+  'lavender',
+  'mint',
+  'coral',
+  'sky',
+  'amber',
+  'teal',
+  'ruby',
+  'plum',
+  'sand',
+  'ice',
+  'moss',
+  'peach',
+  'cobalt',
+  'orchid',
+  'crimson',
+] as const
+
+export type UiTheme = (typeof UI_THEMES)[number]
 
 export interface UiPreferences {
   globalMasked: boolean
@@ -22,6 +41,7 @@ export interface UiPreferences {
   pinnedTabIds: number[]
   pinnedDomainKeys: string[]
   favoriteUrls: string[]
+  filter: PersistedTabFilter
 }
 
 export type TabFilter = 'all' | 'current-window' | 'active' | 'favorites'

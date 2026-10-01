@@ -1,5 +1,11 @@
 import type { UiLanguagePreference } from '../i18n/i18n'
-import type { UiPreferences, UiTheme, UiViewMode } from '../types'
+import {
+  UI_THEMES,
+  type PersistedTabFilter,
+  type UiPreferences,
+  type UiTheme,
+  type UiViewMode,
+} from '../types'
 
 export const UI_PREFERENCES_KEY = 'chrome-tabs.ui-preferences.v1'
 const UI_PREFERENCES_VERSION = 1
@@ -12,6 +18,7 @@ export const defaultUiPreferences: UiPreferences = {
   pinnedTabIds: [],
   pinnedDomainKeys: [],
   favoriteUrls: [],
+  filter: 'all',
 }
 
 interface PreferencesStorage {
@@ -28,10 +35,15 @@ interface StoredUiPreferences {
   pinnedTabIds?: number[]
   pinnedDomainKeys?: string[]
   favoriteUrls?: string[]
+  filter?: PersistedTabFilter
 }
 
 function isViewMode(value: unknown): value is UiViewMode {
   return value === 'list' || value === 'domain'
+}
+
+function isPersistedTabFilter(value: unknown): value is PersistedTabFilter {
+  return value === 'all' || value === 'active' || value === 'favorites'
 }
 
 function isLanguage(value: unknown): value is UiLanguagePreference {
@@ -51,19 +63,7 @@ function isNonEmptyStringArray(value: unknown): value is string[] {
 }
 
 function isTheme(value: unknown): value is UiTheme {
-  return (
-    value === 'classic' ||
-    value === 'aurora' ||
-    value === 'sunset' ||
-    value === 'twilight' ||
-    value === 'ocean' ||
-    value === 'forest' ||
-    value === 'sakura' ||
-    value === 'graphite' ||
-    value === 'lemon' ||
-    value === 'coffee' ||
-    value === 'midnight'
-  )
+  return typeof value === 'string' && UI_THEMES.some((theme) => theme === value)
 }
 
 function parseStoredPreferences(value: string): UiPreferences | null {
@@ -91,6 +91,7 @@ function parseStoredPreferences(value: string): UiPreferences | null {
       favoriteUrls: isNonEmptyStringArray(candidate.favoriteUrls)
         ? [...new Set(candidate.favoriteUrls)]
         : [],
+      filter: isPersistedTabFilter(candidate.filter) ? candidate.filter : 'all',
     }
   } catch {
     return null
@@ -129,6 +130,7 @@ export function saveUiPreferences(
     pinnedTabIds: preferences.pinnedTabIds,
     pinnedDomainKeys: preferences.pinnedDomainKeys,
     favoriteUrls: preferences.favoriteUrls,
+    filter: preferences.filter,
   }
   try { storage.setItem(UI_PREFERENCES_KEY, JSON.stringify(storedPreferences)) } catch {
     // Preferences are best-effort and must never prevent the panel from loading.
