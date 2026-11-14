@@ -5,6 +5,8 @@ import type { BrowserWindow, DisplayDomainGroup, DisplayTab } from '../types'
 import {
   createDisplayDomainGroups,
   createDomainSortedTabIds,
+  createRestoredTabIds,
+  createTabOrderSnapshot,
   createDisplayWindows,
   createDisplayWindowsPresentationContext,
   filterWindows,
@@ -278,6 +280,33 @@ describe('createDomainSortedTabIds', () => {
       { ...base, id: 3, url: 'not valid two' },
       { ...base, id: 4, url: 'chrome://settings/search' },
     ])).toEqual([2, 4, 1, 3])
+  })
+})
+
+describe('createTabOrderSnapshot', () => {
+  it('records native tab ids per window', () => {
+    expect(createTabOrderSnapshot(windows)).toEqual(new Map(
+      windows.map((window) => [window.id, window.tabs.map((tab) => tab.id)]),
+    ))
+  })
+})
+
+describe('createRestoredTabIds', () => {
+  const base = windows[0].tabs[0]
+
+  it('restores the recorded order of tabs that still exist', () => {
+    const tabs = [3, 1, 4, 2].map((id) => ({ ...base, id }))
+    expect(createRestoredTabIds(tabs, [1, 2, 3, 4])).toEqual([1, 2, 3, 4])
+  })
+
+  it('skips closed tabs and appends new tabs in their current order', () => {
+    const tabs = [7, 3, 1, 5].map((id) => ({ ...base, id }))
+    expect(createRestoredTabIds(tabs, [1, 2, 3])).toEqual([1, 3, 7, 5])
+  })
+
+  it('keeps the current order when nothing was recorded', () => {
+    const tabs = [2, 1].map((id) => ({ ...base, id }))
+    expect(createRestoredTabIds(tabs, [])).toEqual([2, 1])
   })
 })
 

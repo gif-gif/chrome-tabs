@@ -9,6 +9,7 @@ export type IconName =
   | 'deduplicate'
   | 'sort-ascending'
   | 'sort-descending'
+  | 'restore-order'
   | 'eye'
   | 'eye-off'
   | 'chevron'
@@ -63,6 +64,12 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <path d="M4 6h10M4 12h7M4 18h4" />
       <path d="M17 5v14m0 0-3-3m3 3 3-3" />
+    </>
+  ),
+  'restore-order': (
+    <>
+      <path d="M9 14 4 9l5-5" />
+      <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
     </>
   ),
   copy: (
