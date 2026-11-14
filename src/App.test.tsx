@@ -104,6 +104,7 @@ describe('Icon', () => {
       'deduplicate',
       'sort-ascending',
       'sort-descending',
+      'restore-order',
     ]
 
     const { container } = render(
@@ -1839,8 +1840,65 @@ describe('progressive sticky search toolbar', () => {
     expect(api.moveTabs).toHaveBeenNthCalledWith(2, [1, 3, 2, 4], 10)
     await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(3))
     expect(screen.getByRole('button', {
+      name: '恢复标签页原始顺序',
+    })).toBeInTheDocument()
+  })
+
+  it('restores the pre-sort native tab order after the popup is reopened', async () => {
+    storeUiPreferences(false)
+    let currentTabs = [
+      { ...fixtureWindows[0].tabs[0], id: 1, index: 0, url: 'https://zeta.com/a' },
+      { ...fixtureWindows[0].tabs[1], id: 2, index: 1, url: 'https://alpha.com/a' },
+      { ...fixtureWindows[0].tabs[1], id: 3, index: 2, url: 'https://zeta.com/b' },
+    ]
+    const api = createTestApi(async () => [{ id: 10, focused: true, tabs: currentTabs }])
+    vi.mocked(api.moveTabs).mockImplementation(async (tabIds) => {
+      currentTabs = tabIds.map((tabId, index) => ({
+        ...currentTabs.find((tab) => tab.id === tabId)!,
+        index,
+      }))
+    })
+    const user = userEvent.setup()
+    const { unmount } = render(<App api={api} />)
+
+    await user.click(await screen.findByRole('button', { name: '按域名升序排列标签页' }))
+    await waitFor(() => expect(api.moveTabs).toHaveBeenNthCalledWith(1, [2, 1, 3], 10))
+    await user.click(await screen.findByRole('button', { name: '按域名降序排列标签页' }))
+    await waitFor(() => expect(api.moveTabs).toHaveBeenNthCalledWith(2, [1, 3, 2], 10))
+    await screen.findByRole('button', { name: '恢复标签页原始顺序' })
+    unmount()
+
+    render(<App api={api} />)
+    await user.click(await screen.findByRole('button', { name: '恢复标签页原始顺序' }))
+    await waitFor(() => expect(api.moveTabs).toHaveBeenNthCalledWith(3, [1, 2, 3], 10))
+    expect(await screen.findByRole('button', {
       name: '按域名升序排列标签页',
     })).toBeInTheDocument()
+  })
+
+  it('keeps the restore step available when restoring fails', async () => {
+    storeUiPreferences(false)
+    const api = createTestApi(async () => [{
+      id: 10,
+      focused: true,
+      tabs: [
+        { ...fixtureWindows[0].tabs[0], id: 1, index: 0, url: 'https://zeta.com/a' },
+        { ...fixtureWindows[0].tabs[1], id: 2, index: 1, url: 'https://alpha.com/a' },
+      ],
+    }])
+    localStorage.setItem('chrome-tabs.tab-sort-state.v1', JSON.stringify({
+      version: 1,
+      nextStep: 'restore',
+      originalOrder: [[10, [2, 1]]],
+    }))
+    vi.mocked(api.moveTabs).mockRejectedValueOnce(new Error('move failed'))
+    const user = userEvent.setup()
+    render(<App api={api} />)
+
+    await user.click(await screen.findByRole('button', { name: '恢复标签页原始顺序' }))
+    expect(await screen.findByText('无法恢复标签页原始顺序，请重试。')).toBeInTheDocument()
+    expect(api.moveTabs).toHaveBeenCalledWith([2, 1], 10)
+    expect(screen.getByRole('button', { name: '恢复标签页原始顺序' })).toBeInTheDocument()
   })
 
 })

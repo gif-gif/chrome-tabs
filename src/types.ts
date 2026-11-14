@@ -56,6 +56,9 @@ export interface BrowserTab {
   favIconUrl?: string
 }
 
+/** Next action of the header sort button: sort ascending, descending, or restore the pre-sort order. */
+export type TabSortStep = 'asc' | 'desc' | 'restore'
+
 export interface BrowserWindow {
   id: number
   focused: boolean

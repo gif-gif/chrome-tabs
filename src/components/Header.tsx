@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Translator } from '../i18n/i18n'
-import type { TabFilter } from '../types'
+import type { TabFilter, TabSortStep } from '../types'
 import { Icon, type IconName } from './Icon'
 
 type HeaderFilter = Exclude<TabFilter, 'current-window'>
@@ -12,7 +12,7 @@ interface HeaderProps {
   onFilterChange: (filter: TabFilter) => void
   onToggleMask: () => void
   onSortTabs?: () => void
-  sortDirection?: 'asc' | 'desc'
+  sortStep?: TabSortStep
   sortingTabs?: boolean
   t: Translator
   beforeMaskAction?: ReactNode
@@ -25,6 +25,12 @@ const filterIcons: Record<HeaderFilter, IconName> = {
   favorites: 'star',
 }
 
+const sortIcons: Record<TabSortStep, IconName> = {
+  asc: 'sort-ascending',
+  desc: 'sort-descending',
+  restore: 'restore-order',
+}
+
 export function Header({
   count,
   filter,
@@ -32,16 +38,18 @@ export function Header({
   onFilterChange,
   onToggleMask,
   onSortTabs,
-  sortDirection = 'asc',
+  sortStep = 'asc',
   sortingTabs = false,
   t,
   beforeMaskAction,
   afterMaskAction,
 }: HeaderProps) {
   const actionLabel = globalMasked ? t('showAllInformation') : t('hideAllInformation')
-  const sortLabel = sortDirection === 'asc'
+  const sortLabel = sortStep === 'asc'
     ? sortingTabs ? t('sortingTabsByDomainAscending') : t('sortTabsByDomainAscending')
-    : sortingTabs ? t('sortingTabsByDomainDescending') : t('sortTabsByDomainDescending')
+    : sortStep === 'desc'
+      ? sortingTabs ? t('sortingTabsByDomainDescending') : t('sortTabsByDomainDescending')
+      : sortingTabs ? t('restoringOriginalTabOrder') : t('restoreOriginalTabOrder')
   const countLabel = t('tabCount', { count })
   const filters: Array<{
     value: HeaderFilter
@@ -97,7 +105,7 @@ export function Header({
             onClick={onSortTabs}
           >
             <Icon
-              name={sortDirection === 'asc' ? 'sort-ascending' : 'sort-descending'}
+              name={sortIcons[sortStep]}
               width={16}
               height={16}
             />

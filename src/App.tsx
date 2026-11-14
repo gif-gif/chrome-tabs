@@ -11,6 +11,8 @@ import { WindowGroup } from './components/WindowGroup'
 import {
   createDisplayDomainGroups,
   createDomainSortedTabIds,
+  createRestoredTabIds,
+  createTabOrderSnapshot,
   createDisplayWindows,
   createDisplayWindowsPresentationContext,
   filterWindows,
@@ -27,6 +29,11 @@ import {
   type UiLanguagePreference,
 } from './i18n/i18n'
 import { loadUiPreferences, saveUiPreferences } from './preferences/uiPreferences'
+import {
+  loadTabSortState,
+  saveTabSortState,
+  type TabSortState,
+} from './preferences/tabSortState'
 import type {
   ChromeTabsApi,
   DisplayDomainGroup,
@@ -74,7 +81,7 @@ export function App({ api }: AppProps) {
   const [favoriteUrls, setFavoriteUrls] = useState<Set<string>>(
     () => new Set(initialPreferences.favoriteUrls),
   )
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [tabSortState, setTabSortState] = useState<TabSortState>(loadTabSortState)
   const [sortingTabs, setSortingTabs] = useState(false)
   const [tabMaskOverrides, setTabMaskOverrides] = useState<Map<number, boolean>>(
     () => new Map(),
@@ -615,24 +622,37 @@ export function App({ api }: AppProps) {
     if (sortingTabs) return
     setSortingTabs(true)
     const operationSequence = ++operationSequenceRef.current
+    const { nextStep } = tabSortState
+    const originalOrder =
+      tabSortState.originalOrder ?? createTabOrderSnapshot(windows)
 
     try {
       const moves = windows.flatMap((window) => {
         const currentIds = window.tabs.map((tab) => tab.id)
-        const sortedIds = createDomainSortedTabIds(window.tabs, sortDirection)
-        return currentIds.every((tabId, index) => tabId === sortedIds[index])
+        const targetIds = nextStep === 'restore'
+          ? createRestoredTabIds(window.tabs, originalOrder.get(window.id) ?? [])
+          : createDomainSortedTabIds(window.tabs, nextStep)
+        return currentIds.every((tabId, index) => tabId === targetIds[index])
           ? []
-          : [resolvedApi.moveTabs(sortedIds, window.id)]
+          : [resolvedApi.moveTabs(targetIds, window.id)]
       })
       await Promise.all(moves)
       await refresh()
       if (operationSequence === operationSequenceRef.current) {
         setOperationMessage(null)
-        setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')
+        const nextState: TabSortState = nextStep === 'asc'
+          ? { nextStep: 'desc', originalOrder }
+          : nextStep === 'desc'
+            ? { nextStep: 'restore', originalOrder }
+            : { nextStep: 'asc', originalOrder: null }
+        setTabSortState(nextState)
+        saveTabSortState(nextState)
       }
     } catch {
       if (operationSequence === operationSequenceRef.current) {
-        setOperationMessage('sortTabsError')
+        setOperationMessage(
+          nextStep === 'restore' ? 'restoreTabOrderError' : 'sortTabsError',
+        )
       }
       await refresh()
     } finally {
@@ -718,7 +738,7 @@ export function App({ api }: AppProps) {
               onFilterChange={setFilter}
               onToggleMask={handleGlobalMaskToggle}
               onSortTabs={() => void handleSortTabs()}
-              sortDirection={sortDirection}
+              sortStep={tabSortState.nextStep}
               sortingTabs={sortingTabs}
               t={t}
               beforeMaskAction={

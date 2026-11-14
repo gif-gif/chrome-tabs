@@ -190,6 +190,37 @@ export function createDomainSortedTabIds(
     .flatMap(([, tabIds]) => tabIds)
 }
 
+/**
+ * Records each window's native tab order so a later domain sort can be undone.
+ */
+export function createTabOrderSnapshot(
+  windows: readonly BrowserWindow[],
+): Map<number, number[]> {
+  return new Map(
+    windows.map((window) => [window.id, window.tabs.map((tab) => tab.id)]),
+  )
+}
+
+/**
+ * Restores a window's recorded tab order. Recorded tabs that still exist come
+ * first in their recorded order; tabs opened or moved in since then keep their
+ * current relative order after them.
+ */
+export function createRestoredTabIds(
+  tabs: readonly BrowserTab[],
+  originalTabIds: readonly number[],
+): number[] {
+  const currentIds = new Set(tabs.map((tab) => tab.id))
+  const restoredIdSet = new Set(
+    originalTabIds.filter((tabId) => currentIds.has(tabId)),
+  )
+
+  return [
+    ...restoredIdSet,
+    ...tabs.map((tab) => tab.id).filter((tabId) => !restoredIdSet.has(tabId)),
+  ]
+}
+
 export function resolveMasked(
   globalMasked: boolean,
   overrides: ReadonlyMap<number, boolean>,
