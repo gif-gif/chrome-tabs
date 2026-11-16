@@ -229,7 +229,7 @@ export function resolveMasked(
   return overrides.get(tabId) ?? globalMasked
 }
 
-function createDisplayTab(
+export function createDisplayTab(
   tab: BrowserTab,
   globalMasked: boolean,
   overrides: ReadonlyMap<number, boolean>,

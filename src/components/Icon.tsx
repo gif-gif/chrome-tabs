@@ -28,6 +28,11 @@ export type IconName =
   | 'collapse-all'
   | 'expand-all'
   | 'check'
+  | 'folder'
+  | 'plus'
+  | 'edit'
+  | 'trash'
+  | 'checklist'
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'children' | 'name'> {
   name: IconName
@@ -163,6 +168,26 @@ const paths: Record<IconName, React.ReactNode> = {
   'collapse-all': <path d="m7 15 5-5 5 5M7 10l5-5 5 5" />,
   'expand-all': <path d="m7 9 5 5 5-5M7 14l5 5 5-5" />,
   check: <path d="m5 12 4 4L19 6" />,
+  folder: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />,
+  plus: <path d="M12 5v14M5 12h14" />,
+  edit: (
+    <>
+      <path d="M4 20h4L19 9l-4-4L4 16v4Z" />
+      <path d="m13 7 4 4" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+      <path d="M10 11v6M14 11v6" />
+    </>
+  ),
+  checklist: (
+    <>
+      <path d="m4 7 2 2 3-3M4 15l2 2 3-3" />
+      <path d="M13 8h7M13 16h7" />
+    </>
+  ),
 }
 
 export function Icon({ name, width = 18, height = 18, ...props }: IconProps) {

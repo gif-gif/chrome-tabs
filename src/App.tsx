@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createSafeChromeTabsApi } from './chrome/chromeTabs'
+import { CustomGroup, type CustomGroupPickerOption } from './components/CustomGroup'
+import { CustomGroupCreator } from './components/CustomGroupCreator'
 import { DomainGroup } from './components/DomainGroup'
 import { Header } from './components/Header'
 import { LanguageMenu } from './components/LanguageMenu'
@@ -8,6 +10,15 @@ import { Icon } from './components/Icon'
 import { SearchFilters } from './components/SearchFilters'
 import { StatusView, type StatusViewState } from './components/StatusView'
 import { WindowGroup } from './components/WindowGroup'
+import {
+  addCustomGroup,
+  createDisplayCustomGroups,
+  deleteCustomGroup,
+  listSelectableTabs,
+  renameCustomGroup,
+  toggleCustomGroupUrl,
+  UNGROUPED_CUSTOM_GROUP_KEY,
+} from './domain/customGroups'
 import {
   createDisplayDomainGroups,
   createDomainSortedTabIds,
@@ -18,6 +29,7 @@ import {
   filterWindows,
   findDuplicateTabIds,
   getTabDomainGroupKey,
+  resolveMasked,
   sortWindowsCurrentFirst,
 } from './domain/tabs'
 import { useChromeTabs } from './hooks/useChromeTabs'
@@ -29,6 +41,7 @@ import {
   type UiLanguagePreference,
 } from './i18n/i18n'
 import { loadUiPreferences, saveUiPreferences } from './preferences/uiPreferences'
+import { loadCustomGroups, saveCustomGroups } from './preferences/customGroups'
 import {
   loadTabSortState,
   saveTabSortState,
@@ -36,6 +49,8 @@ import {
 } from './preferences/tabSortState'
 import type {
   ChromeTabsApi,
+  CustomTabGroup,
+  DisplayCustomGroup,
   DisplayDomainGroup,
   DisplayTab,
   TabFilter,
@@ -81,6 +96,10 @@ export function App({ api }: AppProps) {
   const [favoriteUrls, setFavoriteUrls] = useState<Set<string>>(
     () => new Set(initialPreferences.favoriteUrls),
   )
+  const [customGroups, setCustomGroups] = useState<CustomTabGroup[]>(loadCustomGroups)
+  const [collapsedCustomGroupKeys, setCollapsedCustomGroupKeys] = useState<
+    Set<string>
+  >(() => new Set())
   const [tabSortState, setTabSortState] = useState<TabSortState>(loadTabSortState)
   const [sortingTabs, setSortingTabs] = useState(false)
   const [tabMaskOverrides, setTabMaskOverrides] = useState<Map<number, boolean>>(
@@ -118,6 +137,10 @@ export function App({ api }: AppProps) {
       filter: filter === 'current-window' ? 'all' : filter,
     })
   }, [favoriteUrls, filter, globalMasked, language, pinnedDomainKeys, pinnedTabIds, theme, viewMode])
+
+  useEffect(() => {
+    saveCustomGroups(customGroups)
+  }, [customGroups])
 
   useEffect(() => {
     document.documentElement.lang = locale
@@ -258,6 +281,22 @@ export function App({ api }: AppProps) {
         pinnedDomainKeys,
       ),
     [globalMasked, pinnedDomainKeys, pinnedTabIds, sortedWindows, t, tabMaskOverrides],
+  )
+  const displayCustomGroups = useMemo(
+    () =>
+      createDisplayCustomGroups(
+        filteredWindows,
+        customGroups,
+        globalMasked,
+        tabMaskOverrides,
+        t,
+        pinnedTabIds,
+      ),
+    [customGroups, filteredWindows, globalMasked, pinnedTabIds, t, tabMaskOverrides],
+  )
+  const selectableTabs = useMemo(
+    () => listSelectableTabs(sortedWindows),
+    [sortedWindows],
   )
   const existingDomainGroupKeys = useMemo(
     () => new Set(allDomainGroups.map((group) => group.key)),
@@ -404,6 +443,59 @@ export function App({ api }: AppProps) {
       }
       return next
     })
+  }
+
+  function handleCustomGroupCollapseToggle(groupKey: string) {
+    setCollapsedCustomGroupKeys((current) => {
+      const next = new Set(current)
+      if (next.has(groupKey)) {
+        next.delete(groupKey)
+      } else {
+        next.add(groupKey)
+      }
+      return next
+    })
+  }
+
+  function handleCreateCustomGroup(name: string) {
+    setCustomGroups((current) =>
+      addCustomGroup(current, globalThis.crypto.randomUUID(), name),
+    )
+  }
+
+  function handleRenameCustomGroup(groupKey: string, name: string) {
+    setCustomGroups((current) => renameCustomGroup(current, groupKey, name))
+  }
+
+  function handleDeleteCustomGroup(group: DisplayCustomGroup) {
+    if (!window.confirm(t('deleteCustomGroupConfirm', { label: group.label }))) {
+      return
+    }
+    setCustomGroups((current) => deleteCustomGroup(current, group.key))
+    setCollapsedCustomGroupKeys((current) => {
+      if (!current.has(group.key)) return current
+      const next = new Set(current)
+      next.delete(group.key)
+      return next
+    })
+  }
+
+  function handleToggleCustomGroupUrl(groupKey: string, url: string) {
+    setCustomGroups((current) => toggleCustomGroupUrl(current, groupKey, url))
+  }
+
+  function getCustomGroupPickerOptions(group: CustomTabGroup): CustomGroupPickerOption[] {
+    const openUrls = new Set(selectableTabs.map((tab) => tab.url))
+    return [
+      ...selectableTabs.map((tab) => ({
+        url: tab.url,
+        tab,
+        masked: resolveMasked(globalMasked, tabMaskOverrides, tab.id),
+      })),
+      ...group.urls
+        .filter((url) => !openUrls.has(url))
+        .map((url) => ({ url, masked: globalMasked })),
+    ]
   }
 
   function beginOperation(tabId: number): number | null {
@@ -817,6 +909,46 @@ export function App({ api }: AppProps) {
                   t={t}
                 />
               ))
+            : viewMode === 'custom'
+              ? <>
+                  <CustomGroupCreator onCreate={handleCreateCustomGroup} t={t} />
+                  {customGroups.length === 0 ? (
+                    <div className="status-panel empty-state custom-groups-empty">
+                      <p>{t('noCustomGroups')}</p>
+                      <p>{t('noCustomGroupsHint')}</p>
+                    </div>
+                  ) : null}
+                  {displayCustomGroups.map((group) => {
+                    const sourceGroup = customGroups.find((candidate) => candidate.id === group.key)
+                    return (
+                      <CustomGroup
+                        key={group.key}
+                        group={group}
+                        editable={group.key !== UNGROUPED_CUSTOM_GROUP_KEY && Boolean(sourceGroup)}
+                        collapsed={collapsedCustomGroupKeys.has(group.key)}
+                        pickerOptions={sourceGroup ? getCustomGroupPickerOptions(sourceGroup) : []}
+                        selectedUrls={new Set(sourceGroup?.urls)}
+                        onToggleCollapse={handleCustomGroupCollapseToggle}
+                        onToggleUrl={handleToggleCustomGroupUrl}
+                        onRename={handleRenameCustomGroup}
+                        onDelete={handleDeleteCustomGroup}
+                        onToggleGroupMask={handleDomainGroupMaskToggle}
+                        onCloseGroup={(customGroup) => void handleCloseDomainGroup(customGroup)}
+                        onActivate={(tab) => void handleActivate(tab)}
+                        onTogglePin={handleTabPinToggle}
+                        onToggleFavorite={handleTabFavoriteToggle}
+                        onToggleMask={handleTabMaskToggle}
+                        onCopy={(tab) => void handleCopy(tab)}
+                        onClose={(tab) => void handleClose(tab)}
+                        pinnedTabIds={pinnedTabIds}
+                        favoriteTabIds={favoriteTabIds}
+                        pendingTabIds={pendingTabIds}
+                        copiedTabIds={copiedTabIds}
+                        t={t}
+                      />
+                    )
+                  })}
+                </>
             : displayDomainGroups.map((group) => (
                 <DomainGroup
                   key={group.key}

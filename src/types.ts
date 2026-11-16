@@ -1,6 +1,6 @@
 import type { UiLanguagePreference } from './i18n/i18n'
 
-export type UiViewMode = 'list' | 'domain'
+export type UiViewMode = 'list' | 'domain' | 'custom'
 export type PersistedTabFilter = 'all' | 'active' | 'favorites'
 export const UI_THEMES = [
   'classic',
@@ -88,6 +88,21 @@ export interface DisplayDomainGroup {
   label: string
   tabs: DisplayTab[]
   allMasked: boolean
+}
+
+/**
+ * A user-maintained tab group. Membership is stored by URL because Chrome tab
+ * ids change after a browser restart.
+ */
+export interface CustomTabGroup {
+  id: string
+  name: string
+  urls: string[]
+}
+
+export interface DisplayCustomGroup extends DisplayDomainGroup {
+  /** Number of saved URLs, including ones without an open tab. */
+  savedUrlCount: number
 }
 
 export interface ChromeTabsApi {

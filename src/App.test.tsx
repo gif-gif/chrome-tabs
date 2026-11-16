@@ -105,6 +105,11 @@ describe('Icon', () => {
       'sort-ascending',
       'sort-descending',
       'restore-order',
+      'folder',
+      'plus',
+      'edit',
+      'trash',
+      'checklist',
     ]
 
     const { container } = render(
@@ -1899,6 +1904,88 @@ describe('progressive sticky search toolbar', () => {
     expect(await screen.findByText('无法恢复标签页原始顺序，请重试。')).toBeInTheDocument()
     expect(api.moveTabs).toHaveBeenCalledWith([2, 1], 10)
     expect(screen.getByRole('button', { name: '恢复标签页原始顺序' })).toBeInTheDocument()
+  })
+
+
+  it('creates custom groups, chooses their tabs, and keeps them after reopening', async () => {
+    storeUiPreferences(false)
+    const api = createTestApi()
+    const user = userEvent.setup()
+    const { unmount } = render(<App api={api} />)
+
+    await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+    expect(screen.getByText('还没有自定义分组')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '新建分组' })).toBeDisabled()
+
+    await user.type(screen.getByRole('textbox', { name: '新分组名称' }), '工作{Enter}')
+    await user.type(screen.getByRole('textbox', { name: '新分组名称' }), '阅读')
+    await user.click(screen.getByRole('button', { name: '新建分组' }))
+
+    const work = screen.getByRole('region', { name: /^工作/ })
+    expect(within(work).getByText('这个分组还没有标签页，点击勾选按钮添加。')).toBeInTheDocument()
+    await user.click(within(work).getByRole('button', { name: '选择 工作 分组的标签页' }))
+    await user.click(within(work).getByRole('checkbox', { name: /GitHub - Chrome Tabs/ }))
+    await user.click(within(work).getByRole('checkbox', { name: /Project Documentation/ }))
+    await user.click(within(work).getByRole('button', { name: '选择 工作 分组的标签页' }))
+
+    expect(within(work).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      expect.stringContaining('GitHub - Chrome Tabs'),
+      expect.stringContaining('Project Documentation'),
+    ])
+    const ungrouped = screen.getByRole('region', { name: /^未分组/ })
+    expect(within(ungrouped).getByText('Mail Inbox')).toBeInTheDocument()
+    expect(within(ungrouped).queryByRole('button', { name: /重命名/ })).not.toBeInTheDocument()
+
+    unmount()
+    render(<App api={api} />)
+    const reopenedWork = await screen.findByRole('region', { name: /^工作/ })
+    expect(within(reopenedWork).getByText('GitHub - Chrome Tabs')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /^阅读/ })).toBeInTheDocument()
+  })
+
+  it('renames and deletes custom groups without closing their tabs', async () => {
+    storeUiPreferences(false)
+    localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+      version: 1,
+      groups: [{ id: 'g1', name: '工作', urls: ['https://github.com/example/chrome-tabs'] }],
+    }))
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const api = createTestApi()
+    const user = userEvent.setup()
+    render(<App api={api} />)
+
+    await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+    await user.click(screen.getByRole('button', { name: '重命名 工作 分组' }))
+    const nameInput = screen.getByRole('textbox', { name: '分组名称' })
+    await user.clear(nameInput)
+    await user.type(nameInput, '项目{Enter}')
+    expect(screen.getByRole('region', { name: /^项目/ })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '删除 项目 分组' }))
+    expect(confirm).toHaveBeenCalledWith('删除“项目”分组？分组里的标签页不会被关闭。')
+    expect(screen.queryByRole('region', { name: /^项目/ })).not.toBeInTheDocument()
+    expect(api.closeTab).not.toHaveBeenCalled()
+    expect(JSON.parse(localStorage.getItem('chrome-tabs.custom-groups.v1')!).groups).toEqual([])
+  })
+
+  it('hides tab details but keeps group names in the custom group picker when masked', async () => {
+    storeUiPreferences(true)
+    localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+      version: 1,
+      groups: [{ id: 'g1', name: '工作', urls: ['https://closed.example.com/secret'] }],
+    }))
+    const user = userEvent.setup()
+    const { container } = render(<App api={createTestApi()} />)
+
+    await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+    expect(screen.getByText('这个分组里的标签页当前都没有打开或不符合筛选条件。')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '选择 工作 分组的标签页' }))
+
+    expect(screen.getAllByRole('checkbox')).toHaveLength(4)
+    expect(screen.getByRole('checkbox', { name: /未打开/ })).toBeChecked()
+    expect(container).not.toHaveTextContent('GitHub')
+    expect(container).not.toHaveTextContent('closed.example.com')
+    expect(container.querySelector('img')).toBeNull()
   })
 
 })

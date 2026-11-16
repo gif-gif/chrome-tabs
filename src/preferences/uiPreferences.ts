@@ -39,7 +39,7 @@ interface StoredUiPreferences {
 }
 
 function isViewMode(value: unknown): value is UiViewMode {
-  return value === 'list' || value === 'domain'
+  return value === 'list' || value === 'domain' || value === 'custom'
 }
 
 function isPersistedTabFilter(value: unknown): value is PersistedTabFilter {
