@@ -284,4 +284,10 @@ describe('UI preferences', () => {
     expect(loadUiPreferences(storage)).toEqual(defaultUiPreferences)
     expect(() => saveUiPreferences(defaultUiPreferences, storage)).not.toThrow()
   })
+
+  it('persists the custom group view mode', () => {
+    saveUiPreferences({ ...defaultUiPreferences, viewMode: 'custom' })
+    expect(loadUiPreferences().viewMode).toBe('custom')
+  })
+
 })

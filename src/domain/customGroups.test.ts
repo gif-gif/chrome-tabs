@@ -1,0 +1,122 @@
+import { describe, expect, it } from 'vitest'
+import { createTranslator } from '../i18n/i18n'
+import { windows } from '../test/fixtures'
+import type { CustomTabGroup } from '../types'
+import {
+  addCustomGroup,
+  createDisplayCustomGroups,
+  deleteCustomGroup,
+  listSelectableTabs,
+  normalizeCustomGroupName,
+  renameCustomGroup,
+  toggleCustomGroupUrl,
+  UNGROUPED_CUSTOM_GROUP_KEY,
+} from './customGroups'
+
+const t = createTranslator('zh-CN')
+const githubUrl = 'https://github.com/example/chrome-tabs'
+const mailUrl = 'https://mail.example.com/inbox?TOKEN=SECRET'
+const docsUrl = 'https://docs.example.com/project/overview'
+
+describe('custom group editing', () => {
+  it('normalizes names and rejects blank ones', () => {
+    expect(normalizeCustomGroupName('  Work   stuff ')).toBe('Work stuff')
+    expect(normalizeCustomGroupName('x'.repeat(60))).toHaveLength(40)
+    expect(addCustomGroup([], 'a', '   ')).toEqual([])
+  })
+
+  it('adds, renames, and deletes groups without mutating the input', () => {
+    const initial: CustomTabGroup[] = []
+    const added = addCustomGroup(initial, 'a', ' 工作 ')
+    expect(added).toEqual([{ id: 'a', name: '工作', urls: [] }])
+    expect(initial).toEqual([])
+
+    expect(addCustomGroup(added, 'a', 'dup')).toEqual(added)
+    expect(renameCustomGroup(added, 'a', '学习')).toEqual([{ id: 'a', name: '学习', urls: [] }])
+    expect(renameCustomGroup(added, 'a', '  ')).toEqual(added)
+    expect(deleteCustomGroup(added, 'a')).toEqual([])
+  })
+
+  it('toggles a URL in only the targeted group', () => {
+    const groups = [
+      { id: 'a', name: 'A', urls: [githubUrl] },
+      { id: 'b', name: 'B', urls: [] },
+    ]
+    expect(toggleCustomGroupUrl(groups, 'b', githubUrl)).toEqual([
+      { id: 'a', name: 'A', urls: [githubUrl] },
+      { id: 'b', name: 'B', urls: [githubUrl] },
+    ])
+    expect(toggleCustomGroupUrl(groups, 'a', githubUrl)[0].urls).toEqual([])
+    expect(toggleCustomGroupUrl(groups, 'a', '')).toEqual(groups)
+  })
+})
+
+describe('listSelectableTabs', () => {
+  it('returns one tab per distinct URL in window order', () => {
+    const duplicate = { ...windows[1].tabs[0], id: 999, url: githubUrl }
+    const input = [windows[0], { ...windows[1], tabs: [...windows[1].tabs, duplicate] }]
+    expect(listSelectableTabs(input).map((tab) => tab.id)).toEqual([101, 102, 201])
+  })
+})
+
+describe('createDisplayCustomGroups', () => {
+  it('lists the selected tabs per group and collects the rest as ungrouped', () => {
+    const groups = [
+      { id: 'work', name: '工作', urls: [githubUrl, docsUrl, 'https://closed.example.com'] },
+      { id: 'mail', name: '邮件', urls: [mailUrl, githubUrl] },
+    ]
+    const result = createDisplayCustomGroups(windows, groups, false, new Map(), t)
+
+    expect(result.map((group) => [group.key, group.label, group.tabs.map((tab) => tab.id)])).toEqual([
+      ['work', '工作', [101, 201]],
+      ['mail', '邮件', [101, 102]],
+    ])
+    expect(result[0].savedUrlCount).toBe(3)
+  })
+
+  it('appends an ungrouped section only when some tabs are not in any group', () => {
+    const result = createDisplayCustomGroups(
+      windows,
+      [{ id: 'work', name: '工作', urls: [githubUrl] }],
+      false,
+      new Map(),
+      t,
+    )
+    expect(result.at(-1)).toMatchObject({
+      key: UNGROUPED_CUSTOM_GROUP_KEY,
+      label: '未分组',
+      savedUrlCount: 0,
+    })
+    expect(result.at(-1)?.tabs.map((tab) => tab.id)).toEqual([102, 201])
+  })
+
+  it('keeps group names but hides tab details when masked', () => {
+    const [group] = createDisplayCustomGroups(
+      windows,
+      [{ id: 'work', name: '工作', urls: [githubUrl] }],
+      true,
+      new Map(),
+      t,
+    )
+    expect(group.label).toBe('工作')
+    expect(group.allMasked).toBe(true)
+    expect(group.tabs[0]).toMatchObject({ displayTitle: '内容已隐藏', displayUrl: '' })
+    expect(group.tabs[0].displayFavIconUrl).toBeUndefined()
+  })
+
+  it('puts pinned tabs first and keeps empty groups', () => {
+    const result = createDisplayCustomGroups(
+      windows,
+      [
+        { id: 'work', name: '工作', urls: [githubUrl, mailUrl] },
+        { id: 'empty', name: '空', urls: [] },
+      ],
+      false,
+      new Map(),
+      t,
+      new Set([102]),
+    )
+    expect(result[0].tabs.map((tab) => tab.id)).toEqual([102, 101])
+    expect(result[1]).toMatchObject({ key: 'empty', tabs: [], allMasked: false })
+  })
+})

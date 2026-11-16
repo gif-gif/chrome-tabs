@@ -27,6 +27,21 @@ const messages = {
     viewMode: '标签页显示模式',
     listView: '列表视图',
     domainView: '域名分组视图',
+    customView: '自定义分组视图',
+    ungroupedTabs: '未分组',
+    newCustomGroupName: '新分组名称',
+    newCustomGroupPlaceholder: '新建分组，例如：工作',
+    createCustomGroup: '新建分组',
+    customGroupName: '分组名称',
+    saveCustomGroupName: '保存分组名称',
+    cancel: '取消',
+    chooseGroupTabsHint: '勾选要放进这个分组的标签页',
+    noTabsToChoose: '当前没有可选的标签页',
+    savedTabNotOpen: '未打开',
+    customGroupEmpty: '这个分组还没有标签页，点击勾选按钮添加。',
+    customGroupNoOpenTabs: '这个分组里的标签页当前都没有打开或不符合筛选条件。',
+    noCustomGroups: '还没有自定义分组',
+    noCustomGroupsHint: '在上方输入名称新建一个分组，再勾选要放进去的标签页。',
     list: '列表',
     group: '分组',
     showAllInformation: '显示全部标签信息',
@@ -48,6 +63,10 @@ const messages = {
     showGroupInformation: '显示此分组信息',
     hideGroupInformation: '隐藏此分组信息',
     closeDomainGroup: '关闭 {label} 分组中的 {count} 个标签页',
+    chooseGroupTabs: '选择 {label} 分组的标签页',
+    renameCustomGroup: '重命名 {label} 分组',
+    deleteCustomGroup: '删除 {label} 分组',
+    deleteCustomGroupConfirm: '删除“{label}”分组？分组里的标签页不会被关闭。',
     removeDuplicateTabs: '移除 {count} 个重复标签页',
     noDuplicateTabs: '没有重复标签页',
     loading: '正在加载标签页…',
@@ -131,6 +150,21 @@ const messages = {
     viewMode: 'Tab display mode',
     listView: 'List view',
     domainView: 'Group by domain view',
+    customView: 'Custom groups view',
+    ungroupedTabs: 'Ungrouped',
+    newCustomGroupName: 'New group name',
+    newCustomGroupPlaceholder: 'New group, e.g. Work',
+    createCustomGroup: 'Create group',
+    customGroupName: 'Group name',
+    saveCustomGroupName: 'Save group name',
+    cancel: 'Cancel',
+    chooseGroupTabsHint: 'Check the tabs to include in this group',
+    noTabsToChoose: 'No tabs to choose from',
+    savedTabNotOpen: 'Not open',
+    customGroupEmpty: 'This group has no tabs yet. Use the checklist button to add some.',
+    customGroupNoOpenTabs: 'None of the tabs in this group are open or match the current filter.',
+    noCustomGroups: 'No custom groups yet',
+    noCustomGroupsHint: 'Enter a name above to create a group, then check the tabs to include.',
     list: 'List',
     group: 'Group',
     showAllInformation: 'Show all tab information',
@@ -152,6 +186,10 @@ const messages = {
     showGroupInformation: 'Show this group information',
     hideGroupInformation: 'Hide this group information',
     closeDomainGroup: 'Close {count} {count, plural, one {tab} other {tabs}} in {label} group',
+    chooseGroupTabs: 'Choose tabs for {label} group',
+    renameCustomGroup: 'Rename {label} group',
+    deleteCustomGroup: 'Delete {label} group',
+    deleteCustomGroupConfirm: 'Delete the "{label}" group? Its tabs will not be closed.',
     removeDuplicateTabs: 'Remove {count} duplicate {count, plural, one {tab} other {tabs}}',
     noDuplicateTabs: 'No duplicate tabs',
     loading: 'Loading tabs…',
@@ -223,6 +261,10 @@ export interface TranslationParameters {
   tabCount: { count: number }
   activateMaskedTab: { current: string }
   closeDomainGroup: { label: string; count: number }
+  chooseGroupTabs: { label: string }
+  renameCustomGroup: { label: string }
+  deleteCustomGroup: { label: string }
+  deleteCustomGroupConfirm: { label: string }
 }
 
 type ParameterizedTranslationKey = keyof TranslationParameters

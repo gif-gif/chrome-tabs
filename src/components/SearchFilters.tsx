@@ -37,6 +37,9 @@ export function SearchFilters({ query, viewMode, onQueryChange, onViewModeChange
         <button type="button" className="compact-icon-button" aria-label={t('domainView')} title={t('domainView')} aria-pressed={viewMode === 'domain'} onClick={() => onViewModeChange('domain')}>
           <Icon name="group" width={16} height={16} />
         </button>
+        <button type="button" className="compact-icon-button" aria-label={t('customView')} title={t('customView')} aria-pressed={viewMode === 'custom'} onClick={() => onViewModeChange('custom')}>
+          <Icon name="folder" width={16} height={16} />
+        </button>
       </div>
     </section>
   )

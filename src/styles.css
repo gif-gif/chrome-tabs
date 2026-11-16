@@ -1887,3 +1887,115 @@ main {
     min-width: 24px;
   }
 }
+
+.custom-group-creator {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  margin: 12px var(--panel-gutter) 0;
+}
+
+.custom-group-creator input,
+.custom-group-name-form input {
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  outline: 0;
+}
+
+.custom-group-creator input:focus,
+.custom-group-name-form input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.custom-group-create-button {
+  color: var(--color-accent);
+}
+
+.custom-group-create-button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.custom-group-name-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  min-width: 0;
+  min-height: 42px;
+  gap: 2px;
+  padding: 0 4px 0 10px;
+}
+
+.row-pick-action.is-active {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.custom-group-picker {
+  margin: 0;
+  padding: 6px 4px;
+  background: color-mix(in srgb, var(--color-accent-soft) 36%, var(--color-surface));
+  border: 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.custom-group-picker legend {
+  float: left;
+  width: 100%;
+  padding: 2px 8px 6px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.custom-group-picker ul {
+  clear: both;
+  max-height: 240px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.custom-group-picker-option {
+  display: grid;
+  grid-template-columns: 18px 20px minmax(0, 1fr);
+  align-items: center;
+  min-height: 40px;
+  gap: 8px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.custom-group-picker-option:hover {
+  background: var(--color-hover);
+}
+
+.custom-group-picker-option > input {
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.custom-group-picker-option > img,
+.custom-group-picker-option > svg {
+  width: 16px;
+  height: 16px;
+  justify-self: center;
+  object-fit: contain;
+  color: var(--color-text-muted);
+}
+
+.custom-group-picker-empty,
+.custom-group-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
