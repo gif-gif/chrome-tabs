@@ -2024,4 +2024,44 @@ describe('progressive sticky search toolbar', () => {
     expect(groupNames()).toEqual(['阅读', '购物', '工作', '未分组'])
   })
 
+
+  it('pins custom groups to the top and keeps the pin after reopening', async () => {
+    storeUiPreferences(false)
+    localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+      version: 1,
+      groups: [
+        { id: 'g1', name: '工作', urls: [] },
+        { id: 'g2', name: '阅读', urls: [] },
+        { id: 'g3', name: '购物', urls: [] },
+      ],
+    }))
+    const user = userEvent.setup()
+    const groupNames = () => screen
+      .getAllByRole('region')
+      .map((region) => region.querySelector('.window-toggle > span')?.textContent)
+    const { unmount } = render(<App api={createTestApi()} />)
+
+    await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+    const pinShopping = within(screen.getByRole('region', { name: /^购物/ }))
+      .getByRole('button', { name: '置顶分组' })
+    await user.click(pinShopping)
+
+    expect(groupNames()).toEqual(['购物', '工作', '阅读', '未分组'])
+    const shopping = screen.getByRole('region', { name: /^购物/ })
+    expect(within(shopping).getByRole('button', { name: '取消置顶分组' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: '下移 购物 分组' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '上移 工作 分组' })).toBeDisabled()
+    expect(within(screen.getByRole('region', { name: /^未分组/ }))
+      .queryByRole('button', { name: /置顶分组/ })).not.toBeInTheDocument()
+
+    unmount()
+    render(<App api={createTestApi()} />)
+    await screen.findByRole('region', { name: /^购物/ })
+    expect(groupNames()).toEqual(['购物', '工作', '阅读', '未分组'])
+
+    await user.click(within(screen.getByRole('region', { name: /^购物/ }))
+      .getByRole('button', { name: '取消置顶分组' }))
+    expect(groupNames()).toEqual(['工作', '阅读', '购物', '未分组'])
+  })
+
 })

@@ -43,6 +43,20 @@ describe('custom groups storage', () => {
     },
   )
 
+  it('keeps only a true pinned flag', () => {
+    localStorage.setItem(CUSTOM_GROUPS_KEY, JSON.stringify({
+      version: 1,
+      groups: [
+        { id: 'a', name: 'A', urls: [], pinned: true },
+        { id: 'b', name: 'B', urls: [], pinned: 'yes' },
+      ],
+    }))
+    expect(loadCustomGroups()).toEqual([
+      { id: 'a', name: 'A', urls: [], pinned: true },
+      { id: 'b', name: 'B', urls: [] },
+    ])
+  })
+
   it('ignores storage failures', () => {
     const storage = {
       getItem: () => { throw new Error('denied') },
