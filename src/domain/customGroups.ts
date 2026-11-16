@@ -44,6 +44,22 @@ export function deleteCustomGroup(
   return groups.filter((group) => group.id !== id)
 }
 
+/** Swaps a group with its neighbour; moving past either end is a no-op. */
+export function moveCustomGroup(
+  groups: readonly CustomTabGroup[],
+  id: string,
+  offset: -1 | 1,
+): CustomTabGroup[] {
+  const index = groups.findIndex((group) => group.id === id)
+  const targetIndex = index + offset
+  if (index < 0 || targetIndex < 0 || targetIndex >= groups.length) {
+    return [...groups]
+  }
+  const next = [...groups]
+  ;[next[index], next[targetIndex]] = [next[targetIndex], next[index]]
+  return next
+}
+
 /** Adds the URL to the group when absent, otherwise removes it. */
 export function toggleCustomGroupUrl(
   groups: readonly CustomTabGroup[],

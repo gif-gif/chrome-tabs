@@ -66,6 +66,8 @@ const messages = {
     chooseGroupTabs: '选择 {label} 分组的标签页',
     renameCustomGroup: '重命名 {label} 分组',
     deleteCustomGroup: '删除 {label} 分组',
+    moveCustomGroupUp: '上移 {label} 分组',
+    moveCustomGroupDown: '下移 {label} 分组',
     deleteCustomGroupConfirm: '删除“{label}”分组？分组里的标签页不会被关闭。',
     removeDuplicateTabs: '移除 {count} 个重复标签页',
     noDuplicateTabs: '没有重复标签页',
@@ -189,6 +191,8 @@ const messages = {
     chooseGroupTabs: 'Choose tabs for {label} group',
     renameCustomGroup: 'Rename {label} group',
     deleteCustomGroup: 'Delete {label} group',
+    moveCustomGroupUp: 'Move {label} group up',
+    moveCustomGroupDown: 'Move {label} group down',
     deleteCustomGroupConfirm: 'Delete the "{label}" group? Its tabs will not be closed.',
     removeDuplicateTabs: 'Remove {count} duplicate {count, plural, one {tab} other {tabs}}',
     noDuplicateTabs: 'No duplicate tabs',
@@ -264,6 +268,8 @@ export interface TranslationParameters {
   chooseGroupTabs: { label: string }
   renameCustomGroup: { label: string }
   deleteCustomGroup: { label: string }
+  moveCustomGroupUp: { label: string }
+  moveCustomGroupDown: { label: string }
   deleteCustomGroupConfirm: { label: string }
 }
 
