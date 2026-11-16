@@ -24,6 +24,9 @@ interface CustomGroupProps {
   onToggleUrl?: (groupKey: string, url: string) => void
   onRename?: (groupKey: string, name: string) => void
   onDelete?: (group: DisplayCustomGroup) => void
+  onMove?: (groupKey: string, offset: -1 | 1) => void
+  canMoveUp?: boolean
+  canMoveDown?: boolean
   onToggleGroupMask: (group: DisplayCustomGroup) => void
   onCloseGroup: (group: DisplayCustomGroup) => void
   onActivate: (tab: DisplayTab) => void
@@ -49,6 +52,9 @@ export function CustomGroup({
   onToggleUrl,
   onRename,
   onDelete,
+  onMove,
+  canMoveUp = false,
+  canMoveDown = false,
   onToggleGroupMask,
   onCloseGroup,
   onActivate,
@@ -76,6 +82,8 @@ export function CustomGroup({
   const pickLabel = t('chooseGroupTabs', { label: group.label })
   const renameLabel = t('renameCustomGroup', { label: group.label })
   const deleteLabel = t('deleteCustomGroup', { label: group.label })
+  const moveUpLabel = t('moveCustomGroupUp', { label: group.label })
+  const moveDownLabel = t('moveCustomGroupDown', { label: group.label })
 
   function handleRenameSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -108,6 +116,8 @@ export function CustomGroup({
       )}
       <span className="domain-group-actions">
         {editable && !renaming ? <>
+          <button type="button" className="icon-button domain-group-action row-action-button row-move-action" aria-label={moveUpLabel} title={moveUpLabel} disabled={!canMoveUp} onClick={() => onMove?.(group.key, -1)}><Icon name="arrow-up" width={15} height={15} /></button>
+          <button type="button" className="icon-button domain-group-action row-action-button row-move-action" aria-label={moveDownLabel} title={moveDownLabel} disabled={!canMoveDown} onClick={() => onMove?.(group.key, 1)}><Icon name="arrow-down" width={15} height={15} /></button>
           <button type="button" className={`icon-button domain-group-action row-action-button row-pick-action${picking ? ' is-active' : ''}`} aria-label={pickLabel} title={pickLabel} aria-expanded={picking} aria-controls={pickerId} onClick={() => setPicking((current) => !current)}><Icon name="checklist" width={15} height={15} /></button>
           <button type="button" className="icon-button domain-group-action row-action-button" aria-label={renameLabel} title={renameLabel} onClick={() => { setDraftName(group.label); setRenaming(true) }}><Icon name="edit" width={15} height={15} /></button>
         </> : null}

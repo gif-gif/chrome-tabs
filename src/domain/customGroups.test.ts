@@ -7,6 +7,7 @@ import {
   createDisplayCustomGroups,
   deleteCustomGroup,
   listSelectableTabs,
+  moveCustomGroup,
   normalizeCustomGroupName,
   renameCustomGroup,
   toggleCustomGroupUrl,
@@ -48,6 +49,23 @@ describe('custom group editing', () => {
     ])
     expect(toggleCustomGroupUrl(groups, 'a', githubUrl)[0].urls).toEqual([])
     expect(toggleCustomGroupUrl(groups, 'a', '')).toEqual(groups)
+  })
+})
+
+describe('moveCustomGroup', () => {
+  const groups = ['a', 'b', 'c'].map((id) => ({ id, name: id, urls: [] }))
+  const ids = (result: CustomTabGroup[]) => result.map((group) => group.id)
+
+  it('swaps a group with its neighbour without mutating the input', () => {
+    expect(ids(moveCustomGroup(groups, 'b', -1))).toEqual(['b', 'a', 'c'])
+    expect(ids(moveCustomGroup(groups, 'b', 1))).toEqual(['a', 'c', 'b'])
+    expect(ids(groups)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('ignores moves past either end and unknown ids', () => {
+    expect(ids(moveCustomGroup(groups, 'a', -1))).toEqual(['a', 'b', 'c'])
+    expect(ids(moveCustomGroup(groups, 'c', 1))).toEqual(['a', 'b', 'c'])
+    expect(ids(moveCustomGroup(groups, 'x', 1))).toEqual(['a', 'b', 'c'])
   })
 })
 

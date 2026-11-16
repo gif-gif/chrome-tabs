@@ -33,6 +33,8 @@ export type IconName =
   | 'edit'
   | 'trash'
   | 'checklist'
+  | 'arrow-up'
+  | 'arrow-down'
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'children' | 'name'> {
   name: IconName
@@ -182,6 +184,8 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M10 11v6M14 11v6" />
     </>
   ),
+  'arrow-up': <path d="M12 19V5m0 0-6 6m6-6 6 6" />,
+  'arrow-down': <path d="M12 5v14m0 0-6-6m6 6 6-6" />,
   checklist: (
     <>
       <path d="m4 7 2 2 3-3M4 15l2 2 3-3" />

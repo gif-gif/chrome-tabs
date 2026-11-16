@@ -110,6 +110,8 @@ describe('Icon', () => {
       'edit',
       'trash',
       'checklist',
+      'arrow-up',
+      'arrow-down',
     ]
 
     const { container } = render(
@@ -1986,6 +1988,40 @@ describe('progressive sticky search toolbar', () => {
     expect(container).not.toHaveTextContent('GitHub')
     expect(container).not.toHaveTextContent('closed.example.com')
     expect(container.querySelector('img')).toBeNull()
+  })
+
+
+  it('reorders custom groups and keeps the order after reopening', async () => {
+    storeUiPreferences(false)
+    localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+      version: 1,
+      groups: [
+        { id: 'g1', name: '工作', urls: [] },
+        { id: 'g2', name: '阅读', urls: [] },
+        { id: 'g3', name: '购物', urls: [] },
+      ],
+    }))
+    const user = userEvent.setup()
+    const groupNames = () => screen
+      .getAllByRole('region')
+      .map((region) => region.querySelector('.window-toggle > span')?.textContent)
+    const { unmount } = render(<App api={createTestApi()} />)
+
+    await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+    expect(groupNames()).toEqual(['工作', '阅读', '购物', '未分组'])
+    expect(screen.getByRole('button', { name: '上移 工作 分组' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '下移 购物 分组' })).toBeDisabled()
+    expect(within(screen.getByRole('region', { name: /^未分组/ }))
+      .queryByRole('button', { name: /上移|下移/ })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '下移 工作 分组' }))
+    await user.click(screen.getByRole('button', { name: '上移 购物 分组' }))
+    expect(groupNames()).toEqual(['阅读', '购物', '工作', '未分组'])
+
+    unmount()
+    render(<App api={createTestApi()} />)
+    await screen.findByRole('region', { name: /^阅读/ })
+    expect(groupNames()).toEqual(['阅读', '购物', '工作', '未分组'])
   })
 
 })

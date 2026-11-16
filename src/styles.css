@@ -1713,6 +1713,7 @@ main {
 }
 
 .sort-tabs-button:disabled,
+.row-move-action:disabled,
 .row-favorite-action:disabled,
 .row-deduplicate-action:disabled {
   cursor: default;
