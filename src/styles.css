@@ -1411,7 +1411,31 @@ main {
 }
 
 .search-clear {
-  margin-right: -6px;
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  margin-right: -4px;
+  padding: 0;
+  place-items: center;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
+}
+
+.search-clear > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.search-clear:hover {
+  color: var(--color-text);
+  background: var(--color-hover);
+}
+
+.search-clear:active {
+  background: var(--color-pressed);
 }
 
 .view-mode-switch {
