@@ -780,7 +780,7 @@ describe('compact progressive sticky toolbar CSS contract', () => {
       hover,
     ).get('width')).toBe('var(--row-action-size)')
     expect(declarationsFor(
-      '.tab-row:has(.is-pinned,.is-favorite) :is(.row-pin-action,.row-favorite-action,.row-close-action),.domain-group-heading:not(.has-drag-handle):has(.row-pin-action.is-pinned) :is(.row-pin-action,.row-deduplicate-action,.row-close-action)',
+      '.tab-row:has(.is-pinned,.is-favorite) :is(.row-pin-action,.row-favorite-action,.row-close-action),.domain-group-heading:not(.has-drag-handle):has(.row-pin-action.is-pinned) :is(.row-pin-action,.row-deduplicate-action,.row-close-action),.domain-group-heading.has-drag-handle:has(.row-pin-action.is-pinned) :is(.row-pin-action,.row-close-action)',
       hover,
     ).get('width')).toBe('var(--row-action-size)')
     expect(declarationsFor(

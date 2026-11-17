@@ -2151,15 +2151,15 @@ describe('progressive sticky search toolbar', () => {
     expect([...actions.querySelectorAll('button')].map((button) => button.getAttribute('aria-label'))).toEqual([
       '选择 工作 分组的标签页',
       '重命名 工作 分组',
-      '置顶分组',
       '隐藏此分组信息',
+      '置顶分组',
       '关闭 工作 分组中的 0 个标签',
       '删除 工作 分组',
     ])
   })
 
 
-  it('orders tab row actions as hide, copy, pin, favorite, close', async () => {
+  it('orders tab row actions as hide, copy, favorite, pin, close', async () => {
     storeUiPreferences(false)
     render(<App api={createTestApi()} />)
 
@@ -2168,14 +2168,14 @@ describe('progressive sticky search toolbar', () => {
     expect([...row.querySelectorAll('.row-action-button')].map((button) => button.getAttribute('aria-label'))).toEqual([
       '隐藏此标签信息',
       '复制标签链接',
-      '置顶标签',
       '收藏标签',
+      '置顶标签',
       '关闭标签页',
     ])
   })
 
 
-  it('orders domain group header actions as hide, pin, deduplicate, close', async () => {
+  it('orders domain group header actions as hide, deduplicate, pin, close', async () => {
     storeUiPreferences(false)
     const user = userEvent.setup()
     render(<App api={createTestApi()} />)
@@ -2184,8 +2184,8 @@ describe('progressive sticky search toolbar', () => {
     const header = screen.getAllByRole('region')[0].querySelector('.domain-group-actions')!
     expect([...header.querySelectorAll('button')].map((button) => button.className.match(/row-[a-z]+-action/)?.[0])).toEqual([
       'row-privacy-action',
-      'row-pin-action',
       'row-deduplicate-action',
+      'row-pin-action',
       'row-close-action',
     ])
   })

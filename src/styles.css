@@ -2114,7 +2114,8 @@ main {
      the lit icons stay put on hover and only the actions to their left
      open up. */
   .tab-row:has(.is-pinned, .is-favorite) :is(.row-pin-action, .row-favorite-action, .row-close-action),
-  .domain-group-heading:not(.has-drag-handle):has(.row-pin-action.is-pinned) :is(.row-pin-action, .row-deduplicate-action, .row-close-action) {
+  .domain-group-heading:not(.has-drag-handle):has(.row-pin-action.is-pinned) :is(.row-pin-action, .row-deduplicate-action, .row-close-action),
+  .domain-group-heading.has-drag-handle:has(.row-pin-action.is-pinned) :is(.row-pin-action, .row-close-action) {
     width: var(--row-action-size);
     min-width: var(--row-action-size);
   }
