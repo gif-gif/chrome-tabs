@@ -699,6 +699,12 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(searchRow.get('display')).toBe('flex')
     expect(searchRow.get('min-width')).toBe('0')
 
+    const clear = declarationsFor('.search-clear')
+    expect(clear.get('background')).toBe('transparent')
+    expect(clear.get('border')).toBe('0')
+    expect(clear.get('width')).toBe('24px')
+    expect(clear.get('height')).toBe('24px')
+
     const search = declarationsFor('.search-box')
     expect(search.get('flex')).toBe('1 1 auto')
     expect(search.get('min-width')).toBe('0')
