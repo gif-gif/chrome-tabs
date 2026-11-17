@@ -2135,4 +2135,27 @@ describe('progressive sticky search toolbar', () => {
     expect(JSON.parse(localStorage.getItem('chrome-tabs.custom-group-collapse.v1')!)).toEqual(['custom-ungrouped'])
   })
 
+
+  it('lists custom group header actions with choose tabs and rename next to the name', async () => {
+    storeUiPreferences(false)
+    localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+      version: 1,
+      groups: [{ id: 'g1', name: '工作', urls: [] }],
+    }))
+    const user = userEvent.setup()
+    render(<App api={createTestApi()} />)
+
+    await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+    const work = screen.getByRole('region', { name: /^工作/ })
+    const actions = work.querySelector('.domain-group-actions')!
+    expect([...actions.querySelectorAll('button')].map((button) => button.getAttribute('aria-label'))).toEqual([
+      '选择 工作 分组的标签页',
+      '重命名 工作 分组',
+      '置顶分组',
+      '隐藏此分组信息',
+      '关闭 工作 分组中的 0 个标签',
+      '删除 工作 分组',
+    ])
+  })
+
 })
