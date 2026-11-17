@@ -9,6 +9,7 @@ import {
   listSelectableTabs,
   moveCustomGroup,
   orderCustomGroups,
+  reorderCustomGroup,
   toggleCustomGroupPin,
   normalizeCustomGroupName,
   renameCustomGroup,
@@ -95,17 +96,31 @@ describe('custom group pinning', () => {
 
   it('moves groups only within their pinned or unpinned part', () => {
     expect(ids(moveCustomGroup(groups, 'd', -1))).toEqual(['d', 'b', 'a', 'c'])
-    expect(ids(moveCustomGroup(groups, 'd', 1))).toEqual(['b', 'd', 'a', 'c'])
-    expect(ids(moveCustomGroup(groups, 'a', -1))).toEqual(['b', 'd', 'a', 'c'])
+    expect(ids(moveCustomGroup(groups, 'd', 1))).toEqual(['a', 'b', 'c', 'd'])
+    expect(ids(moveCustomGroup(groups, 'a', -1))).toEqual(['a', 'b', 'c', 'd'])
   })
 
-  it('exposes pin state and in-part move limits for display', () => {
+  it('drops a dragged group at the target position within its part', () => {
+    const many: CustomTabGroup[] = ['a', 'b', 'c', 'd'].map((id) => ({ id, name: id, urls: [] }))
+    expect(ids(reorderCustomGroup(many, 'a', 'c'))).toEqual(['b', 'c', 'a', 'd'])
+    expect(ids(reorderCustomGroup(many, 'd', 'b'))).toEqual(['a', 'd', 'b', 'c'])
+    expect(ids(reorderCustomGroup(many, 'a', 'a'))).toEqual(['a', 'b', 'c', 'd'])
+    expect(ids(reorderCustomGroup(many, 'x', 'a'))).toEqual(['a', 'b', 'c', 'd'])
+    expect(ids(many)).toEqual(['a', 'b', 'c', 'd'])
+  })
+
+  it('ignores drops across the pinned boundary', () => {
+    expect(ids(reorderCustomGroup(groups, 'a', 'b'))).toEqual(['a', 'b', 'c', 'd'])
+    expect(ids(reorderCustomGroup(groups, 'd', 'b'))).toEqual(['d', 'b', 'a', 'c'])
+  })
+
+  it('exposes pin state in display order', () => {
     const result = createDisplayCustomGroups([], groups, false, new Map(), t)
-    expect(result.map(({ key, pinned, canMoveUp, canMoveDown }) => [key, pinned, canMoveUp, canMoveDown])).toEqual([
-      ['b', true, false, true],
-      ['d', true, true, false],
-      ['a', false, false, true],
-      ['c', false, true, false],
+    expect(result.map(({ key, pinned }) => [key, pinned])).toEqual([
+      ['b', true],
+      ['d', true],
+      ['a', false],
+      ['c', false],
     ])
   })
 })

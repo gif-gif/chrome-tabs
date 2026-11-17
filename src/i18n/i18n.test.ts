@@ -92,6 +92,8 @@ describe('createTranslator', () => {
     expect(en('sortTabsByDomainDescending')).toBe('Sort tabs by domain descending')
     expect(zh('restoreOriginalTabOrder')).toBe('恢复标签页原始顺序')
     expect(zh('customView')).toBe('自定义分组视图')
+    expect(en('dragCustomGroup', { label: 'Work' })).toBe('Drag to reorder the Work group, or use the up and down arrow keys')
+    expect(en('customGroupHiddenByFilter', { count: 1 })).toBe('1 more selected tab is hidden by the current search or filter')
     expect(en('customView')).toBe('Custom groups view')
     expect(en('deleteCustomGroupConfirm', { label: 'Work' })).toBe('Delete the "Work" group? Its tabs will not be closed.')
     expect(en('restoreOriginalTabOrder')).toBe('Restore original tab order')
