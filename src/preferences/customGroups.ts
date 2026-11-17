@@ -79,3 +79,36 @@ export function saveCustomGroups(
     // Custom groups are best-effort and must never prevent the popup from loading.
   }
 }
+
+export const CUSTOM_GROUP_COLLAPSE_KEY = 'chrome-tabs.custom-group-collapse.v1'
+
+/**
+ * Loads which custom group sections are collapsed. Keys are group ids, plus
+ * the built-in ungrouped section key; unknown or malformed entries are dropped.
+ */
+export function loadCollapsedCustomGroupKeys(
+  validKeys: ReadonlySet<string>,
+  storage: CustomGroupsStorage | undefined = getDefaultStorage(),
+): Set<string> {
+  try {
+    const storedValue = storage?.getItem(CUSTOM_GROUP_COLLAPSE_KEY)
+    if (!storedValue) return new Set()
+    const parsed: unknown = JSON.parse(storedValue)
+    if (!Array.isArray(parsed)) return new Set()
+    return new Set(parsed.filter(
+      (key): key is string => typeof key === 'string' && validKeys.has(key),
+    ))
+  } catch {
+    return new Set()
+  }
+}
+
+export function saveCollapsedCustomGroupKeys(
+  keys: ReadonlySet<string>,
+  storage: CustomGroupsStorage | undefined = getDefaultStorage(),
+): void {
+  if (!storage) return
+  try { storage.setItem(CUSTOM_GROUP_COLLAPSE_KEY, JSON.stringify([...keys])) } catch {
+    // Collapse state is best-effort and must never prevent the popup from loading.
+  }
+}
