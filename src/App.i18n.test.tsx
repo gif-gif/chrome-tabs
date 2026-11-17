@@ -759,10 +759,21 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(focus.get('outline-offset')).toBe('1px')
 
     const hover = '(hover:hover)'
+    expect(declarationsFor('.tab-row', hover).get('display')).toBe('flex')
+    const collapsed = declarationsFor(
+      '.tab-row .row-action-button:not(.is-pinned,.is-favorite,.is-copied),.domain-group-heading .domain-group-action:not(.is-pinned,.is-active)',
+      hover,
+    )
+    expect(collapsed.get('width')).toBe('0')
+    expect(collapsed.get('overflow')).toBe('hidden')
     expect(declarationsFor(
       '.tab-row .row-action-button:not(.is-pinned,.is-favorite,.is-copied)>svg,.domain-group-heading .domain-group-action:not(.is-pinned,.is-active)>svg',
       hover,
     ).get('opacity')).toBe('0')
+    expect(declarationsFor(
+      '.tab-row:hover .row-action-button,.tab-row:has(:focus-visible) .row-action-button,.domain-group-heading:hover .domain-group-action,.domain-group-heading:has(:focus-visible) .domain-group-action',
+      hover,
+    ).get('width')).toBe('var(--row-action-size)')
     expect(declarationsFor(
       '.tab-row:hover .row-action-button>svg,.tab-row:has(:focus-visible) .row-action-button>svg,.domain-group-heading:hover .domain-group-action>svg,.domain-group-heading:has(:focus-visible) .domain-group-action>svg',
       hover,
