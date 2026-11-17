@@ -106,8 +106,6 @@ export interface DisplayCustomGroup extends DisplayDomainGroup {
   /** Number of saved URLs, including ones without an open tab. */
   savedUrlCount: number
   pinned: boolean
-  canMoveUp: boolean
-  canMoveDown: boolean
 }
 
 export interface ChromeTabsApi {

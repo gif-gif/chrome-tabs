@@ -59,7 +59,8 @@ export function orderCustomGroups(
 
 /**
  * Swaps a group with its displayed neighbour of the same pin state, so a group
- * never crosses the pinned/unpinned boundary. Other moves are no-ops.
+ * never crosses the pinned/unpinned boundary. Other moves leave the saved
+ * order untouched.
  */
 export function moveCustomGroup(
   groups: readonly CustomTabGroup[],
@@ -70,9 +71,35 @@ export function moveCustomGroup(
   const index = ordered.findIndex((group) => group.id === id)
   const target = ordered[index + offset]
   if (index < 0 || !target || Boolean(target.pinned) !== Boolean(ordered[index].pinned)) {
-    return ordered
+    return [...groups]
   }
   ;[ordered[index], ordered[index + offset]] = [target, ordered[index]]
+  return ordered
+}
+
+/**
+ * Moves a dragged group to the position of the group it was dropped on, in
+ * display order. Dragging down lands after the target, dragging up before it.
+ * Drops across the pinned/unpinned boundary leave the saved order untouched.
+ */
+export function reorderCustomGroup(
+  groups: readonly CustomTabGroup[],
+  sourceId: string,
+  targetId: string,
+): CustomTabGroup[] {
+  const ordered = orderCustomGroups(groups)
+  const sourceIndex = ordered.findIndex((group) => group.id === sourceId)
+  const targetIndex = ordered.findIndex((group) => group.id === targetId)
+  if (
+    sourceIndex < 0 ||
+    targetIndex < 0 ||
+    sourceIndex === targetIndex ||
+    Boolean(ordered[sourceIndex].pinned) !== Boolean(ordered[targetIndex].pinned)
+  ) {
+    return [...groups]
+  }
+  const [source] = ordered.splice(sourceIndex, 1)
+  ordered.splice(targetIndex, 0, source)
   return ordered
 }
 
@@ -141,7 +168,7 @@ export function createDisplayCustomGroups(
     label: string,
     groupTabs: BrowserTab[],
     savedUrlCount: number,
-    position: Pick<DisplayCustomGroup, 'pinned' | 'canMoveUp' | 'canMoveDown'>,
+    pinned: boolean,
   ): DisplayCustomGroup {
     const displayTabs = groupTabs
       .map((tab, originalIndex) => ({ tab, originalIndex }))
@@ -160,26 +187,19 @@ export function createDisplayCustomGroups(
       tabs: displayTabs,
       allMasked: displayTabs.length > 0 && displayTabs.every((tab) => tab.masked),
       savedUrlCount,
-      ...position,
+      pinned,
     }
   }
 
   const orderedGroups = orderCustomGroups(groups)
-  const displayGroups = orderedGroups.map((group, index) => {
+  const displayGroups = orderedGroups.map((group) => {
     const urls = new Set(group.urls)
-    const pinned = Boolean(group.pinned)
     return toDisplayGroup(
       group.id,
       group.name,
       tabs.filter((tab) => urls.has(tab.url)),
       group.urls.length,
-      {
-        pinned,
-        canMoveUp: Boolean(orderedGroups[index - 1]) &&
-          Boolean(orderedGroups[index - 1].pinned) === pinned,
-        canMoveDown: Boolean(orderedGroups[index + 1]) &&
-          Boolean(orderedGroups[index + 1].pinned) === pinned,
-      },
+      Boolean(group.pinned),
     )
   })
   const ungroupedTabs = tabs.filter((tab) => !groupedUrls.has(tab.url))
@@ -187,11 +207,7 @@ export function createDisplayCustomGroups(
   return ungroupedTabs.length > 0
     ? [
         ...displayGroups,
-        toDisplayGroup(UNGROUPED_CUSTOM_GROUP_KEY, t('ungroupedTabs'), ungroupedTabs, 0, {
-          pinned: false,
-          canMoveUp: false,
-          canMoveDown: false,
-        }),
+        toDisplayGroup(UNGROUPED_CUSTOM_GROUP_KEY, t('ungroupedTabs'), ungroupedTabs, 0, false),
       ]
     : displayGroups
 }

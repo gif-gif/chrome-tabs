@@ -1411,7 +1411,31 @@ main {
 }
 
 .search-clear {
-  margin-right: -6px;
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  margin-right: -4px;
+  padding: 0;
+  place-items: center;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
+}
+
+.search-clear > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.search-clear:hover {
+  color: var(--color-text);
+  background: var(--color-hover);
+}
+
+.search-clear:active {
+  background: var(--color-pressed);
 }
 
 .view-mode-switch {
@@ -1706,7 +1730,6 @@ main {
 }
 
 .sort-tabs-button:disabled,
-.row-move-action:disabled,
 .row-favorite-action:disabled,
 .row-deduplicate-action:disabled {
   cursor: default;
@@ -1993,4 +2016,59 @@ main {
   padding: 10px 12px;
   color: var(--color-text-muted);
   font-size: 12px;
+}
+
+.domain-group-heading.has-drag-handle {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.domain-group-heading.has-drag-handle .window-toggle {
+  padding-left: 4px;
+}
+
+.custom-group-drag-handle {
+  display: inline-grid;
+  width: 24px;
+  margin-left: 4px;
+  padding: 0;
+  place-items: center;
+  align-self: center;
+  height: 32px;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: grab;
+  transition: background-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
+}
+
+.custom-group-drag-handle > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.custom-group-drag-handle:hover:not(:disabled) {
+  color: var(--color-text);
+  background: var(--color-hover);
+}
+
+.custom-group-drag-handle:active:not(:disabled) {
+  cursor: grabbing;
+}
+
+.custom-group-drag-handle:disabled {
+  opacity: 0.4;
+}
+
+.custom-group.is-dragging {
+  opacity: 0.5;
+}
+
+.custom-group.is-drop-target {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.custom-group-hidden-count {
+  list-style: none;
 }

@@ -16,6 +16,7 @@ import {
   deleteCustomGroup,
   listSelectableTabs,
   moveCustomGroup,
+  reorderCustomGroup,
   toggleCustomGroupPin,
   renameCustomGroup,
   toggleCustomGroupUrl,
@@ -99,6 +100,8 @@ export function App({ api }: AppProps) {
     () => new Set(initialPreferences.favoriteUrls),
   )
   const [customGroups, setCustomGroups] = useState<CustomTabGroup[]>(loadCustomGroups)
+  const [draggingCustomGroupKey, setDraggingCustomGroupKey] = useState<string | null>(null)
+  const [customGroupDropKey, setCustomGroupDropKey] = useState<string | null>(null)
   const [collapsedCustomGroupKeys, setCollapsedCustomGroupKeys] = useState<
     Set<string>
   >(() => new Set())
@@ -296,6 +299,13 @@ export function App({ api }: AppProps) {
       ),
     [customGroups, filteredWindows, globalMasked, pinnedTabIds, t, tabMaskOverrides],
   )
+  const openTabCountByCustomGroup = useMemo(() => {
+    const openUrls = sortedWindows.flatMap((window) => window.tabs.map((tab) => tab.url))
+    return new Map(customGroups.map((group) => {
+      const urls = new Set(group.urls)
+      return [group.id, openUrls.filter((url) => urls.has(url)).length]
+    }))
+  }, [customGroups, sortedWindows])
   const selectableTabs = useMemo(
     () => listSelectableTabs(sortedWindows),
     [sortedWindows],
@@ -484,6 +494,36 @@ export function App({ api }: AppProps) {
 
   function handleMoveCustomGroup(groupKey: string, offset: -1 | 1) {
     setCustomGroups((current) => moveCustomGroup(current, groupKey, offset))
+  }
+
+  function isSameCustomGroupSection(sourceKey: string, targetKey: string) {
+    const source = customGroups.find((group) => group.id === sourceKey)
+    const target = customGroups.find((group) => group.id === targetKey)
+    return Boolean(source && target && Boolean(source.pinned) === Boolean(target.pinned))
+  }
+
+  function handleCustomGroupDragOver(groupKey: string): boolean {
+    if (!draggingCustomGroupKey || !isSameCustomGroupSection(draggingCustomGroupKey, groupKey)) {
+      return false
+    }
+    if (customGroupDropKey !== groupKey) {
+      setCustomGroupDropKey(groupKey === draggingCustomGroupKey ? null : groupKey)
+    }
+    return true
+  }
+
+  function handleCustomGroupDrop(groupKey: string) {
+    if (draggingCustomGroupKey) {
+      const sourceKey = draggingCustomGroupKey
+      setCustomGroups((current) => reorderCustomGroup(current, sourceKey, groupKey))
+    }
+    setDraggingCustomGroupKey(null)
+    setCustomGroupDropKey(null)
+  }
+
+  function handleCustomGroupDragEnd() {
+    setDraggingCustomGroupKey(null)
+    setCustomGroupDropKey(null)
   }
 
   function handleToggleCustomGroupPin(groupKey: string) {
@@ -943,6 +983,13 @@ export function App({ api }: AppProps) {
                         onRename={handleRenameCustomGroup}
                         onDelete={handleDeleteCustomGroup}
                         onMove={handleMoveCustomGroup}
+                        onDragStartGroup={setDraggingCustomGroupKey}
+                        onDragEndGroup={handleCustomGroupDragEnd}
+                        onDragOverGroup={handleCustomGroupDragOver}
+                        onDropGroup={handleCustomGroupDrop}
+                        dragging={draggingCustomGroupKey === group.key}
+                        dropTarget={customGroupDropKey === group.key}
+                        hiddenTabCount={Math.max(0, (openTabCountByCustomGroup.get(group.key) ?? 0) - group.tabs.length)}
                         onTogglePinGroup={handleToggleCustomGroupPin}
                         onToggleGroupMask={handleDomainGroupMaskToggle}
                         onCloseGroup={(customGroup) => void handleCloseDomainGroup(customGroup)}

@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useId, useRef, useState, type DragEvent, type FormEvent, type KeyboardEvent } from 'react'
 import { MAX_CUSTOM_GROUP_NAME_LENGTH } from '../domain/customGroups'
 import { resolveSafeFaviconUrl } from '../domain/tabs'
 import type { Translator } from '../i18n/i18n'
@@ -24,7 +24,16 @@ interface CustomGroupProps {
   onToggleUrl?: (groupKey: string, url: string) => void
   onRename?: (groupKey: string, name: string) => void
   onDelete?: (group: DisplayCustomGroup) => void
+  /** Keyboard reordering from the drag handle. */
   onMove?: (groupKey: string, offset: -1 | 1) => void
+  onDragStartGroup?: (groupKey: string) => void
+  onDragEndGroup?: () => void
+  onDragOverGroup?: (groupKey: string) => boolean
+  onDropGroup?: (groupKey: string) => void
+  dragging?: boolean
+  dropTarget?: boolean
+  /** Selected tabs that are open but hidden by the current search or filter. */
+  hiddenTabCount?: number
   onTogglePinGroup?: (groupKey: string) => void
   onToggleGroupMask: (group: DisplayCustomGroup) => void
   onCloseGroup: (group: DisplayCustomGroup) => void
@@ -52,6 +61,13 @@ export function CustomGroup({
   onRename,
   onDelete,
   onMove,
+  onDragStartGroup,
+  onDragEndGroup,
+  onDragOverGroup,
+  onDropGroup,
+  dragging = false,
+  dropTarget = false,
+  hiddenTabCount = 0,
   onTogglePinGroup,
   onToggleGroupMask,
   onCloseGroup,
@@ -71,6 +87,8 @@ export function CustomGroup({
   const headingId = `custom-heading-${reactId}`
   const listId = `custom-tabs-${reactId}`
   const pickerId = `custom-picker-${reactId}`
+  const toggleId = `custom-toggle-${reactId}`
+  const sectionRef = useRef<HTMLElement>(null)
   const [picking, setPicking] = useState(false)
   const [renaming, setRenaming] = useState(false)
   const [draftName, setDraftName] = useState(group.label)
@@ -81,8 +99,40 @@ export function CustomGroup({
   const renameLabel = t('renameCustomGroup', { label: group.label })
   const deleteLabel = t('deleteCustomGroup', { label: group.label })
   const pinLabel = group.pinned ? t('unpinGroup') : t('pinGroup')
-  const moveUpLabel = t('moveCustomGroupUp', { label: group.label })
-  const moveDownLabel = t('moveCustomGroupDown', { label: group.label })
+  const finishPickLabel = t('finishChoosingGroupTabs', { label: group.label })
+  const dragLabel = t('dragCustomGroup', { label: group.label })
+
+  function startPicking() {
+    if (collapsed) onToggleCollapse(group.key)
+    setPicking(true)
+  }
+
+  function handleDragStart(event: DragEvent<HTMLButtonElement>) {
+    event.dataTransfer?.setData('text/plain', group.label)
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+    if (sectionRef.current) event.dataTransfer?.setDragImage(sectionRef.current, 16, 16)
+    onDragStartGroup?.(group.key)
+  }
+
+  function handleDragOver(event: DragEvent<HTMLElement>) {
+    if (onDragOverGroup?.(group.key)) {
+      event.preventDefault()
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+    }
+  }
+
+  function handleDrop(event: DragEvent<HTMLElement>) {
+    event.preventDefault()
+    onDropGroup?.(group.key)
+  }
+
+  function handleHandleKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault()
+      onMove?.(group.key, event.key === 'ArrowUp' ? -1 : 1)
+      event.currentTarget.focus()
+    }
+  }
 
   function handleRenameSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -90,8 +140,11 @@ export function CustomGroup({
     setRenaming(false)
   }
 
-  return <section className={`window-group domain-group custom-group${group.pinned ? ' is-pinned' : ''}`} aria-labelledby={headingId}>
-    <h2 id={headingId} className="domain-group-heading">
+  const sectionClassName = `window-group domain-group custom-group${group.pinned ? ' is-pinned' : ''}${dragging ? ' is-dragging' : ''}${dropTarget ? ' is-drop-target' : ''}`
+
+  return <section ref={sectionRef} className={sectionClassName} aria-labelledby={renaming ? undefined : toggleId} aria-label={renaming ? group.label : undefined} onDragOver={editable ? handleDragOver : undefined} onDrop={editable ? handleDrop : undefined}>
+    <h2 id={headingId} className={`domain-group-heading${editable ? ' has-drag-handle' : ''}`}>
+      {editable ? <button type="button" className="custom-group-drag-handle" draggable={!picking && !renaming} disabled={picking || renaming} aria-label={dragLabel} title={dragLabel} onDragStart={handleDragStart} onDragEnd={() => onDragEndGroup?.()} onKeyDown={handleHandleKeyDown}><Icon name="grip" width={16} height={16} /></button> : null}
       {renaming ? (
         <form className="custom-group-name-form" onSubmit={handleRenameSubmit}>
           <input
@@ -111,19 +164,21 @@ export function CustomGroup({
           <button type="button" className="icon-button domain-group-action row-action-button" aria-label={t('cancel')} title={t('cancel')} onClick={() => setRenaming(false)}><Icon name="close" width={15} height={15} /></button>
         </form>
       ) : (
-        <button type="button" className="window-toggle domain-toggle" aria-expanded={!collapsed} aria-controls={listId} onClick={() => onToggleCollapse(group.key)}><Icon name="chevron" /><span>{group.label}</span><span>{t('tabCount', { count: group.tabs.length })}</span></button>
+        <button type="button" id={toggleId} className="window-toggle domain-toggle" aria-expanded={!collapsed} aria-controls={listId} onClick={() => onToggleCollapse(group.key)}><Icon name="chevron" /><span>{group.label}</span><span>{t('tabCount', { count: group.tabs.length })}</span></button>
       )}
       <span className="domain-group-actions">
-        {editable && !renaming ? <>
-          <button type="button" className={`icon-button domain-group-action row-action-button row-pin-action${group.pinned ? ' is-pinned' : ''}`} aria-label={pinLabel} title={pinLabel} aria-pressed={group.pinned} onClick={() => onTogglePinGroup?.(group.key)}><Icon name="pin" width={15} height={15} /></button>
-          <button type="button" className="icon-button domain-group-action row-action-button row-move-action" aria-label={moveUpLabel} title={moveUpLabel} disabled={!group.canMoveUp} onClick={() => onMove?.(group.key, -1)}><Icon name="arrow-up" width={15} height={15} /></button>
-          <button type="button" className="icon-button domain-group-action row-action-button row-move-action" aria-label={moveDownLabel} title={moveDownLabel} disabled={!group.canMoveDown} onClick={() => onMove?.(group.key, 1)}><Icon name="arrow-down" width={15} height={15} /></button>
-          <button type="button" className={`icon-button domain-group-action row-action-button row-pick-action${picking ? ' is-active' : ''}`} aria-label={pickLabel} title={pickLabel} aria-expanded={picking} aria-controls={pickerId} onClick={() => setPicking((current) => !current)}><Icon name="checklist" width={15} height={15} /></button>
-          <button type="button" className="icon-button domain-group-action row-action-button" aria-label={renameLabel} title={renameLabel} onClick={() => { setDraftName(group.label); setRenaming(true) }}><Icon name="edit" width={15} height={15} /></button>
-        </> : null}
-        <button type="button" className="icon-button domain-group-action row-action-button row-privacy-action" aria-label={maskLabel} title={maskLabel} disabled={group.tabs.length === 0} onClick={() => onToggleGroupMask(group)}><Icon name={group.allMasked ? 'eye' : 'eye-off'} width={15} height={15} /></button>
-        <button type="button" className="icon-button domain-group-action close-button row-action-button row-close-action" aria-label={closeLabel} title={closeLabel} onClick={() => onCloseGroup(group)} disabled={groupPending || group.tabs.length === 0}><Icon name="close" width={15} height={15} /></button>
-        {editable ? <button type="button" className="icon-button domain-group-action close-button row-action-button row-close-action" aria-label={deleteLabel} title={deleteLabel} onClick={() => onDelete?.(group)}><Icon name="trash" width={15} height={15} /></button> : null}
+        {picking ? (
+          <button type="button" className="icon-button domain-group-action row-action-button row-pick-action is-active" aria-label={finishPickLabel} title={finishPickLabel} aria-expanded={true} aria-controls={pickerId} onClick={() => setPicking(false)}><Icon name="check" width={15} height={15} /></button>
+        ) : <>
+          {editable && !renaming ? <>
+            <button type="button" className={`icon-button domain-group-action row-action-button row-pin-action${group.pinned ? ' is-pinned' : ''}`} aria-label={pinLabel} title={pinLabel} aria-pressed={group.pinned} onClick={() => onTogglePinGroup?.(group.key)}><Icon name="pin" width={15} height={15} /></button>
+            <button type="button" className="icon-button domain-group-action row-action-button row-pick-action" aria-label={pickLabel} title={pickLabel} aria-expanded={false} aria-controls={pickerId} onClick={startPicking}><Icon name="checklist" width={15} height={15} /></button>
+            <button type="button" className="icon-button domain-group-action row-action-button" aria-label={renameLabel} title={renameLabel} onClick={() => { setDraftName(group.label); setRenaming(true) }}><Icon name="edit" width={15} height={15} /></button>
+          </> : null}
+          <button type="button" className="icon-button domain-group-action row-action-button row-privacy-action" aria-label={maskLabel} title={maskLabel} disabled={group.tabs.length === 0} onClick={() => onToggleGroupMask(group)}><Icon name={group.allMasked ? 'eye' : 'eye-off'} width={15} height={15} /></button>
+          <button type="button" className="icon-button domain-group-action close-button row-action-button row-close-action" aria-label={closeLabel} title={closeLabel} onClick={() => onCloseGroup(group)} disabled={groupPending || group.tabs.length === 0}><Icon name="close" width={15} height={15} /></button>
+          {editable ? <button type="button" className="icon-button domain-group-action close-button row-action-button row-close-action" aria-label={deleteLabel} title={deleteLabel} onClick={() => onDelete?.(group)}><Icon name="trash" width={15} height={15} /></button> : null}
+        </>}
       </span>
     </h2>
     {picking ? (
@@ -154,10 +209,13 @@ export function CustomGroup({
       </fieldset>
     ) : null}
     <ul className="tab-list" id={listId} hidden={collapsed}>
-      {!collapsed && editable && group.tabs.length === 0 && !picking
+      {!collapsed && editable && group.tabs.length === 0 && hiddenTabCount === 0 && !picking
         ? <li className="custom-group-empty">{group.savedUrlCount === 0 ? t('customGroupEmpty') : t('customGroupNoOpenTabs')}</li>
         : null}
       {!collapsed ? group.tabs.map((tab) => <TabRow key={tab.id} tab={tab} pinned={pinnedTabIds?.has(tab.id)} favorite={favoriteTabIds?.has(tab.id)} onActivate={onActivate} onTogglePin={onTogglePin} onToggleFavorite={onToggleFavorite} onToggleMask={onToggleMask} onCopy={onCopy} onClose={onClose} t={t} pending={pendingTabIds?.has(tab.id)} copied={copiedTabIds?.has(tab.id)} />) : null}
+      {!collapsed && hiddenTabCount > 0
+        ? <li className="custom-group-empty custom-group-hidden-count">{t('customGroupHiddenByFilter', { count: hiddenTabCount })}</li>
+        : null}
     </ul>
   </section>
 }

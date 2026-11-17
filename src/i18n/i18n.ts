@@ -40,6 +40,7 @@ const messages = {
     savedTabNotOpen: '未打开',
     customGroupEmpty: '这个分组还没有标签页，点击勾选按钮添加。',
     customGroupNoOpenTabs: '这个分组里的标签页当前都没有打开或不符合筛选条件。',
+    customGroupHiddenByFilter: '另有 {count} 个已选标签页被当前搜索或筛选隐藏',
     noCustomGroups: '还没有自定义分组',
     noCustomGroupsHint: '在上方输入名称新建一个分组，再勾选要放进去的标签页。',
     list: '列表',
@@ -66,8 +67,8 @@ const messages = {
     chooseGroupTabs: '选择 {label} 分组的标签页',
     renameCustomGroup: '重命名 {label} 分组',
     deleteCustomGroup: '删除 {label} 分组',
-    moveCustomGroupUp: '上移 {label} 分组',
-    moveCustomGroupDown: '下移 {label} 分组',
+    dragCustomGroup: '拖动调整 {label} 分组的顺序，也可以用上下方向键',
+    finishChoosingGroupTabs: '完成选择 {label} 分组的标签页',
     deleteCustomGroupConfirm: '删除“{label}”分组？分组里的标签页不会被关闭。',
     removeDuplicateTabs: '移除 {count} 个重复标签页',
     noDuplicateTabs: '没有重复标签页',
@@ -165,6 +166,7 @@ const messages = {
     savedTabNotOpen: 'Not open',
     customGroupEmpty: 'This group has no tabs yet. Use the checklist button to add some.',
     customGroupNoOpenTabs: 'None of the tabs in this group are open or match the current filter.',
+    customGroupHiddenByFilter: '{count} more selected {count, plural, one {tab is} other {tabs are}} hidden by the current search or filter',
     noCustomGroups: 'No custom groups yet',
     noCustomGroupsHint: 'Enter a name above to create a group, then check the tabs to include.',
     list: 'List',
@@ -191,8 +193,8 @@ const messages = {
     chooseGroupTabs: 'Choose tabs for {label} group',
     renameCustomGroup: 'Rename {label} group',
     deleteCustomGroup: 'Delete {label} group',
-    moveCustomGroupUp: 'Move {label} group up',
-    moveCustomGroupDown: 'Move {label} group down',
+    dragCustomGroup: 'Drag to reorder the {label} group, or use the up and down arrow keys',
+    finishChoosingGroupTabs: 'Finish choosing tabs for {label} group',
     deleteCustomGroupConfirm: 'Delete the "{label}" group? Its tabs will not be closed.',
     removeDuplicateTabs: 'Remove {count} duplicate {count, plural, one {tab} other {tabs}}',
     noDuplicateTabs: 'No duplicate tabs',
@@ -268,8 +270,9 @@ export interface TranslationParameters {
   chooseGroupTabs: { label: string }
   renameCustomGroup: { label: string }
   deleteCustomGroup: { label: string }
-  moveCustomGroupUp: { label: string }
-  moveCustomGroupDown: { label: string }
+  dragCustomGroup: { label: string }
+  customGroupHiddenByFilter: { count: number }
+  finishChoosingGroupTabs: { label: string }
   deleteCustomGroupConfirm: { label: string }
 }
 

@@ -110,8 +110,7 @@ describe('Icon', () => {
       'edit',
       'trash',
       'checklist',
-      'arrow-up',
-      'arrow-down',
+      'grip',
     ]
 
     const { container } = render(
@@ -1928,7 +1927,12 @@ describe('progressive sticky search toolbar', () => {
     await user.click(within(work).getByRole('button', { name: '选择 工作 分组的标签页' }))
     await user.click(within(work).getByRole('checkbox', { name: /GitHub - Chrome Tabs/ }))
     await user.click(within(work).getByRole('checkbox', { name: /Project Documentation/ }))
-    await user.click(within(work).getByRole('button', { name: '选择 工作 分组的标签页' }))
+    expect(within(work).queryByRole('button', { name: '重命名 工作 分组' })).not.toBeInTheDocument()
+    expect(within(work).queryByRole('button', { name: '删除 工作 分组' })).not.toBeInTheDocument()
+    expect(within(work).queryByRole('button', { name: '置顶分组' })).not.toBeInTheDocument()
+    expect(within(work).getByRole('button', { name: /拖动调整 工作 分组/ })).toBeDisabled()
+    await user.click(within(work).getByRole('button', { name: '完成选择 工作 分组的标签页' }))
+    expect(within(work).getByRole('button', { name: '重命名 工作 分组' })).toBeInTheDocument()
 
     expect(within(work).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
       expect.stringContaining('GitHub - Chrome Tabs'),
@@ -1991,7 +1995,7 @@ describe('progressive sticky search toolbar', () => {
   })
 
 
-  it('reorders custom groups and keeps the order after reopening', async () => {
+  it('reorders custom groups by dragging the handle and keeps the order after reopening', async () => {
     storeUiPreferences(false)
     localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
       version: 1,
@@ -2009,21 +2013,53 @@ describe('progressive sticky search toolbar', () => {
 
     await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
     expect(groupNames()).toEqual(['工作', '阅读', '购物', '未分组'])
-    expect(screen.getByRole('button', { name: '上移 工作 分组' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: '下移 购物 分组' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: /上移|下移/ })).not.toBeInTheDocument()
     expect(within(screen.getByRole('region', { name: /^未分组/ }))
-      .queryByRole('button', { name: /上移|下移/ })).not.toBeInTheDocument()
+      .queryByRole('button', { name: /拖动/ })).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: '下移 工作 分组' }))
-    await user.click(screen.getByRole('button', { name: '上移 购物 分组' }))
+    const handle = screen.getByRole('button', { name: /拖动调整 工作 分组/ })
+    expect(handle).toHaveAttribute('draggable', 'true')
+    fireEvent.dragStart(handle)
+    expect(screen.getByRole('region', { name: /^工作/ })).toHaveClass('is-dragging')
+    fireEvent.dragOver(screen.getByRole('region', { name: /^购物/ }))
+    expect(screen.getByRole('region', { name: /^购物/ })).toHaveClass('is-drop-target')
+    fireEvent.drop(screen.getByRole('region', { name: /^购物/ }))
+    fireEvent.dragEnd(handle)
     expect(groupNames()).toEqual(['阅读', '购物', '工作', '未分组'])
+    expect(screen.getByRole('region', { name: /^工作/ })).not.toHaveClass('is-dragging')
+
+    screen.getByRole('button', { name: /拖动调整 工作 分组/ }).focus()
+    await user.keyboard('{ArrowUp}')
+    expect(groupNames()).toEqual(['阅读', '工作', '购物', '未分组'])
 
     unmount()
     render(<App api={createTestApi()} />)
     await screen.findByRole('region', { name: /^阅读/ })
-    expect(groupNames()).toEqual(['阅读', '购物', '工作', '未分组'])
+    expect(groupNames()).toEqual(['阅读', '工作', '购物', '未分组'])
   })
 
+  it('opens collapsed groups for picking and counts selected tabs hidden by search', async () => {
+    storeUiPreferences(false)
+    localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+      version: 1,
+      groups: [{ id: 'g1', name: '工作', urls: ['https://github.com/example/chrome-tabs'] }],
+    }))
+    const user = userEvent.setup()
+    render(<App api={createTestApi()} />)
+
+    await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+    const work = screen.getByRole('region', { name: /^工作/ })
+    await user.click(within(work).getByRole('button', { name: /^工作/ }))
+    await user.click(within(work).getByRole('button', { name: '选择 工作 分组的标签页' }))
+    expect(within(work).getByRole('button', { name: /^工作/ })).toHaveAttribute('aria-expanded', 'true')
+    await user.click(within(work).getByRole('checkbox', { name: /Mail Inbox/ }))
+    await user.click(within(work).getByRole('button', { name: '完成选择 工作 分组的标签页' }))
+
+    await user.type(screen.getByRole('searchbox', { name: '搜索标签页' }), 'github')
+    const filtered = screen.getByRole('region', { name: /^工作/ })
+    expect(within(filtered).getByText('GitHub - Chrome Tabs')).toBeInTheDocument()
+    expect(within(filtered).getByText('另有 1 个已选标签页被当前搜索或筛选隐藏')).toBeInTheDocument()
+  })
 
   it('pins custom groups to the top and keeps the pin after reopening', async () => {
     storeUiPreferences(false)
@@ -2049,8 +2085,11 @@ describe('progressive sticky search toolbar', () => {
     expect(groupNames()).toEqual(['购物', '工作', '阅读', '未分组'])
     const shopping = screen.getByRole('region', { name: /^购物/ })
     expect(within(shopping).getByRole('button', { name: '取消置顶分组' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: '下移 购物 分组' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: '上移 工作 分组' })).toBeDisabled()
+    fireEvent.dragStart(screen.getByRole('button', { name: /拖动调整 工作 分组/ }))
+    fireEvent.dragOver(shopping)
+    expect(shopping).not.toHaveClass('is-drop-target')
+    fireEvent.drop(shopping)
+    expect(groupNames()).toEqual(['购物', '工作', '阅读', '未分组'])
     expect(within(screen.getByRole('region', { name: /^未分组/ }))
       .queryByRole('button', { name: /置顶分组/ })).not.toBeInTheDocument()
 
