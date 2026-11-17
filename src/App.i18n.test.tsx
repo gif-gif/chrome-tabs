@@ -768,6 +768,13 @@ describe('compact progressive sticky toolbar CSS contract', () => {
       hover,
     ).get('opacity')).toBe('1')
 
+    expect(declarationsFor('.tab-row>.tab-main', hover).get('grid-column')).toBe('1/-1')
+    expect(declarationsFor(
+      '.tab-row:hover>.tab-main,.tab-row:has(:focus-visible)>.tab-main,.tab-row:has(.is-pinned,.is-favorite,.is-copied)>.tab-main',
+      hover,
+    ).get('grid-column')).toBe('1')
+    expect(declarationsFor('.tab-row>:nth-child(6)', hover).get('grid-column')).toBe('6')
+
     expect(declarationsFor('.row-privacy-action:hover:not(:disabled),.row-privacy-action:focus-visible').get('color')).toBe('var(--color-text)')
     expect(declarationsFor('.row-close-action:hover:not(:disabled),.row-close-action:focus-visible').get('color')).toBe('var(--color-danger)')
   })

@@ -2090,4 +2090,28 @@ main {
   .domain-group-heading:has(:focus-visible) .domain-group-action > svg {
     opacity: 1;
   }
+
+  /* While its actions are hidden, a row's title and URL run across the
+     whole row. The actions keep their own columns and overlay the end of
+     the row, and the text gives the space back once they show: on hover,
+     on keyboard focus, or when a state icon stays visible. */
+  .tab-row > * {
+    grid-row: 1;
+  }
+
+  .tab-row > .tab-main {
+    grid-column: 1 / -1;
+  }
+
+  .tab-row > :nth-child(2) { grid-column: 2; }
+  .tab-row > :nth-child(3) { grid-column: 3; }
+  .tab-row > :nth-child(4) { grid-column: 4; }
+  .tab-row > :nth-child(5) { grid-column: 5; }
+  .tab-row > :nth-child(6) { grid-column: 6; }
+
+  .tab-row:hover > .tab-main,
+  .tab-row:has(:focus-visible) > .tab-main,
+  .tab-row:has(.is-pinned, .is-favorite, .is-copied) > .tab-main {
+    grid-column: 1;
+  }
 }
