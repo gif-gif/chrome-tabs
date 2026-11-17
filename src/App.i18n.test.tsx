@@ -780,6 +780,10 @@ describe('compact progressive sticky toolbar CSS contract', () => {
       hover,
     ).get('width')).toBe('var(--row-action-size)')
     expect(declarationsFor(
+      '.tab-row:has(.is-pinned,.is-favorite) :is(.row-pin-action,.row-favorite-action,.row-close-action)',
+      hover,
+    ).get('width')).toBe('var(--row-action-size)')
+    expect(declarationsFor(
       '.tab-row:hover .row-action-button>svg,.tab-row:has(:focus-visible) .row-action-button>svg,.domain-group-heading:hover .domain-group-action>svg,.domain-group-heading:has(:focus-visible) .domain-group-action>svg',
       hover,
     ).get('opacity')).toBe('1')
