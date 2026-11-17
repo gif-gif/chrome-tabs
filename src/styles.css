@@ -2074,14 +2074,39 @@ main {
 }
 
 /* Row and group actions stay out of the way until the row or header is
-   hovered or one of its controls has keyboard focus. Actions that show a state (pinned,
-   favorite, copied, picking) stay visible. Touch screens without hover
-   keep every action visible. */
+   hovered or one of its controls has keyboard focus. Hidden actions
+   collapse to zero width, so the title and URL run across the row and any
+   action that shows a state (pinned, favorite, copied, picking) sits at
+   the right edge. On hover every action takes its usual place again.
+   Collapsed buttons stay focusable, and touch screens without hover keep
+   every action visible. */
 @media (hover: hover) {
+  .tab-row {
+    display: flex;
+  }
+
+  .tab-row > .tab-main {
+    flex: 1 1 auto;
+  }
+
+  .tab-row .row-action-button:not(.is-pinned, .is-favorite, .is-copied),
+  .domain-group-heading .domain-group-action:not(.is-pinned, .is-active) {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+
   .tab-row .row-action-button:not(.is-pinned, .is-favorite, .is-copied) > svg,
   .domain-group-heading .domain-group-action:not(.is-pinned, .is-active) > svg {
     opacity: 0;
-    transition: opacity var(--motion-fast) var(--ease);
+  }
+
+  .tab-row:hover .row-action-button,
+  .tab-row:has(:focus-visible) .row-action-button,
+  .domain-group-heading:hover .domain-group-action,
+  .domain-group-heading:has(:focus-visible) .domain-group-action {
+    width: var(--row-action-size);
+    min-width: var(--row-action-size);
   }
 
   .tab-row:hover .row-action-button > svg,
@@ -2089,29 +2114,5 @@ main {
   .domain-group-heading:hover .domain-group-action > svg,
   .domain-group-heading:has(:focus-visible) .domain-group-action > svg {
     opacity: 1;
-  }
-
-  /* While its actions are hidden, a row's title and URL run across the
-     whole row. The actions keep their own columns and overlay the end of
-     the row, and the text gives the space back once they show: on hover,
-     on keyboard focus, or when a state icon stays visible. */
-  .tab-row > * {
-    grid-row: 1;
-  }
-
-  .tab-row > .tab-main {
-    grid-column: 1 / -1;
-  }
-
-  .tab-row > :nth-child(2) { grid-column: 2; }
-  .tab-row > :nth-child(3) { grid-column: 3; }
-  .tab-row > :nth-child(4) { grid-column: 4; }
-  .tab-row > :nth-child(5) { grid-column: 5; }
-  .tab-row > :nth-child(6) { grid-column: 6; }
-
-  .tab-row:hover > .tab-main,
-  .tab-row:has(:focus-visible) > .tab-main,
-  .tab-row:has(.is-pinned, .is-favorite, .is-copied) > .tab-main {
-    grid-column: 1;
   }
 }
