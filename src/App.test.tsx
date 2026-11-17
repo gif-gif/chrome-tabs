@@ -2158,4 +2158,20 @@ describe('progressive sticky search toolbar', () => {
     ])
   })
 
+
+  it('orders tab row actions as hide, copy, pin, favorite, close', async () => {
+    storeUiPreferences(false)
+    render(<App api={createTestApi()} />)
+
+    const title = await screen.findByText('Mail Inbox')
+    const row = title.closest('li')!
+    expect([...row.querySelectorAll('.row-action-button')].map((button) => button.getAttribute('aria-label'))).toEqual([
+      '隐藏此标签信息',
+      '复制标签链接',
+      '置顶标签',
+      '收藏标签',
+      '关闭标签页',
+    ])
+  })
+
 })

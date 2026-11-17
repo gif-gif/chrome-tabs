@@ -2109,6 +2109,14 @@ main {
     min-width: var(--row-action-size);
   }
 
+  /* A row with a lit pin or star keeps the pin, star and close slots, so
+     the lit icons stay put when the row is hovered and only the hide and
+     copy actions open up to their left. */
+  .tab-row:has(.is-pinned, .is-favorite) :is(.row-pin-action, .row-favorite-action, .row-close-action) {
+    width: var(--row-action-size);
+    min-width: var(--row-action-size);
+  }
+
   .tab-row:hover .row-action-button > svg,
   .tab-row:has(:focus-visible) .row-action-button > svg,
   .domain-group-heading:hover .domain-group-action > svg,
