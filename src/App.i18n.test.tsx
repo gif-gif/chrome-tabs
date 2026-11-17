@@ -758,6 +758,11 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(focus.get('outline')).toBe('2px solid var(--color-focus)')
     expect(focus.get('outline-offset')).toBe('1px')
 
+    expect(declarationsFor('.domain-group-heading:hover').get('background')).toBe('var(--color-hover)')
+    expect(declarationsFor(
+      '.domain-group-heading .window-toggle:hover,.domain-group-heading .window-toggle:active,.domain-group-heading .custom-group-drag-handle:hover:not(:disabled),.domain-group-heading .domain-group-action:hover:not(:disabled),.domain-group-heading .domain-group-action:active:not(:disabled),.domain-group-heading .domain-group-action.row-close-action:hover:not(:disabled)',
+    ).get('background')).toBe('transparent')
+
     const hover = '(hover:hover)'
     expect(declarationsFor('.tab-row', hover).get('display')).toBe('flex')
     const collapsed = declarationsFor(
