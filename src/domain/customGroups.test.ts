@@ -8,6 +8,8 @@ import {
   deleteCustomGroup,
   listSelectableTabs,
   moveCustomGroup,
+  orderCustomGroups,
+  toggleCustomGroupPin,
   normalizeCustomGroupName,
   renameCustomGroup,
   toggleCustomGroupUrl,
@@ -66,6 +68,45 @@ describe('moveCustomGroup', () => {
     expect(ids(moveCustomGroup(groups, 'a', -1))).toEqual(['a', 'b', 'c'])
     expect(ids(moveCustomGroup(groups, 'c', 1))).toEqual(['a', 'b', 'c'])
     expect(ids(moveCustomGroup(groups, 'x', 1))).toEqual(['a', 'b', 'c'])
+  })
+})
+
+describe('custom group pinning', () => {
+  const ids = (result: CustomTabGroup[]) => result.map((group) => group.id)
+  const groups: CustomTabGroup[] = [
+    { id: 'a', name: 'a', urls: [] },
+    { id: 'b', name: 'b', urls: [], pinned: true },
+    { id: 'c', name: 'c', urls: [] },
+    { id: 'd', name: 'd', urls: [], pinned: true },
+  ]
+
+  it('lists pinned groups first, keeping saved order within each part', () => {
+    expect(ids(orderCustomGroups(groups))).toEqual(['b', 'd', 'a', 'c'])
+  })
+
+  it('toggles a group pin and keeps the saved order stable', () => {
+    const pinned = toggleCustomGroupPin(groups, 'c')
+    expect(ids(pinned)).toEqual(['a', 'b', 'c', 'd'])
+    expect(pinned.find((group) => group.id === 'c')?.pinned).toBe(true)
+    expect(ids(orderCustomGroups(pinned))).toEqual(['b', 'c', 'd', 'a'])
+    expect(ids(orderCustomGroups(toggleCustomGroupPin(groups, 'b')))).toEqual(['d', 'a', 'b', 'c'])
+    expect(groups.find((group) => group.id === 'c')?.pinned).toBeUndefined()
+  })
+
+  it('moves groups only within their pinned or unpinned part', () => {
+    expect(ids(moveCustomGroup(groups, 'd', -1))).toEqual(['d', 'b', 'a', 'c'])
+    expect(ids(moveCustomGroup(groups, 'd', 1))).toEqual(['b', 'd', 'a', 'c'])
+    expect(ids(moveCustomGroup(groups, 'a', -1))).toEqual(['b', 'd', 'a', 'c'])
+  })
+
+  it('exposes pin state and in-part move limits for display', () => {
+    const result = createDisplayCustomGroups([], groups, false, new Map(), t)
+    expect(result.map(({ key, pinned, canMoveUp, canMoveDown }) => [key, pinned, canMoveUp, canMoveDown])).toEqual([
+      ['b', true, false, true],
+      ['d', true, true, false],
+      ['a', false, false, true],
+      ['c', false, true, false],
+    ])
   })
 })
 

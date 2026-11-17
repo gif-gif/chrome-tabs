@@ -33,6 +33,7 @@ function parseGroup(value: unknown): CustomTabGroup | null {
     urls: [...new Set(candidate.urls.filter(
       (url): url is string => typeof url === 'string' && url.length > 0,
     ))],
+    ...(candidate.pinned === true ? { pinned: true } : {}),
   }
 }
 

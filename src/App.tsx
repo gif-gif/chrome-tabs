@@ -16,6 +16,7 @@ import {
   deleteCustomGroup,
   listSelectableTabs,
   moveCustomGroup,
+  toggleCustomGroupPin,
   renameCustomGroup,
   toggleCustomGroupUrl,
   UNGROUPED_CUSTOM_GROUP_KEY,
@@ -485,6 +486,10 @@ export function App({ api }: AppProps) {
     setCustomGroups((current) => moveCustomGroup(current, groupKey, offset))
   }
 
+  function handleToggleCustomGroupPin(groupKey: string) {
+    setCustomGroups((current) => toggleCustomGroupPin(current, groupKey))
+  }
+
   function handleToggleCustomGroupUrl(groupKey: string, url: string) {
     setCustomGroups((current) => toggleCustomGroupUrl(current, groupKey, url))
   }
@@ -924,8 +929,7 @@ export function App({ api }: AppProps) {
                     </div>
                   ) : null}
                   {displayCustomGroups.map((group) => {
-                    const sourceIndex = customGroups.findIndex((candidate) => candidate.id === group.key)
-                    const sourceGroup = customGroups[sourceIndex] as CustomTabGroup | undefined
+                    const sourceGroup = customGroups.find((candidate) => candidate.id === group.key)
                     return (
                       <CustomGroup
                         key={group.key}
@@ -939,8 +943,7 @@ export function App({ api }: AppProps) {
                         onRename={handleRenameCustomGroup}
                         onDelete={handleDeleteCustomGroup}
                         onMove={handleMoveCustomGroup}
-                        canMoveUp={sourceIndex > 0}
-                        canMoveDown={sourceIndex >= 0 && sourceIndex < customGroups.length - 1}
+                        onTogglePinGroup={handleToggleCustomGroupPin}
                         onToggleGroupMask={handleDomainGroupMaskToggle}
                         onCloseGroup={(customGroup) => void handleCloseDomainGroup(customGroup)}
                         onActivate={(tab) => void handleActivate(tab)}

@@ -44,20 +44,49 @@ export function deleteCustomGroup(
   return groups.filter((group) => group.id !== id)
 }
 
-/** Swaps a group with its neighbour; moving past either end is a no-op. */
+/**
+ * Lists groups in display order: pinned groups first, each part keeping the
+ * user's saved order.
+ */
+export function orderCustomGroups(
+  groups: readonly CustomTabGroup[],
+): CustomTabGroup[] {
+  return [
+    ...groups.filter((group) => group.pinned),
+    ...groups.filter((group) => !group.pinned),
+  ]
+}
+
+/**
+ * Swaps a group with its displayed neighbour of the same pin state, so a group
+ * never crosses the pinned/unpinned boundary. Other moves are no-ops.
+ */
 export function moveCustomGroup(
   groups: readonly CustomTabGroup[],
   id: string,
   offset: -1 | 1,
 ): CustomTabGroup[] {
-  const index = groups.findIndex((group) => group.id === id)
-  const targetIndex = index + offset
-  if (index < 0 || targetIndex < 0 || targetIndex >= groups.length) {
-    return [...groups]
+  const ordered = orderCustomGroups(groups)
+  const index = ordered.findIndex((group) => group.id === id)
+  const target = ordered[index + offset]
+  if (index < 0 || !target || Boolean(target.pinned) !== Boolean(ordered[index].pinned)) {
+    return ordered
   }
-  const next = [...groups]
-  ;[next[index], next[targetIndex]] = [next[targetIndex], next[index]]
-  return next
+  ;[ordered[index], ordered[index + offset]] = [target, ordered[index]]
+  return ordered
+}
+
+/**
+ * Flips a group's pin without reordering the saved list, so unpinning puts the
+ * group back where it was unless the user moved groups in between.
+ */
+export function toggleCustomGroupPin(
+  groups: readonly CustomTabGroup[],
+  id: string,
+): CustomTabGroup[] {
+  return groups.map((group) =>
+    group.id === id ? { ...group, pinned: !group.pinned } : group,
+  )
 }
 
 /** Adds the URL to the group when absent, otherwise removes it. */
@@ -112,6 +141,7 @@ export function createDisplayCustomGroups(
     label: string,
     groupTabs: BrowserTab[],
     savedUrlCount: number,
+    position: Pick<DisplayCustomGroup, 'pinned' | 'canMoveUp' | 'canMoveDown'>,
   ): DisplayCustomGroup {
     const displayTabs = groupTabs
       .map((tab, originalIndex) => ({ tab, originalIndex }))
@@ -130,16 +160,26 @@ export function createDisplayCustomGroups(
       tabs: displayTabs,
       allMasked: displayTabs.length > 0 && displayTabs.every((tab) => tab.masked),
       savedUrlCount,
+      ...position,
     }
   }
 
-  const displayGroups = groups.map((group) => {
+  const orderedGroups = orderCustomGroups(groups)
+  const displayGroups = orderedGroups.map((group, index) => {
     const urls = new Set(group.urls)
+    const pinned = Boolean(group.pinned)
     return toDisplayGroup(
       group.id,
       group.name,
       tabs.filter((tab) => urls.has(tab.url)),
       group.urls.length,
+      {
+        pinned,
+        canMoveUp: Boolean(orderedGroups[index - 1]) &&
+          Boolean(orderedGroups[index - 1].pinned) === pinned,
+        canMoveDown: Boolean(orderedGroups[index + 1]) &&
+          Boolean(orderedGroups[index + 1].pinned) === pinned,
+      },
     )
   })
   const ungroupedTabs = tabs.filter((tab) => !groupedUrls.has(tab.url))
@@ -147,7 +187,11 @@ export function createDisplayCustomGroups(
   return ungroupedTabs.length > 0
     ? [
         ...displayGroups,
-        toDisplayGroup(UNGROUPED_CUSTOM_GROUP_KEY, t('ungroupedTabs'), ungroupedTabs, 0),
+        toDisplayGroup(UNGROUPED_CUSTOM_GROUP_KEY, t('ungroupedTabs'), ungroupedTabs, 0, {
+          pinned: false,
+          canMoveUp: false,
+          canMoveDown: false,
+        }),
       ]
     : displayGroups
 }

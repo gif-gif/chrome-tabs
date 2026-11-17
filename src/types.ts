@@ -98,11 +98,16 @@ export interface CustomTabGroup {
   id: string
   name: string
   urls: string[]
+  /** Pinned groups are listed before unpinned ones. */
+  pinned?: boolean
 }
 
 export interface DisplayCustomGroup extends DisplayDomainGroup {
   /** Number of saved URLs, including ones without an open tab. */
   savedUrlCount: number
+  pinned: boolean
+  canMoveUp: boolean
+  canMoveDown: boolean
 }
 
 export interface ChromeTabsApi {
