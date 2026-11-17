@@ -1,32 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!-- Two offset browser-tab layers keep the silhouette recognizable at 16 px. -->
-  <path
-    d="M33 15h34l10 10h27a10 10 0 0 1 10 10v47a10 10 0 0 1-10 10H33a10 10 0 0 1-10-10V25a10 10 0 0 1 10-10Z"
-    fill="#9BC3FF"
-    stroke="#102A56"
-    stroke-width="6"
-    stroke-linejoin="round"
-  />
-  <path
-    d="M23 31h38l10 10h36a10 10 0 0 1 10 10v48a10 10 0 0 1-10 10H23a10 10 0 0 1-10-10V41a10 10 0 0 1 10-10Z"
-    fill="#5B7CFA"
-    stroke="#102A56"
-    stroke-width="6"
-    stroke-linejoin="round"
-  />
-
-  <!-- The saturated front tab stays visible on both light and dark Chrome toolbars. -->
-  <path
-    d="M14 48h41l11 11h43a10 10 0 0 1 10 10v38a10 10 0 0 1-10 10H14a10 10 0 0 1-10-10V58a10 10 0 0 1 10-10Z"
-    fill="#2563EB"
-    stroke="#0B1F42"
-    stroke-width="7"
-    stroke-linejoin="round"
-  />
-
-  <!-- Simplified tab-list marks remain legible at toolbar size. -->
-  <circle cx="25" cy="78" r="6" fill="#FF7A59"/>
-  <rect x="39" y="72" width="59" height="12" rx="6" fill="#FFFFFF"/>
-  <circle cx="25" cy="99" r="6" fill="#BFD7FF"/>
-  <rect x="39" y="93" width="43" height="12" rx="6" fill="#DCE9FF"/>
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="39" y="22" width="68" height="66" rx="14" fill="#F4B64A"/>
+  <rect x="29" y="32" width="68" height="66" rx="14" fill="#45B9DF"/>
+  <rect x="19" y="42" width="68" height="66" rx="14" fill="#DDE8ED"/>
+  <path d="M19 56C19 48.268 25.268 42 33 42H73C80.732 42 87 48.268 87 56V62H19V56Z" fill="#C5D7DE"/>
+  <rect x="31" y="51" width="23" height="5" rx="2.5" fill="#1788B1"/>
+  <rect x="62" y="51" width="13" height="5" rx="2.5" fill="#7D98A5"/>
+  <rect x="31" y="75" width="42" height="6" rx="3" fill="#9DB4BF"/>
+  <rect x="31" y="89" width="31" height="6" rx="3" fill="#9DB4BF"/>
 </svg>
