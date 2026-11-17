@@ -64,9 +64,9 @@ export function DomainGroup({
     <h2 id={headingId} className="domain-group-heading">
       <button type="button" className="window-toggle domain-toggle" aria-expanded={!collapsed} aria-controls={listId} onClick={() => onToggleCollapse(group.key)}><Icon name="chevron" /><span>{group.label}</span><span>{t('tabCount', { count: group.tabs.length })}</span></button>
       <span className="domain-group-actions">
+        <button type="button" className="icon-button domain-group-action row-action-button row-privacy-action" aria-label={maskLabel} title={maskLabel} onClick={(event) => { event.stopPropagation(); onToggleGroupMask(group) }}><Icon name={group.allMasked ? 'eye' : 'eye-off'} width={15} height={15} /></button>
         <button type="button" className={`icon-button domain-group-action row-action-button row-pin-action${pinned ? ' is-pinned' : ''}`} aria-label={pinLabel} title={pinLabel} aria-pressed={pinned} onClick={(event) => { event.stopPropagation(); onToggleGroupPin?.(group) }}><Icon name="pin" width={15} height={15} /></button>
         <button type="button" className="icon-button domain-group-action row-action-button row-deduplicate-action" aria-label={duplicateLabel} title={duplicateLabel} disabled={!onRemoveDuplicates || duplicateCount === 0 || groupPending} onClick={(event) => { event.stopPropagation(); onRemoveDuplicates?.(group) }}><Icon name="deduplicate" width={15} height={15} /></button>
-        <button type="button" className="icon-button domain-group-action row-action-button row-privacy-action" aria-label={maskLabel} title={maskLabel} onClick={(event) => { event.stopPropagation(); onToggleGroupMask(group) }}><Icon name={group.allMasked ? 'eye' : 'eye-off'} width={15} height={15} /></button>
         <button type="button" className="icon-button domain-group-action close-button row-action-button row-close-action" aria-label={closeLabel} title={closeLabel} onClick={(event) => { event.stopPropagation(); onCloseGroup(group) }} disabled={groupPending}><Icon name="close" width={15} height={15} /></button>
       </span>
     </h2>
