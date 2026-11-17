@@ -2151,8 +2151,8 @@ describe('progressive sticky search toolbar', () => {
     expect([...actions.querySelectorAll('button')].map((button) => button.getAttribute('aria-label'))).toEqual([
       '选择 工作 分组的标签页',
       '重命名 工作 分组',
-      '置顶分组',
       '隐藏此分组信息',
+      '置顶分组',
       '关闭 工作 分组中的 0 个标签',
       '删除 工作 分组',
     ])
