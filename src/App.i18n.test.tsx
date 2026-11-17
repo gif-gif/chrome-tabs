@@ -758,6 +758,16 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(focus.get('outline')).toBe('2px solid var(--color-focus)')
     expect(focus.get('outline-offset')).toBe('1px')
 
+    const hover = '(hover:hover)'
+    expect(declarationsFor(
+      '.tab-row .row-action-button:not(.is-pinned,.is-favorite,.is-copied)>svg,.domain-group-heading .domain-group-action:not(.is-pinned,.is-active)>svg',
+      hover,
+    ).get('opacity')).toBe('0')
+    expect(declarationsFor(
+      '.tab-row:hover .row-action-button>svg,.tab-row:has(:focus-visible) .row-action-button>svg,.domain-group-heading:hover .domain-group-action>svg,.domain-group-heading:has(:focus-visible) .domain-group-action>svg',
+      hover,
+    ).get('opacity')).toBe('1')
+
     expect(declarationsFor('.row-privacy-action:hover:not(:disabled),.row-privacy-action:focus-visible').get('color')).toBe('var(--color-text)')
     expect(declarationsFor('.row-close-action:hover:not(:disabled),.row-close-action:focus-visible').get('color')).toBe('var(--color-danger)')
   })

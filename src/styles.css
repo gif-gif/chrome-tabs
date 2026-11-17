@@ -2072,3 +2072,22 @@ main {
 .custom-group-hidden-count {
   list-style: none;
 }
+
+/* Row and group actions stay out of the way until the row or header is
+   hovered or one of its controls has keyboard focus. Actions that show a state (pinned,
+   favorite, copied, picking) stay visible. Touch screens without hover
+   keep every action visible. */
+@media (hover: hover) {
+  .tab-row .row-action-button:not(.is-pinned, .is-favorite, .is-copied) > svg,
+  .domain-group-heading .domain-group-action:not(.is-pinned, .is-active) > svg {
+    opacity: 0;
+    transition: opacity var(--motion-fast) var(--ease);
+  }
+
+  .tab-row:hover .row-action-button > svg,
+  .tab-row:has(:focus-visible) .row-action-button > svg,
+  .domain-group-heading:hover .domain-group-action > svg,
+  .domain-group-heading:has(:focus-visible) .domain-group-action > svg {
+    opacity: 1;
+  }
+}
