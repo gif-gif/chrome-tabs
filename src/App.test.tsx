@@ -144,9 +144,9 @@ describe('Header', () => {
     expect(screen.queryByRole('heading')).not.toBeInTheDocument()
     const count = screen.getByText('41')
     expect(count).toHaveTextContent(/^41$/)
-    expect(count).toHaveAttribute('title', '41 个标签页')
-    expect(count).toHaveAttribute('aria-label', '41 个标签页')
-    expect(screen.queryByText('41 个标签页')).not.toBeInTheDocument()
+    expect(count).toHaveAttribute('title', '41 个标签')
+    expect(count).toHaveAttribute('aria-label', '41 个标签')
+    expect(screen.queryByText('41 个标签')).not.toBeInTheDocument()
     const revealButton = screen.getByRole('button', {
       name: '显示全部标签信息',
     })
@@ -406,7 +406,7 @@ describe('WindowGroup', () => {
     const group = screen.getByRole('region', { name: /当前窗口/ })
     expect(group).toHaveClass('window-group', 'window-list-group')
     expect(within(group).getByText('当前窗口')).toBeInTheDocument()
-    expect(within(group).getByText('2 个标签页')).toBeInTheDocument()
+    expect(within(group).getByText('2 个标签')).toBeInTheDocument()
     expect(within(group).getAllByRole('listitem')).toHaveLength(2)
     const disclosure = within(group).getByRole('button', { name: /当前窗口/ })
     const controlledListId = disclosure.getAttribute('aria-controls')
@@ -514,7 +514,7 @@ async function renderReadyApp(api = createTestApi()) {
     value: { writeText: clipboardWriteText },
   })
   const view = render(<App api={api} />)
-  await screen.findByLabelText('3 个标签页')
+  await screen.findByLabelText('3 个标签')
   await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(1))
   await waitFor(() =>
     expect(screen.queryByText('正在加载标签页…')).not.toBeInTheDocument(),
@@ -709,7 +709,7 @@ describe('App integration', () => {
     expect(screen.queryByText('标签页管理器')).not.toBeInTheDocument()
     const toolbar = screen.getByRole('toolbar', { name: '标签页工具栏' })
     expect(toolbar).toHaveClass('sticky-controls')
-    expect(within(toolbar).getByLabelText('3 个标签页')).toHaveTextContent(/^3$/)
+    expect(within(toolbar).getByLabelText('3 个标签')).toHaveTextContent(/^3$/)
     expect(
       within(toolbar).getByRole('button', { name: '显示全部标签信息' }),
     ).toHaveTextContent('')
@@ -937,11 +937,11 @@ describe('App integration', () => {
     await user.click(screen.getByRole('button', { name: '域名分组视图' }))
 
     const googleGroup = screen.getByRole('region', { name: /google\.com/ })
-    expect(within(googleGroup).getByText('2 个标签页')).toBeInTheDocument()
+    expect(within(googleGroup).getByText('2 个标签')).toBeInTheDocument()
     expect(within(googleGroup).getAllByRole('listitem')).toHaveLength(2)
 
     const disclosure = within(googleGroup)
-      .getAllByRole('button', { name: /google\.com.*2 个标签页/ })
+      .getAllByRole('button', { name: /google\.com.*2 个标签/ })
       .find((button) => button.hasAttribute('aria-expanded'))
     if (!disclosure) {
       throw new Error('Expected google group disclosure button')
@@ -961,7 +961,7 @@ describe('App integration', () => {
     const restoredGoogleDisclosure = within(
       screen.getByRole('region', { name: /google\.com/ }),
     )
-      .getAllByRole('button', { name: /google\.com.*2 个标签页/ })
+      .getAllByRole('button', { name: /google\.com.*2 个标签/ })
       .find((button) => button.hasAttribute('aria-expanded'))
     if (!restoredGoogleDisclosure) {
       throw new Error('Expected restored google group disclosure button')
@@ -993,7 +993,7 @@ describe('App integration', () => {
     const googleGroup = screen.getByRole('region', { name: /google\.com/ })
     expect(within(googleGroup).getAllByRole('listitem')).toHaveLength(1)
     const groupPrivacyButton = within(googleGroup).getByRole('button', { name: '隐藏此分组信息' })
-    const groupCloseButton = within(googleGroup).getByRole('button', { name: '关闭 google.com 分组中的 1 个标签页' })
+    const groupCloseButton = within(googleGroup).getByRole('button', { name: '关闭 google.com 分组中的 1 个标签' })
     expect(groupPrivacyButton).toHaveClass('row-action-button', 'row-privacy-action')
     expect(groupCloseButton).toHaveClass('row-action-button', 'row-close-action')
     for (const button of [groupPrivacyButton, groupCloseButton]) {
@@ -1039,12 +1039,12 @@ describe('App integration', () => {
     await user.type(screen.getByRole('searchbox', { name: '搜索标签页' }), 'docs')
     const googleGroup = screen.getByRole('region', { name: /google\.com/ })
 
-    await user.click(within(googleGroup).getByRole('button', { name: '关闭 google.com 分组中的 1 个标签页' }))
-    expect(confirm).toHaveBeenCalledWith('关闭该分组中的 1 个标签页？')
+    await user.click(within(googleGroup).getByRole('button', { name: '关闭 google.com 分组中的 1 个标签' }))
+    expect(confirm).toHaveBeenCalledWith('关闭该分组中的 1 个标签？')
     expect(api.closeTab).not.toHaveBeenCalled()
 
-    await user.click(within(googleGroup).getByRole('button', { name: '关闭 google.com 分组中的 1 个标签页' }))
-    expect(confirm).toHaveBeenLastCalledWith('关闭该分组中的 1 个标签页？')
+    await user.click(within(googleGroup).getByRole('button', { name: '关闭 google.com 分组中的 1 个标签' }))
+    expect(confirm).toHaveBeenLastCalledWith('关闭该分组中的 1 个标签？')
     await waitFor(() => expect(api.closeTab).toHaveBeenCalledTimes(1))
     expect(api.closeTab).toHaveBeenCalledWith(1)
     expect(api.closeTab).not.toHaveBeenCalledWith(2)
@@ -1070,7 +1070,7 @@ describe('App integration', () => {
     await screen.findByText('Google Docs A')
     await user.click(screen.getByRole('button', { name: '域名分组视图' }))
     const googleGroup = screen.getByRole('region', { name: /google\.com/ })
-    const closeGroupButton = within(googleGroup).getByRole('button', { name: '关闭 google.com 分组中的 2 个标签页' })
+    const closeGroupButton = within(googleGroup).getByRole('button', { name: '关闭 google.com 分组中的 2 个标签' })
 
     await user.click(closeGroupButton)
     await waitFor(() => expect(api.closeTab).toHaveBeenCalled())
@@ -1180,7 +1180,7 @@ describe('App integration', () => {
     await screen.findByText('GitHub - Chrome Tabs')
     await user.click(screen.getByRole('button', { name: '域名分组视图' }))
     const toggleAllButton = screen.getByRole('button', { name: '全部折叠分组' })
-    const disclosures = () => screen.getAllByRole('button', { name: /个标签页/ }).filter((button) => button.hasAttribute('aria-expanded'))
+    const disclosures = () => screen.getAllByRole('button', { name: /个标签/ }).filter((button) => button.hasAttribute('aria-expanded'))
 
     expect(disclosures()).toHaveLength(2)
     await user.click(toggleAllButton)
@@ -1231,7 +1231,7 @@ describe('App integration', () => {
     expect(screen.getByRole('region', { name: /网站分组 2/ })).toBeInTheDocument()
     expect(
       within(firstMaskedGroup).getByRole('button', {
-        name: '关闭 网站分组 1 分组中的 1 个标签页',
+        name: '关闭 网站分组 1 分组中的 1 个标签',
       }),
     ).toBeInTheDocument()
     expect(container.innerHTML).not.toContain('github.com')
@@ -1243,7 +1243,7 @@ describe('App integration', () => {
     const api = createTestApi(async () => [...fixtureWindows].reverse())
     const { container } = await renderReadyApp(api)
 
-    expect(screen.getByLabelText('3 个标签页')).toHaveTextContent(/^3$/)
+    expect(screen.getByLabelText('3 个标签')).toHaveTextContent(/^3$/)
     const groups = screen.getAllByRole('region', { name: /窗口/ })
     expect(within(groups[0]).getByText('当前窗口')).toBeInTheDocument()
     expect(within(groups[1]).getByText('窗口 2')).toBeInTheDocument()
@@ -1366,12 +1366,12 @@ describe('App integration', () => {
     expect(screen.getAllByText('内容已隐藏')).toHaveLength(2)
 
     await user.click(screen.getByRole('button', { name: '全部标签页' }))
-    const disclosure = screen.getByRole('button', { name: /当前窗口.*2 个标签页/ })
+    const disclosure = screen.getByRole('button', { name: /当前窗口.*2 个标签/ })
     await user.click(disclosure)
     expect(disclosure).toHaveAttribute('aria-expanded', 'false')
     await user.click(screen.getByRole('button', { name: '活动标签' }))
     await user.click(screen.getByRole('button', { name: '全部标签页' }))
-    expect(screen.getByRole('button', { name: /当前窗口.*2 个标签页/ })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /当前窗口.*2 个标签/ })).toHaveAttribute(
       'aria-expanded',
       'false',
     )
@@ -1393,7 +1393,7 @@ describe('App integration', () => {
 
     expect(screen.getByText('正在加载标签页…')).toBeInTheDocument()
     resolveInitial(fixtureWindows)
-    await screen.findByLabelText('3 个标签页')
+    await screen.findByLabelText('3 个标签')
 
     // A rejected operation forces the hook through its generic query error state.
     api.activateTab.mockRejectedValueOnce(new Error('GitHub - Chrome Tabs secret'))
@@ -1506,14 +1506,14 @@ describe('App integration', () => {
 
     await user.click(screen.getAllByRole('button', { name: '显示此标签信息' })[0])
     expect(screen.getByText('GitHub - Chrome Tabs')).toBeInTheDocument()
-    const disclosure = screen.getByRole('button', { name: /当前窗口.*2 个标签页/ })
+    const disclosure = screen.getByRole('button', { name: /当前窗口.*2 个标签/ })
     await user.click(disclosure)
     expect(disclosure).toHaveAttribute('aria-expanded', 'false')
 
     currentWindows = [fixtureWindows[0]]
     listener?.()
     await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
-    expect(screen.getByRole('button', { name: /当前窗口.*2 个标签页/ })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /当前窗口.*2 个标签/ })).toHaveAttribute(
       'aria-expanded',
       'false',
     )
@@ -1527,7 +1527,7 @@ describe('App integration', () => {
     listener?.()
     await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(4))
     const restoredDisclosure = screen.getByRole('button', {
-      name: /当前窗口.*2 个标签页/,
+      name: /当前窗口.*2 个标签/,
     })
     expect(restoredDisclosure).toHaveAttribute('aria-expanded', 'true')
     expect(screen.queryByText('GitHub - Chrome Tabs')).not.toBeInTheDocument()
@@ -1788,11 +1788,11 @@ describe('progressive sticky search toolbar', () => {
     await user.type(screen.getByRole('searchbox', { name: '搜索标签页' }), 'First')
     const googleGroup = screen.getByRole('region', { name: /google\.com/ })
     const deduplicateButton = within(googleGroup).getByRole('button', {
-      name: '移除 1 个重复标签页',
+      name: '移除 1 个重复标签',
     })
 
     await user.click(deduplicateButton)
-    expect(confirm).toHaveBeenCalledWith('关闭该分组中的 1 个重复标签页？')
+    expect(confirm).toHaveBeenCalledWith('关闭该分组中的 1 个重复标签？')
     expect(api.closeTab).not.toHaveBeenCalled()
 
     await user.click(deduplicateButton)
@@ -1828,7 +1828,7 @@ describe('progressive sticky search toolbar', () => {
     const user = userEvent.setup()
     render(<App api={api} />)
 
-    await screen.findByLabelText('6 个标签页')
+    await screen.findByLabelText('6 个标签')
     await user.click(screen.getByRole('button', { name: '按域名升序排列标签页' }))
 
     await waitFor(() => expect(api.moveTabs).toHaveBeenCalledTimes(1))
@@ -2058,7 +2058,7 @@ describe('progressive sticky search toolbar', () => {
     await user.type(screen.getByRole('searchbox', { name: '搜索标签页' }), 'github')
     const filtered = screen.getByRole('region', { name: /^工作/ })
     expect(within(filtered).getByText('GitHub - Chrome Tabs')).toBeInTheDocument()
-    expect(within(filtered).getByText('另有 1 个已选标签页被当前搜索或筛选隐藏')).toBeInTheDocument()
+    expect(within(filtered).getByText('另有 1 个已选标签被当前搜索或筛选隐藏')).toBeInTheDocument()
   })
 
   it('pins custom groups to the top and keeps the pin after reopening', async () => {
