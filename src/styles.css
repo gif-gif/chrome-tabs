@@ -2116,3 +2116,39 @@ main {
     opacity: 1;
   }
 }
+
+/* Group headers highlight as one row: hovering the drag handle, the
+   name and count, or the actions tints the whole header, and the
+   individual controls only change their icon color. */
+.domain-group-heading {
+  transition: background-color var(--motion-fast) var(--ease);
+}
+
+.domain-group-heading:hover {
+  background: var(--color-hover);
+}
+
+.domain-group-heading:has(.window-toggle:active) {
+  background: var(--color-pressed);
+}
+
+.domain-group-heading .window-toggle:hover,
+.domain-group-heading .window-toggle:active,
+.domain-group-heading .custom-group-drag-handle:hover:not(:disabled),
+.domain-group-heading .domain-group-action:hover:not(:disabled),
+.domain-group-heading .domain-group-action:active:not(:disabled),
+.domain-group-heading .domain-group-action.row-close-action:hover:not(:disabled) {
+  background: transparent;
+}
+
+.domain-group-heading .domain-group-action:hover:not(:disabled) {
+  color: var(--color-text);
+}
+
+.domain-group-heading .domain-group-action.row-close-action:hover:not(:disabled) {
+  color: var(--color-danger);
+}
+
+.domain-group-heading .domain-group-action.row-pin-action:hover:not(:disabled) {
+  color: var(--color-accent);
+}
