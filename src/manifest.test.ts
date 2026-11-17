@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 interface ExtensionManifest {
   manifest_version: number
+  version: string
   minimum_chrome_version: string
   permissions: string[]
   host_permissions?: string[]
@@ -43,6 +44,8 @@ describe('Manifest V3 action popup wiring', () => {
 
     expect(manifest.manifest_version).toBe(3)
     expect(manifest.minimum_chrome_version).toBe('141')
+    expect(manifest.version).toBe('0.0.1')
+    expect(JSON.parse(readFileSync(resolve(publicDir, '..', 'package.json'), 'utf8')).version).toBe(manifest.version)
     expect(manifest.permissions).toEqual(['tabs', 'favicon', 'clipboardWrite'])
     expect(manifest.host_permissions ?? []).toEqual([])
     expect(manifest.action.default_popup).toBe('index.html')
