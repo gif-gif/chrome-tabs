@@ -2109,10 +2109,12 @@ main {
     min-width: var(--row-action-size);
   }
 
-  /* A row with a lit pin or star keeps the pin, star and close slots, so
-     the lit icons stay put when the row is hovered and only the hide and
-     copy actions open up to their left. */
-  .tab-row:has(.is-pinned, .is-favorite) :is(.row-pin-action, .row-favorite-action, .row-close-action) {
+  /* A row with a lit pin or star keeps the pin, star and close slots, and
+     a pinned domain group keeps its pin, deduplicate and close slots, so
+     the lit icons stay put on hover and only the actions to their left
+     open up. */
+  .tab-row:has(.is-pinned, .is-favorite) :is(.row-pin-action, .row-favorite-action, .row-close-action),
+  .domain-group-heading:not(.has-drag-handle):has(.row-pin-action.is-pinned) :is(.row-pin-action, .row-deduplicate-action, .row-close-action) {
     width: var(--row-action-size);
     min-width: var(--row-action-size);
   }

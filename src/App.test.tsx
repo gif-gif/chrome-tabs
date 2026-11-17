@@ -2174,4 +2174,20 @@ describe('progressive sticky search toolbar', () => {
     ])
   })
 
+
+  it('orders domain group header actions as hide, pin, deduplicate, close', async () => {
+    storeUiPreferences(false)
+    const user = userEvent.setup()
+    render(<App api={createTestApi()} />)
+
+    await user.click(await screen.findByRole('button', { name: '域名分组视图' }))
+    const header = screen.getAllByRole('region')[0].querySelector('.domain-group-actions')!
+    expect([...header.querySelectorAll('button')].map((button) => button.className.match(/row-[a-z]+-action/)?.[0])).toEqual([
+      'row-privacy-action',
+      'row-pin-action',
+      'row-deduplicate-action',
+      'row-close-action',
+    ])
+  })
+
 })
