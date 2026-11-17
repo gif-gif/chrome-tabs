@@ -207,14 +207,14 @@ describe('createTranslator', () => {
 
   it('keeps all interpolation values in Chinese translations', () => {
     const zh = createTranslator('zh-CN')
-    expect(zh('tabCount', { count: 2 })).toBe('2 个标签页')
+    expect(zh('tabCount', { count: 2 })).toBe('2 个标签')
     expect(zh('maskedDomainGroup', { number: 4 })).toBe('网站分组 4')
     expect(zh('closeDomainGroup', { label: 'google.com', count: 2 })).toBe(
-      '关闭 google.com 分组中的 2 个标签页',
+      '关闭 google.com 分组中的 2 个标签',
     )
-    expect(zh('removeDuplicateTabs', { count: 2 })).toBe('移除 2 个重复标签页')
+    expect(zh('removeDuplicateTabs', { count: 2 })).toBe('移除 2 个重复标签')
     expect(zh('removeDuplicatesConfirm', { count: 2 })).toBe(
-      '关闭该分组中的 2 个重复标签页？',
+      '关闭该分组中的 2 个重复标签？',
     )
   })
 })
