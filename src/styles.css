@@ -29,6 +29,8 @@
   --panel-gutter: clamp(8px, 3vw, 16px);
   --motion-fast: 140ms;
   --motion-normal: 220ms;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-figures: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1169,13 +1171,13 @@ main {
   border-bottom: 1px solid color-mix(in srgb, var(--color-border-subtle) calc(35% + (65% * var(--sticky-search-progress))), transparent);
   box-shadow: 0 calc(1px * var(--sticky-search-progress)) calc(5px * var(--sticky-search-progress)) rgb(60 64 67 / calc(18% * var(--sticky-search-progress)));
   backdrop-filter: blur(calc(4px + (8px * var(--sticky-search-progress))));
-  transition: padding var(--motion-fast) ease;
+  transition: padding var(--motion-fast) var(--ease);
 }
 
 .toolbar-auxiliary {
   opacity: calc(1 - var(--sticky-search-progress));
   transform: translateY(calc(-8px * var(--sticky-search-progress)));
-  transition: opacity var(--motion-fast) linear, transform var(--motion-fast) ease, max-height var(--motion-normal) ease, margin var(--motion-normal) ease;
+  transition: opacity var(--motion-fast) linear, transform var(--motion-fast) var(--ease), max-height var(--motion-normal) var(--ease), margin var(--motion-normal) var(--ease);
 }
 
 .toolbar-auxiliary.is-hidden {
@@ -1206,13 +1208,14 @@ main {
   min-width: 28px;
   height: 24px;
   margin: 0;
-  padding: 0 8px;
+  padding: 0 4px;
   place-items: center;
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-  border-radius: 999px;
+  color: var(--color-text-muted);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-figures);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1223,10 +1226,10 @@ main {
   flex: 0 0 auto;
   height: 30px;
   gap: 2px;
-  margin-left: 10px;
+  margin-left: 8px;
   padding: 2px;
   background: var(--color-hover);
-  border-radius: 999px;
+  border-radius: var(--radius-md);
 }
 
 .app-header-actions,
@@ -1245,12 +1248,12 @@ main {
   min-width: 0;
   height: 26px;
   gap: 4px;
-  padding: 0 7px;
+  padding: 0 8px;
   color: var(--color-text-muted);
   background: transparent;
   border: 0;
-  border-radius: 999px;
-  transition: background-color var(--motion-fast) ease, color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+  border-radius: 8px;
+  transition: background-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease);
 }
 
 .compact-icon-button {
@@ -1266,8 +1269,8 @@ main {
   color: var(--color-text-muted);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 50%;
-  transition: background-color var(--motion-fast) ease, border-color var(--motion-fast) ease, color var(--motion-fast) ease;
+  border-radius: 8px;
+  transition: background-color var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
 
 .compact-filter-button > svg,
@@ -1282,20 +1285,20 @@ main {
 }
 
 .compact-filter-button.is-active {
-  color: var(--color-accent);
+  color: var(--color-text);
   background: var(--color-surface);
-  box-shadow: 0 1px 2px rgb(60 64 67 / 18%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
 }
 
 .view-mode-switch button[aria-pressed="true"] {
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  color: var(--color-text);
+  background: var(--color-hover);
+  border-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 }
 
 .compact-filter-label {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -1331,12 +1334,12 @@ main {
   width: 190px;
   min-width: 190px;
   max-width: calc(100vw - 2 * var(--panel-gutter));
-  padding: 5px;
+  padding: 4px;
   color: var(--color-text);
   background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 16px rgb(60 64 67 / 24%);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
 }
 
 .language-menu-item {
@@ -1345,7 +1348,7 @@ main {
   align-items: center;
   min-height: 36px;
   gap: 12px;
-  padding: 0 9px;
+  padding: 0 8px;
   text-align: left;
   color: inherit;
   background: transparent;
@@ -1377,9 +1380,9 @@ main {
   color: var(--color-text-muted);
   background: var(--color-surface-raised);
   border: 1px solid color-mix(in srgb, var(--color-border) calc(100% - (25% * var(--sticky-search-progress))), var(--color-accent));
-  border-radius: calc(20px - (8px * var(--sticky-search-progress)));
+  border-radius: var(--radius-md);
   box-shadow: 0 calc(2px * var(--sticky-search-progress)) calc(8px * var(--sticky-search-progress)) rgb(60 64 67 / calc(16% * var(--sticky-search-progress)));
-  transition: border-color var(--motion-fast) ease, border-radius var(--motion-fast) ease, box-shadow var(--motion-fast) ease, background-color var(--motion-fast) ease;
+  transition: border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background-color var(--motion-fast) var(--ease);
 }
 
 .search-box:focus-within {
@@ -1424,9 +1427,9 @@ main {
   margin: 12px var(--panel-gutter) 0;
   overflow: hidden;
   background: var(--color-surface);
-  border: 1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgb(60 64 67 / 8%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
 }
 
 .window-group h2 {
@@ -1438,9 +1441,8 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: stretch;
-  background: color-mix(in srgb, var(--color-accent-soft) 58%, var(--color-surface-raised));
-  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 24%, var(--color-border-subtle));
-  border-left: 3px solid var(--color-accent);
+  background: var(--color-surface-raised);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .window-toggle {
@@ -1455,16 +1457,7 @@ main {
   text-align: left;
   background: var(--color-surface-raised);
   border: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
-}
-
-.window-list-group .window-toggle {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--color-accent-soft) 42%, var(--color-surface-raised)),
-    var(--color-surface-raised) 38%
-  );
-  border-left: 3px solid color-mix(in srgb, var(--color-accent) 62%, transparent);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .domain-group-heading .window-toggle {
@@ -1503,7 +1496,7 @@ main {
 
 .window-toggle svg {
   color: var(--color-text-muted);
-  transition: transform var(--motion-fast) ease;
+  transition: transform var(--motion-fast) var(--ease);
 }
 
 .window-toggle[aria-expanded="false"] svg {
@@ -1512,7 +1505,7 @@ main {
 
 .window-toggle > span:first-of-type {
   overflow: hidden;
-  font-weight: 600;
+  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1521,6 +1514,7 @@ main {
   color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 400;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -1542,7 +1536,7 @@ main {
   padding: 2px 4px 2px 8px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-subtle);
-  transition: background-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+  transition: background-color var(--motion-fast) var(--ease);
 }
 
 .tab-row:first-child {
@@ -1558,7 +1552,6 @@ main {
 
 .tab-row:hover {
   background: var(--color-hover);
-  box-shadow: 0 1px 5px rgb(60 64 67 / 10%);
 }
 
 .tab-row:active {
@@ -1625,7 +1618,7 @@ main {
 .current-label {
   color: var(--color-accent);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .tab-row.is-active .tab-title {
@@ -1749,7 +1742,7 @@ main {
 }
 
 .status-panel {
-  padding: 22px 16px;
+  padding: 24px 16px;
   text-align: center;
   color: var(--color-text-muted);
   background: var(--color-surface);
@@ -1770,22 +1763,23 @@ main {
   display: inline-flex;
   align-items: center;
   min-height: var(--control-size);
-  gap: 6px;
+  gap: 8px;
   margin-top: 12px;
-  padding: 0 14px;
+  padding: 0 16px;
   color: var(--color-on-accent);
-  font-weight: 600;
-  background: var(--color-accent-hover);
+  font-weight: 500;
+  background: var(--color-accent);
   border: 0;
-  border-radius: 18px;
+  border-radius: 8px;
+  transition: background-color var(--motion-fast) var(--ease), transform var(--motion-fast) var(--ease);
 }
 
 .retry-button:hover {
-  filter: brightness(1.05);
+  background: var(--color-accent-hover);
 }
 
 .retry-button:active {
-  filter: brightness(0.94);
+  transform: scale(0.98);
 }
 
 @media (min-width: 480px) {
@@ -1935,14 +1929,14 @@ main {
 }
 
 .row-pick-action.is-active {
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
+  color: var(--color-text);
+  background: var(--color-pressed);
 }
 
 .custom-group-picker {
   margin: 0;
-  padding: 6px 4px;
-  background: color-mix(in srgb, var(--color-accent-soft) 36%, var(--color-surface));
+  padding: 8px 4px;
+  background: color-mix(in srgb, var(--color-bg) 42%, var(--color-surface));
   border: 0;
   border-bottom: 1px solid var(--color-border-subtle);
 }
@@ -1950,7 +1944,7 @@ main {
 .custom-group-picker legend {
   float: left;
   width: 100%;
-  padding: 2px 8px 6px;
+  padding: 0 8px 8px;
   color: var(--color-text-muted);
   font-size: 12px;
 }
