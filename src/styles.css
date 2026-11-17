@@ -21,8 +21,8 @@
   --color-focus: #0b57d0;
   --color-on-accent: #ffffff;
   --shadow-sticky: 0 1px 3px rgb(60 64 67 / 18%);
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
   --control-size: 36px;
   --compact-control-size: 28px;
   --row-action-size: 26px;
@@ -1252,7 +1252,7 @@ main {
   color: var(--color-text-muted);
   background: transparent;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: background-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease);
 }
 
@@ -1269,7 +1269,7 @@ main {
   color: var(--color-text-muted);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: background-color var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
 
@@ -1443,7 +1443,7 @@ main {
 }
 
 .view-mode-switch .compact-icon-button {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .window-group {
@@ -1793,7 +1793,7 @@ main {
   font-weight: 500;
   background: var(--color-accent);
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: background-color var(--motion-fast) var(--ease), transform var(--motion-fast) var(--ease);
 }
 

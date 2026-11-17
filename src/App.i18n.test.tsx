@@ -854,13 +854,15 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(filters.get('margin-left')).toBe('8px')
     expect(filters.get('background')).toBe('var(--color-hover)')
     expect(filters.get('border-radius')).toBe('var(--radius-md)')
+    expect(declarationsFor(':root').get('--radius-sm')).toBe('4px')
+    expect(declarationsFor(':root').get('--radius-md')).toBe('6px')
 
     const filterButton = declarationsFor('.compact-filter-button')
     expect(filterButton.get('height')).toBe('26px')
     expect(filterButton.get('min-width')).toBe('0')
     expect(filterButton.get('padding')).toBe('0 8px')
     expect(filterButton.get('background')).toBe('transparent')
-    expect(filterButton.get('border-radius')).toBe('8px')
+    expect(filterButton.get('border-radius')).toBe('var(--radius-sm)')
 
     const selected = declarationsFor('.compact-filter-button.is-active')
     expect(selected.get('color')).toBe('var(--color-text)')
