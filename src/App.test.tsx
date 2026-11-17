@@ -2103,4 +2103,36 @@ describe('progressive sticky search toolbar', () => {
     expect(groupNames()).toEqual(['工作', '阅读', '购物', '未分组'])
   })
 
+
+  it('remembers which custom groups are collapsed after reopening', async () => {
+    storeUiPreferences(false)
+    localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+      version: 1,
+      groups: [
+        { id: 'g1', name: '工作', urls: ['https://github.com/example/chrome-tabs'] },
+        { id: 'g2', name: '阅读', urls: [] },
+      ],
+    }))
+    const user = userEvent.setup()
+    const toggle = (name: RegExp) => within(screen.getByRole('region', { name })).getByRole('button', { name })
+    const { unmount } = render(<App api={createTestApi()} />)
+
+    await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+    await user.click(toggle(/^工作/))
+    await user.click(toggle(/^未分组/))
+    expect(toggle(/^工作/)).toHaveAttribute('aria-expanded', 'false')
+
+    unmount()
+    render(<App api={createTestApi()} />)
+    await screen.findByRole('region', { name: /^工作/ })
+    expect(toggle(/^工作/)).toHaveAttribute('aria-expanded', 'false')
+    expect(toggle(/^阅读/)).toHaveAttribute('aria-expanded', 'true')
+    expect(toggle(/^未分组/)).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByText('GitHub - Chrome Tabs')).not.toBeInTheDocument()
+
+    await user.click(toggle(/^工作/))
+    expect(screen.getByText('GitHub - Chrome Tabs')).toBeInTheDocument()
+    expect(JSON.parse(localStorage.getItem('chrome-tabs.custom-group-collapse.v1')!)).toEqual(['custom-ungrouped'])
+  })
+
 })

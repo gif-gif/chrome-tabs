@@ -44,7 +44,12 @@ import {
   type UiLanguagePreference,
 } from './i18n/i18n'
 import { loadUiPreferences, saveUiPreferences } from './preferences/uiPreferences'
-import { loadCustomGroups, saveCustomGroups } from './preferences/customGroups'
+import {
+  loadCollapsedCustomGroupKeys,
+  loadCustomGroups,
+  saveCollapsedCustomGroupKeys,
+  saveCustomGroups,
+} from './preferences/customGroups'
 import {
   loadTabSortState,
   saveTabSortState,
@@ -104,7 +109,10 @@ export function App({ api }: AppProps) {
   const [customGroupDropKey, setCustomGroupDropKey] = useState<string | null>(null)
   const [collapsedCustomGroupKeys, setCollapsedCustomGroupKeys] = useState<
     Set<string>
-  >(() => new Set())
+  >(() => loadCollapsedCustomGroupKeys(new Set([
+    ...customGroups.map((group) => group.id),
+    UNGROUPED_CUSTOM_GROUP_KEY,
+  ])))
   const [tabSortState, setTabSortState] = useState<TabSortState>(loadTabSortState)
   const [sortingTabs, setSortingTabs] = useState(false)
   const [tabMaskOverrides, setTabMaskOverrides] = useState<Map<number, boolean>>(
@@ -146,6 +154,10 @@ export function App({ api }: AppProps) {
   useEffect(() => {
     saveCustomGroups(customGroups)
   }, [customGroups])
+
+  useEffect(() => {
+    saveCollapsedCustomGroupKeys(collapsedCustomGroupKeys)
+  }, [collapsedCustomGroupKeys])
 
   useEffect(() => {
     document.documentElement.lang = locale
