@@ -20,7 +20,6 @@ export type IconName =
   | 'clear'
   | 'all-tabs'
   | 'window'
-  | 'active-tab'
   | 'globe'
   | 'palette'
   | 'list'
@@ -129,13 +128,6 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <path d="M3 8h18M7 6h.01M10 6h.01" />
-    </>
-  ),
-  'active-tab': (
-    <>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M3 9h18" />
-      <circle cx="12" cy="14" r="2.5" />
     </>
   ),
   globe: (

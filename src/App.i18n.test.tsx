@@ -145,25 +145,19 @@ describe('App internationalization', () => {
     expect(screen.queryByText('41 tabs')).not.toBeInTheDocument()
 
     const allButton = screen.getByRole('button', { name: 'All tabs' })
-    const activeButton = screen.getByRole('button', { name: 'Active tabs' })
     const favoritesButton = screen.getByRole('button', { name: 'Favorite tabs' })
     expect(allButton.querySelector('.compact-filter-label')).toHaveTextContent(/^All$/)
-    expect(activeButton.querySelector('.compact-filter-label')).toHaveTextContent(/^Active$/)
     expect(favoritesButton.querySelector('.compact-filter-label')).toHaveTextContent(/^Saved$/)
     expect(allButton).toHaveAttribute('title', 'All tabs')
-    expect(activeButton).toHaveAttribute('title', 'Active tabs')
     expect(favoritesButton).toHaveAttribute('title', 'Favorite tabs')
     expect(allButton).toHaveAttribute('aria-pressed', 'true')
-    expect(activeButton).toHaveAttribute('aria-pressed', 'false')
     expect(favoritesButton).toHaveAttribute('aria-pressed', 'false')
     expect(screen.queryByRole('button', { name: 'Current window' })).not.toBeInTheDocument()
 
     await user.click(allButton)
-    await user.click(activeButton)
     await user.click(favoritesButton)
     expect(onFilterChange.mock.calls).toEqual([
       ['all'],
-      ['active'],
       ['favorites'],
     ])
   })
@@ -312,7 +306,8 @@ describe('App internationalization', () => {
 
     const search = screen.getByRole('searchbox', { name: 'Search tabs' })
     await user.type(search, 'github')
-    await user.click(screen.getByRole('button', { name: 'Active tabs' }))
+    await user.click(screen.getByRole('button', { name: 'Add tab to favorites' }))
+    await user.click(within(screen.getByRole('group', { name: 'Tab filters' })).getByRole('button', { name: 'Favorite tabs' }))
     await user.click(screen.getByRole('button', { name: 'Group by domain view' }))
     await user.click(screen.getByRole('button', { name: 'Hide all tab information' }))
     const maskedGroup = screen.getByRole('region', { name: /Website group 1/ })
@@ -323,7 +318,7 @@ describe('App internationalization', () => {
     await chooseLanguage(user, 'Display language', '中文')
 
     expect(screen.getByRole('searchbox', { name: '搜索标签页' })).toHaveValue('github')
-    expect(screen.getByRole('button', { name: '活动标签' })).toHaveAttribute('aria-pressed', 'true')
+    expect(within(screen.getByRole('group', { name: '标签页筛选' })).getByRole('button', { name: '收藏标签' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '域名分组视图' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '显示全部标签信息' })).toBeInTheDocument()
     const translatedMaskedGroup = screen.getByRole('region', { name: /网站分组 1/ })
@@ -410,7 +405,7 @@ describe('App internationalization', () => {
     expect(screen.getByPlaceholderText('Search titles or URLs…')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'All tabs' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Current window' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Active tabs' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Active tabs' })).not.toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Copy tab link' })).toHaveLength(3)
     await user.click(screen.getByRole('button', { name: 'Group by domain view' }))
     const googleGroup = screen.getByRole('region', { name: /example.com/ })
@@ -926,7 +921,7 @@ describe('compact progressive sticky toolbar CSS contract', () => {
 
     const availableHeaderWidth = 280 - (2 * 8)
     const threeDigitCountWidth = Math.max(28, (3 * 7.2) + (2 * 5))
-    const englishFilterTextWidth = ('All'.length + 'Active'.length + 'Saved'.length) * 7.2
+    const englishFilterTextWidth = ('All'.length + 'Saved'.length) * 7.2
     const filterButtonPaddingWidth = 3 * (2 * 3)
     const filterGroupWidth = 3 + 1 + englishFilterTextWidth + filterButtonPaddingWidth + 1
     const actionButtonsWidth = 3 * 24

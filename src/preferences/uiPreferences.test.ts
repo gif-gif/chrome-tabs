@@ -129,7 +129,7 @@ describe('UI preferences', () => {
     })
   })
 
-  it.each(['all', 'active', 'favorites'] as const)(
+  it.each(['all', 'favorites'] as const)(
     'restores the supported %s tab filter',
     (filter) => {
       localStorage.setItem(
@@ -147,7 +147,7 @@ describe('UI preferences', () => {
   )
 
   it('falls back to all for missing or invalid stored tab filters', () => {
-    for (const filter of [undefined, 'current-window', 'unknown']) {
+    for (const filter of [undefined, 'current-window', 'active', 'unknown']) {
       localStorage.setItem(
         UI_PREFERENCES_KEY,
         JSON.stringify({

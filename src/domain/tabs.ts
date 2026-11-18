@@ -115,10 +115,6 @@ export function filterWindows(
     }
 
     const tabs = window.tabs.filter((tab) => {
-      if (filter === 'active' && !tab.active) {
-        return false
-      }
-
       if (filter === 'favorites' && (tab.url.length === 0 || !favoriteUrls.has(tab.url))) {
         return false
       }
