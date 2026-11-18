@@ -34,6 +34,7 @@ import {
   findDuplicateTabIds,
   getTabDomainGroupKey,
   resolveMasked,
+  findCurrentTab,
   sortWindowsCurrentFirst,
   toggleAllCollapsed,
 } from './domain/tabs'
@@ -147,6 +148,8 @@ export function App({ api }: AppProps) {
   const [auxiliaryControlsFocused, setAuxiliaryControlsFocused] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const [colorSchemeMenuOpen, setColorSchemeMenuOpen] = useState(false)
+  const [locateTabId, setLocateTabId] = useState<number | null>(null)
+  const locatedRowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const auxiliaryControlsHidden = useStickySearchProgress(
     scrollContainer,
     stickyToolbar,
@@ -363,6 +366,47 @@ export function App({ api }: AppProps) {
     custom: displayCustomGroups.map((group) => group.key),
   }
   const visibleSectionCount = visibleSectionKeys[viewMode].length
+
+  // Locating runs over a few renders: wait until the tab is shown (after a
+  // filter reset), expand its section, then scroll to it and flash the row.
+  useEffect(() => {
+    if (locateTabId === null) return
+    const holds = (section: { tabs: readonly DisplayTab[] }) =>
+      section.tabs.some((tab) => tab.id === locateTabId)
+    if (viewMode === 'list') {
+      const section = displayWindows.find(holds)
+      if (!section) return
+      if (collapsedWindowIds.has(section.id)) {
+        setCollapsedWindowIds((current) => { const next = new Set(current); next.delete(section.id); return next })
+        return
+      }
+    } else {
+      const section = (viewMode === 'domain' ? displayDomainGroups : displayCustomGroups).find(holds)
+      if (!section) return
+      const collapsed = viewMode === 'domain' ? collapsedDomainGroupKeys : collapsedCustomGroupKeys
+      const setCollapsed = viewMode === 'domain' ? setCollapsedDomainGroupKeys : setCollapsedCustomGroupKeys
+      if (collapsed.has(section.key)) {
+        setCollapsed((current) => { const next = new Set(current); next.delete(section.key); return next })
+        return
+      }
+    }
+
+    setLocateTabId(null)
+    const row = scrollContainer?.querySelector<HTMLElement>(`.tab-row[data-tab-id="${locateTabId}"]`)
+    if (!row) return
+    row.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
+    // data-located is not managed by React, so re-renders leave it alone.
+    row.dataset.located = 'true'
+    if (locatedRowTimerRef.current) clearTimeout(locatedRowTimerRef.current)
+    locatedRowTimerRef.current = setTimeout(() => {
+      delete row.dataset.located
+      locatedRowTimerRef.current = null
+    }, 1600)
+  }, [collapsedCustomGroupKeys, collapsedDomainGroupKeys, collapsedWindowIds, displayCustomGroups, displayDomainGroups, displayWindows, locateTabId, scrollContainer, viewMode])
+
+  useEffect(() => () => {
+    if (locatedRowTimerRef.current) clearTimeout(locatedRowTimerRef.current)
+  }, [])
   const allSectionsCollapsed =
     viewMode === 'list'
       ? visibleSectionKeys.list.length > 0 && visibleSectionKeys.list.every((id) => collapsedWindowIds.has(id))
@@ -482,6 +526,19 @@ export function App({ api }: AppProps) {
       }
       return next
     })
+  }
+
+  const currentTab = findCurrentTab(windows, effectiveFocusedWindowId)
+
+  function handleLocateCurrentTab() {
+    if (!currentTab) return
+    const visible = (viewMode === 'list' ? displayWindows : viewMode === 'domain' ? displayDomainGroups : displayCustomGroups)
+      .some((section) => section.tabs.some((tab) => tab.id === currentTab.id))
+    if (!visible) {
+      setQuery('')
+      setFilter('all')
+    }
+    setLocateTabId(currentTab.id)
   }
 
   function handleToggleAllSections() {
@@ -984,8 +1041,19 @@ export function App({ api }: AppProps) {
                   />
                 </>
               }
-              afterMaskAction={
-                visibleSectionCount > 0 ? (
+              afterMaskAction={<>
+                {currentTab ? (
+                  <button
+                    type="button"
+                    className="compact-icon-button locate-current-tab-button"
+                    aria-label={t('locateCurrentTab')}
+                    title={t('locateCurrentTab')}
+                    onClick={handleLocateCurrentTab}
+                  >
+                    <Icon name="locate" width={16} height={16} />
+                  </button>
+                ) : null}
+                {visibleSectionCount > 0 ? (
                   <button
                     type="button"
                     className="compact-icon-button domain-collapse-all-button"
@@ -995,8 +1063,8 @@ export function App({ api }: AppProps) {
                   >
                     <Icon name={allSectionsCollapsed ? 'expand-all' : 'collapse-all'} width={16} height={16} />
                   </button>
-                ) : null
-              }
+                ) : null}
+              </>}
             />
           </div>
           <SearchFilters

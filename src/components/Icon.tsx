@@ -29,6 +29,7 @@ export type IconName =
   | 'collapse-all'
   | 'expand-all'
   | 'check'
+  | 'locate'
   | 'folder'
   | 'plus'
   | 'edit'
@@ -168,6 +169,13 @@ const paths: Record<IconName, React.ReactNode> = {
   'collapse-all': <path d="m7 15 5-5 5 5M7 10l5-5 5 5" />,
   'expand-all': <path d="m7 9 5 5 5-5M7 14l5 5 5-5" />,
   check: <path d="m5 12 4 4L19 6" />,
+  locate: (
+    <>
+      <circle cx="12" cy="12" r="7" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    </>
+  ),
   folder: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />,
   plus: <path d="M12 5v14M5 12h14" />,
   edit: (
