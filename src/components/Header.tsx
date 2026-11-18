@@ -21,7 +21,6 @@ interface HeaderProps {
 
 const filterIcons: Record<HeaderFilter, IconName> = {
   all: 'all-tabs',
-  active: 'active-tab',
   favorites: 'star',
 }
 
@@ -57,11 +56,6 @@ export function Header({
     accessibleLabel: string
   }> = [
     { value: 'all', label: t('allShort'), accessibleLabel: t('allTabs') },
-    {
-      value: 'active',
-      label: t('activeTabsShort'),
-      accessibleLabel: t('activeTabs'),
-    },
     {
       value: 'favorites',
       label: t('favoritesShort'),

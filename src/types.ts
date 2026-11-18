@@ -2,7 +2,7 @@ import type { PageSnapshot } from './domain/markdown'
 import type { UiLanguagePreference } from './i18n/i18n'
 
 export type UiViewMode = 'list' | 'domain' | 'custom'
-export type PersistedTabFilter = 'all' | 'active' | 'favorites'
+export type PersistedTabFilter = 'all' | 'favorites'
 export const UI_THEMES = [
   'classic',
   'aurora',
@@ -45,7 +45,7 @@ export interface UiPreferences {
   filter: PersistedTabFilter
 }
 
-export type TabFilter = 'all' | 'current-window' | 'active' | 'favorites'
+export type TabFilter = 'all' | 'current-window' | 'favorites'
 
 export interface BrowserTab {
   id: number

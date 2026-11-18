@@ -93,7 +93,6 @@ describe('Icon', () => {
       'clear',
       'all-tabs',
       'window',
-      'active-tab',
       'globe',
       'palette',
       'list',
@@ -157,7 +156,7 @@ describe('Header', () => {
     expect(revealIcon).toHaveAttribute('width', '16')
     expect(revealIcon).toHaveAttribute('height', '16')
 
-    for (const name of ['全部标签页', '活动标签', '收藏标签']) {
+    for (const name of ['全部标签页', '收藏标签']) {
       const filterButton = screen.getByRole('button', { name })
       expect(filterButton.querySelector('svg')).toHaveAttribute('width', '16')
       expect(filterButton.querySelector('svg')).toHaveAttribute('height', '16')
@@ -682,8 +681,7 @@ describe('App integration', () => {
   })
 
   it.each([
-    { filter: 'all', label: '全部标签页', prepareLabels: ['活动标签', '全部标签页'] },
-    { filter: 'active', label: '活动标签', prepareLabels: ['活动标签'] },
+    { filter: 'all', label: '全部标签页', prepareLabels: ['收藏标签', '全部标签页'] },
     { filter: 'favorites', label: '收藏标签', prepareLabels: ['收藏标签'] },
   ] as const)(
     'restores the $filter filter after the popup is reopened',
@@ -754,26 +752,21 @@ describe('App integration', () => {
 
     const filterGroup = screen.getByRole('group', { name: '标签页筛选' })
     const allButton = within(filterGroup).getByRole('button', { name: '全部标签页' })
-    const activeButton = within(filterGroup).getByRole('button', { name: '活动标签' })
     const favoritesButton = within(filterGroup).getByRole('button', { name: '收藏标签' })
 
     expect(allButton.querySelector('.compact-filter-label')).toHaveTextContent(/^全部$/)
-    expect(activeButton.querySelector('.compact-filter-label')).toHaveTextContent(/^活动$/)
     expect(favoritesButton.querySelector('.compact-filter-label')).toHaveTextContent(/^收藏$/)
     expect(allButton).toHaveAttribute('title', '全部标签页')
-    expect(activeButton).toHaveAttribute('title', '活动标签')
     expect(favoritesButton).toHaveAttribute('title', '收藏标签')
     expect(allButton).toHaveAttribute('aria-pressed', 'true')
-    expect(activeButton).toHaveAttribute('aria-pressed', 'false')
     expect(favoritesButton).toHaveAttribute('aria-pressed', 'false')
     expect(within(filterGroup).queryByRole('button', { name: '当前窗口' })).not.toBeInTheDocument()
+    expect(within(filterGroup).getAllByRole('button')).toHaveLength(2)
 
     await user.click(allButton)
-    await user.click(activeButton)
     await user.click(favoritesButton)
     expect(onFilterChange.mock.calls).toEqual([
       ['all'],
-      ['active'],
       ['favorites'],
     ])
   })
@@ -1369,15 +1362,12 @@ describe('App integration', () => {
     expect(screen.getByText('窗口 2')).toBeInTheDocument()
 
     await user.clear(search)
-    await user.click(screen.getByRole('button', { name: '活动标签' }))
-    expect(screen.getAllByText('内容已隐藏')).toHaveLength(2)
-
-    await user.click(screen.getByRole('button', { name: '全部标签页' }))
     const disclosure = screen.getByRole('button', { name: /当前窗口.*2 个标签/ })
     await user.click(disclosure)
     expect(disclosure).toHaveAttribute('aria-expanded', 'false')
-    await user.click(screen.getByRole('button', { name: '活动标签' }))
-    await user.click(screen.getByRole('button', { name: '全部标签页' }))
+    const filterGroup = screen.getByRole('group', { name: '标签页筛选' })
+    await user.click(within(filterGroup).getByRole('button', { name: '收藏标签' }))
+    await user.click(within(filterGroup).getByRole('button', { name: '全部标签页' }))
     expect(screen.getByRole('button', { name: /当前窗口.*2 个标签/ })).toHaveAttribute(
       'aria-expanded',
       'false',

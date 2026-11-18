@@ -122,28 +122,6 @@ describe('filterWindows', () => {
     expect(result[0].tabs).toHaveLength(2)
   })
 
-  it('keeps only active tabs and removes empty window groups', () => {
-    const input = [
-      ...windows,
-      {
-        id: 30,
-        focused: false,
-        tabs: [{ ...windows[0].tabs[1], id: 301, windowId: 30 }],
-      },
-    ]
-
-    const result = filterWindows(input, {
-      query: '',
-      filter: 'active',
-      focusedWindowId: 10,
-    })
-
-    expect(result.map((window) => window.id)).toEqual([10, 20])
-    expect(result.flatMap((window) => window.tabs).every((tab) => tab.active)).toBe(
-      true,
-    )
-  })
-
   it('combines the query with the current-window filter', () => {
     const result = filterWindows(windows, {
       query: 'docs.example.com',
@@ -152,24 +130,6 @@ describe('filterWindows', () => {
     })
 
     expect(result).toEqual([])
-  })
-
-  it('combines the query with the active filter', () => {
-    expect(
-      filterWindows(windows, {
-        query: 'mail',
-        filter: 'active',
-        focusedWindowId: 10,
-      }),
-    ).toEqual([])
-
-    expect(
-      filterWindows(windows, {
-        query: 'documentation',
-        filter: 'active',
-        focusedWindowId: 10,
-      }).flatMap((window) => window.tabs.map((tab) => tab.id)),
-    ).toEqual([201])
   })
 
   it('keeps only currently open tabs whose exact non-empty URLs are favorites', () => {
@@ -467,8 +427,12 @@ describe('createDisplayWindows', () => {
     ]
     const filtered = filterWindows(originalWindows, {
       query: '',
-      filter: 'active',
+      filter: 'favorites',
       focusedWindowId: 10,
+      favoriteUrls: new Set([
+        windows[0].tabs[0].url,
+        backgroundWindow30.tabs[0].url,
+      ]),
     })
 
     const result = createDisplayWindows(

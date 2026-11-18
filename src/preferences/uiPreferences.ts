@@ -43,7 +43,7 @@ function isViewMode(value: unknown): value is UiViewMode {
 }
 
 function isPersistedTabFilter(value: unknown): value is PersistedTabFilter {
-  return value === 'all' || value === 'active' || value === 'favorites'
+  return value === 'all' || value === 'favorites'
 }
 
 function isLanguage(value: unknown): value is UiLanguagePreference {
