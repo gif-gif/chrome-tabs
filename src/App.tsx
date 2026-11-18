@@ -1034,7 +1034,7 @@ export function App({ api }: AppProps) {
               ))
             : viewMode === 'custom'
               ? <>
-                  <CustomGroupCreator onCreate={handleCreateCustomGroup} t={t} />
+                  <CustomGroupCreator onCreate={handleCreateCustomGroup} defaultOpen={customGroups.length === 0} t={t} />
                   {customGroups.length === 0 ? (
                     <div className="status-panel empty-state custom-groups-empty">
                       <p>{t('noCustomGroups')}</p>

@@ -1928,6 +1928,7 @@ describe('progressive sticky search toolbar', () => {
     await user.type(screen.getByRole('textbox', { name: '新分组名称' }), '工作{Enter}')
     await user.type(screen.getByRole('textbox', { name: '新分组名称' }), '阅读')
     await user.click(screen.getByRole('button', { name: '新建分组' }))
+    expect(screen.getByRole('textbox', { name: '新分组名称' })).toHaveValue('')
 
     const work = screen.getByRole('region', { name: /^工作/ })
     expect(within(work).getByText('这个分组还没有标签页，点击勾选按钮添加。')).toBeInTheDocument()
@@ -2270,6 +2271,34 @@ describe('progressive sticky search toolbar', () => {
       .getByRole('button', { name: '复制为 Markdown' })
     expect(exampleButton).not.toHaveClass('is-unavailable')
     expect(exampleButton).not.toHaveAttribute('aria-disabled')
+  })
+
+
+  it('keeps the new group field collapsed to a small action once groups exist', async () => {
+    storeUiPreferences(false)
+    localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+      version: 1,
+      groups: [{ id: 'g1', name: '工作', urls: [] }],
+    }))
+    const user = userEvent.setup()
+    render(<App api={createTestApi()} />)
+
+    await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+    expect(screen.queryByRole('textbox', { name: '新分组名称' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '新建分组' }))
+    const input = screen.getByRole('textbox', { name: '新分组名称' })
+    expect(input).toHaveFocus()
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('textbox', { name: '新分组名称' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '新建分组' }))
+    await user.keyboard('阅读{Enter}')
+    expect(screen.getByRole('region', { name: /^阅读/ })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: '新分组名称' })).toHaveValue('')
+
+    await user.click(screen.getByRole('button', { name: '取消' }))
+    expect(screen.queryByRole('textbox', { name: '新分组名称' })).not.toBeInTheDocument()
   })
 
 })
