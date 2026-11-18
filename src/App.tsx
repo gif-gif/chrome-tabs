@@ -67,7 +67,7 @@ import type {
 
 
 const markdownErrorMessages: Record<PageCaptureErrorCode, PlainTranslationKey> = {
-  unsupported: 'markdownUnsupportedError',
+  unsupported: 'markdownUnsupportedTip',
   fileAccess: 'markdownFileAccessError',
   permissionDenied: 'markdownPermissionError',
   unloaded: 'markdownUnloadedError',
