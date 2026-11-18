@@ -148,6 +148,23 @@ export function createChromeTabsApi(
         return []
       }
 
+      // While the toolbar popup is open no browser window reports focused,
+      // so fall back to the last focused normal window as the current one.
+      let lastFocusedWindowId: number | undefined
+      if (
+        !result.some((value) => isRecord(value) && value.focused === true) &&
+        typeof chromeApi.windows.getLastFocused === 'function'
+      ) {
+        try {
+          const lastFocused: unknown = await chromeApi.windows.getLastFocused({ windowTypes: ['normal'] })
+          if (isRecord(lastFocused) && isNonNegativeInteger(lastFocused.id)) {
+            lastFocusedWindowId = lastFocused.id
+          }
+        } catch {
+          // Without a last focused window the list simply has no current window.
+        }
+      }
+
       return result.flatMap((value) => {
         if (!isRecord(value) || !isNonNegativeInteger(value.id)) {
           return []
@@ -165,7 +182,7 @@ export function createChromeTabsApi(
         return [
           {
             id: value.id,
-            focused: Boolean(value.focused),
+            focused: Boolean(value.focused) || value.id === lastFocusedWindowId,
             tabs,
           },
         ]
