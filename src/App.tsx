@@ -6,7 +6,7 @@ import { CustomGroupCreator } from './components/CustomGroupCreator'
 import { DomainGroup } from './components/DomainGroup'
 import { Header } from './components/Header'
 import { LanguageMenu } from './components/LanguageMenu'
-import { ColorSchemeMenu } from './components/ColorSchemeMenu'
+import { ColorSchemeToggle } from './components/ColorSchemeToggle'
 import { Icon } from './components/Icon'
 import { SearchFilters } from './components/SearchFilters'
 import { StatusView, type StatusViewState } from './components/StatusView'
@@ -147,7 +147,6 @@ export function App({ api }: AppProps) {
   const [stickyToolbar, setStickyToolbar] = useState<HTMLElement | null>(null)
   const [auxiliaryControlsFocused, setAuxiliaryControlsFocused] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
-  const [colorSchemeMenuOpen, setColorSchemeMenuOpen] = useState(false)
   const [locateTabId, setLocateTabId] = useState<number | null>(null)
   const locatedRowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const auxiliaryControlsHidden = useStickySearchProgress(
@@ -156,7 +155,7 @@ export function App({ api }: AppProps) {
     {
       distance: 64,
       compactThreshold: 0.96,
-      paused: auxiliaryControlsFocused || languageMenuOpen || colorSchemeMenuOpen,
+      paused: auxiliaryControlsFocused || languageMenuOpen,
     },
   )
 
@@ -1018,7 +1017,6 @@ export function App({ api }: AppProps) {
                     value={language}
                     onOpenChange={(open, reason) => {
                       setLanguageMenuOpen(open)
-                      if (open) setColorSchemeMenuOpen(false)
                       if (!open && reason === 'outside-pointer') {
                         setAuxiliaryControlsFocused(false)
                       }
@@ -1026,19 +1024,7 @@ export function App({ api }: AppProps) {
                     onChange={setLanguage}
                     t={t}
                   />
-                  <ColorSchemeMenu
-                    open={colorSchemeMenuOpen}
-                    value={colorScheme}
-                    onOpenChange={(open, reason) => {
-                      setColorSchemeMenuOpen(open)
-                      if (open) setLanguageMenuOpen(false)
-                      if (!open && reason === 'outside-pointer') {
-                        setAuxiliaryControlsFocused(false)
-                      }
-                    }}
-                    onChange={setColorScheme}
-                    t={t}
-                  />
+                  <ColorSchemeToggle value={colorScheme} onChange={setColorScheme} t={t} />
                 </>
               }
               afterMaskAction={<>

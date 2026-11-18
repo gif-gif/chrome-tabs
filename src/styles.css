@@ -1212,16 +1212,6 @@ main {
   opacity: 0.4;
 }
 
-.color-scheme-menu-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.color-scheme-menu-label > svg {
-  color: var(--color-text-muted);
-}
-
 /* Briefly marks the row found by "locate current tab". */
 .tab-row[data-located] {
   box-shadow: inset 0 0 0 2px var(--color-accent);
