@@ -75,6 +75,8 @@ export interface DisplayTab {
   displayTitle: string
   displayUrl: string
   displayFavIconUrl?: string
+  /** False for pages Chrome does not let extensions read, such as chrome://. */
+  markdownSupported: boolean
 }
 
 export interface DisplayWindow {

@@ -1739,8 +1739,8 @@ main {
 .row-copy-action:hover:not(:disabled),
 .row-copy-action:focus-visible,
 .row-copy-action.is-copied,
-.row-markdown-action:hover:not(:disabled),
-.row-markdown-action:focus-visible,
+.row-markdown-action:not(.is-unavailable):hover:not(:disabled),
+.row-markdown-action:not(.is-unavailable):focus-visible,
 .row-markdown-action.is-copied {
   color: var(--color-accent);
 }
@@ -2165,4 +2165,11 @@ main {
 
 .domain-group-heading .domain-group-action.row-pin-action:hover:not(:disabled) {
   color: var(--color-accent);
+}
+
+/* Pages Chrome does not let extensions read keep the Markdown action in
+   place, dimmed, with its reason in the tooltip instead of a banner. */
+.row-markdown-action.is-unavailable {
+  cursor: not-allowed;
+  opacity: 0.4;
 }

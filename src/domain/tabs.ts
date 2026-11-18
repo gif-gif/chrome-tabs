@@ -1,5 +1,6 @@
 import { getDomain } from 'tldts'
 import type { Translator } from '../i18n/i18n'
+import { classifyCaptureUrl } from './captureUrl'
 import type {
   BrowserTab,
   BrowserWindow,
@@ -248,6 +249,7 @@ export function createDisplayTab(
     displayFavIconUrl: masked
       ? undefined
       : resolveSafeFaviconUrl(tab.favIconUrl, tab.url),
+    markdownSupported: classifyCaptureUrl(tab.url) !== 'unsupported',
   }
 }
 

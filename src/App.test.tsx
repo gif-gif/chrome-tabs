@@ -51,6 +51,7 @@ const unmaskedTab: DisplayTab = {
   displayUrl: 'https://openai.com',
   displayFavIconUrl:
     '/_favicon/?pageUrl=https%3A%2F%2Fopenai.com&size=32',
+  markdownSupported: true,
 }
 
 const originalTitle = 'OpenAI'
@@ -2232,12 +2233,43 @@ describe('progressive sticky search toolbar', () => {
     const [button] = screen.getAllByRole('button', { name: '复制为 Markdown' })
 
     await user.click(button)
-    expect(await screen.findByRole('status')).toHaveTextContent('这个页面不支持复制为 Markdown')
+    expect(await screen.findByRole('status')).toHaveTextContent('此页面不支持复制为 Markdown')
     await user.click(button)
     expect(await screen.findByRole('status')).toHaveTextContent('需要允许访问网站内容才能复制为 Markdown。')
     await user.click(button)
     expect(await screen.findByRole('status')).toHaveTextContent('这个页面没有可复制的文字内容。')
     expect(clipboardWriteText).not.toHaveBeenCalled()
+  })
+
+
+  it('dims the Markdown action on pages Chrome does not allow and explains it in a tooltip only', async () => {
+    const api = createTestApi(async () => [{
+      id: 10,
+      focused: true,
+      tabs: [
+        { ...fixtureWindows[0].tabs[0], id: 1, index: 0, url: 'chrome://settings/', title: 'Settings' },
+        { ...fixtureWindows[0].tabs[1], id: 2, index: 1, url: 'https://example.com/', title: 'Example' },
+      ],
+    }])
+    storeUiPreferences(false)
+    const user = userEvent.setup()
+    render(<App api={api} />)
+    await screen.findByText('Settings')
+
+    const settingsButton = within(screen.getByText('Settings').closest('li')!)
+      .getByRole('button', { name: '此页面不支持复制为 Markdown' })
+    expect(settingsButton).toHaveAttribute('title', '此页面不支持复制为 Markdown')
+    expect(settingsButton).toHaveAttribute('aria-disabled', 'true')
+    expect(settingsButton).toHaveClass('is-unavailable')
+
+    await user.click(settingsButton)
+    expect(api.capturePage).not.toHaveBeenCalled()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+
+    const exampleButton = within(screen.getByText('Example').closest('li')!)
+      .getByRole('button', { name: '复制为 Markdown' })
+    expect(exampleButton).not.toHaveClass('is-unavailable')
+    expect(exampleButton).not.toHaveAttribute('aria-disabled')
   })
 
 })

@@ -555,6 +555,7 @@ describe('createDisplayWindows', () => {
       displayTitle: '内容已隐藏',
       displayUrl: '',
       displayFavIconUrl: undefined,
+      markdownSupported: true,
     })
 
     const serialized = JSON.stringify(displayTab)
