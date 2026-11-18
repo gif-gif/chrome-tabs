@@ -16,6 +16,7 @@ import {
   resolveSafeFaviconUrl,
   sortWindowsCurrentFirst,
   toggleAllCollapsed,
+  findCurrentTab,
 } from './tabs'
 
 type RawDisplayTabFields = Extract<
@@ -910,5 +911,14 @@ describe('toggleAllCollapsed', () => {
     expect(toggleAllCollapsed(new Set(['a', 'z']), ['a', 'b'])).toEqual(new Set(['a', 'b', 'z']))
     expect(toggleAllCollapsed(new Set(['a', 'b', 'z']), ['a', 'b'])).toEqual(new Set(['z']))
     expect(toggleAllCollapsed(new Set(['z']), [])).toEqual(new Set(['z']))
+  })
+})
+
+describe('findCurrentTab', () => {
+  it('returns the active tab of the focused window', () => {
+    expect(findCurrentTab(windows, 10)?.id).toBe(101)
+    expect(findCurrentTab(windows, 20)?.id).toBe(201)
+    expect(findCurrentTab(windows, -1)?.id).toBe(101)
+    expect(findCurrentTab([], 10)).toBeUndefined()
   })
 })

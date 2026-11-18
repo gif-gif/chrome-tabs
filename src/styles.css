@@ -319,7 +319,8 @@ main {
 .global-mask-button,
 .sort-tabs-button,
 .domain-collapse-all-button,
-.language-menu-trigger {
+.language-menu-trigger,
+.locate-current-tab-button {
   color: var(--color-text-muted);
 }
 
@@ -1209,4 +1210,10 @@ main {
 .row-markdown-action.is-unavailable {
   cursor: not-allowed;
   opacity: 0.4;
+}
+
+/* Briefly marks the row found by "locate current tab". */
+.tab-row[data-located] {
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+  transition: box-shadow var(--motion-normal) var(--ease);
 }

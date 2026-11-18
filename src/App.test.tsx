@@ -102,6 +102,7 @@ describe('Icon', () => {
       'collapse-all',
       'expand-all',
       'check',
+      'locate',
       'star',
       'deduplicate',
       'sort-ascending',
@@ -1015,6 +1016,7 @@ describe('App integration', () => {
       screen.getByRole('button', { name: '显示语言' }).closest('.language-menu-root'),
       screen.getByRole('button', { name: '外观: 自动（跟随系统）' }),
       globalMaskButton,
+      screen.getByRole('button', { name: '定位当前标签' }),
       toggleAllButton,
     ])
   })
@@ -2196,6 +2198,34 @@ describe('progressive sticky search toolbar', () => {
     expect(screen.queryByText('GitHub - Chrome Tabs')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '全部展开分组' }))
     expect(expanded().every((value) => value === 'true')).toBe(true)
+  })
+
+
+  it('locates the current tab: clears hiding filters, expands its section, scrolls and flashes the row', async () => {
+    storeUiPreferences(false)
+    const scrollIntoView = vi.fn()
+    Element.prototype.scrollIntoView = scrollIntoView
+    const user = userEvent.setup()
+    render(<App api={createTestApi()} />)
+    await screen.findByText('GitHub - Chrome Tabs')
+
+    const search = screen.getByRole('searchbox', { name: '搜索标签页' })
+    await user.type(search, 'documentation')
+    expect(screen.queryByText('GitHub - Chrome Tabs')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '定位当前标签' }))
+    expect(search).toHaveValue('')
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(1))
+    const row = screen.getByText('GitHub - Chrome Tabs').closest('li')!
+    expect(scrollIntoView.mock.contexts[0]).toBe(row)
+    expect(row).toHaveAttribute('data-located', 'true')
+
+    await user.click(screen.getByRole('button', { name: '域名分组视图' }))
+    await user.click(screen.getByRole('button', { name: '全部折叠分组' }))
+    expect(screen.queryByText('GitHub - Chrome Tabs')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '定位当前标签' }))
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(2))
+    expect(screen.getByText('GitHub - Chrome Tabs').closest('li')).toHaveAttribute('data-located', 'true')
   })
 
 })
