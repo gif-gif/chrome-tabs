@@ -496,12 +496,18 @@ function createTestApi(
   activateTab: ReturnType<typeof vi.fn<ChromeTabsApi['activateTab']>>
   closeTab: ReturnType<typeof vi.fn<ChromeTabsApi['closeTab']>>
   moveTabs: ReturnType<typeof vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>>
+  capturePage: ReturnType<typeof vi.fn<ChromeTabsApi['capturePage']>>
 } {
   return {
     queryWindows: vi.fn(queryWindows),
     activateTab: vi.fn<ChromeTabsApi['activateTab']>(async () => undefined),
     closeTab: vi.fn<ChromeTabsApi['closeTab']>(async () => undefined),
     moveTabs: vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>(async () => undefined),
+    capturePage: vi.fn<ChromeTabsApi['capturePage']>(async (_tabId, url) => ({
+      html: '<html><head><title>Captured</title></head><body><p>Captured page text</p></body></html>',
+      url,
+      title: 'Captured',
+    })),
     subscribe: vi.fn(() => () => undefined),
   }
 }
@@ -542,7 +548,7 @@ describe('action popup shell CSS contract', () => {
     )
     expect(stylesSource).not.toMatch(/\.drawer-rail|\.drawer-toggle|\.drawer-shell|\.drawer-content/)
     expect(stylesSource).toMatch(
-      /\.tab-row\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) repeat\(5, var\(--row-action-size\)\);/,
+      /\.tab-row\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) repeat\(6, var\(--row-action-size\)\);/,
     )
   })
 
@@ -2159,7 +2165,7 @@ describe('progressive sticky search toolbar', () => {
   })
 
 
-  it('orders tab row actions as hide, copy, favorite, pin, close', async () => {
+  it('orders tab row actions as hide, copy link, copy Markdown, favorite, pin, close', async () => {
     storeUiPreferences(false)
     render(<App api={createTestApi()} />)
 
@@ -2168,6 +2174,7 @@ describe('progressive sticky search toolbar', () => {
     expect([...row.querySelectorAll('.row-action-button')].map((button) => button.getAttribute('aria-label'))).toEqual([
       '隐藏此标签信息',
       '复制标签链接',
+      '复制为 Markdown',
       '收藏标签',
       '置顶标签',
       '关闭标签页',
@@ -2188,6 +2195,49 @@ describe('progressive sticky search toolbar', () => {
       'row-pin-action',
       'row-close-action',
     ])
+  })
+
+
+  it('copies a tab as Markdown with front matter and a checkmark', async () => {
+    const api = createTestApi()
+    api.capturePage.mockResolvedValueOnce({
+      html: '<html><head><title>Mail Inbox</title></head><body><p>Read the <a href="/help">help page</a> first.</p></body></html>',
+      url: 'https://mail.example.com/inbox?TOKEN=SECRET',
+      title: 'Mail Inbox',
+    })
+    const { container, user } = await renderReadyApp(api)
+    const buttons = screen.getAllByRole('button', { name: '复制为 Markdown' })
+
+    await user.click(buttons[1])
+
+    expect(api.capturePage).toHaveBeenCalledWith(102, 'https://mail.example.com/inbox?TOKEN=SECRET')
+    await waitFor(() => expect(clipboardWriteText).toHaveBeenCalledTimes(1))
+    const markdown = clipboardWriteText.mock.calls[0][0] as string
+    expect(markdown).toMatch(/^---\ntitle: "Mail Inbox"\nsource: "https:\/\/mail\.example\.com\/inbox\?TOKEN=SECRET"\n/)
+    expect(markdown).toContain('\n# Mail Inbox\n\nRead the [help page](https://mail.example.com/help) first.')
+    await waitFor(() => expect(buttons[1]).toHaveClass('is-copied'))
+    expect(api.activateTab).not.toHaveBeenCalled()
+    expect(container.innerHTML).not.toContain('TOKEN=SECRET')
+    expect(container.innerHTML).not.toContain('help page')
+  })
+
+  it('explains why a tab cannot be copied as Markdown', async () => {
+    const api = createTestApi()
+    const { PageCaptureError } = await import('./chrome/pageCapture')
+    api.capturePage
+      .mockRejectedValueOnce(new PageCaptureError('unsupported'))
+      .mockRejectedValueOnce(new PageCaptureError('permissionDenied'))
+      .mockResolvedValueOnce({ html: '<html><body><script>x()</script></body></html>', url: 'https://example.com/', title: '' })
+    const { user } = await renderReadyApp(api)
+    const [button] = screen.getAllByRole('button', { name: '复制为 Markdown' })
+
+    await user.click(button)
+    expect(await screen.findByRole('status')).toHaveTextContent('这个页面不支持复制为 Markdown')
+    await user.click(button)
+    expect(await screen.findByRole('status')).toHaveTextContent('需要允许访问网站内容才能复制为 Markdown。')
+    await user.click(button)
+    expect(await screen.findByRole('status')).toHaveTextContent('这个页面没有可复制的文字内容。')
+    expect(clipboardWriteText).not.toHaveBeenCalled()
   })
 
 })

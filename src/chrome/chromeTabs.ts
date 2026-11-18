@@ -1,4 +1,5 @@
 import type { BrowserTab, BrowserWindow, ChromeTabsApi } from '../types'
+import { capturePage } from './pageCapture'
 
 const CHROME_API_UNAVAILABLE_MESSAGE =
   'Chrome extension API is unavailable.'
@@ -14,6 +15,9 @@ const unavailableChromeTabsApi: ChromeTabsApi = {
     throw new Error(CHROME_API_UNAVAILABLE_MESSAGE)
   },
   moveTabs: async () => {
+    throw new Error(CHROME_API_UNAVAILABLE_MESSAGE)
+  },
+  capturePage: async () => {
     throw new Error(CHROME_API_UNAVAILABLE_MESSAGE)
   },
   subscribe: () => () => undefined,
@@ -184,6 +188,10 @@ export function createChromeTabsApi(
       }
 
       await chromeApi.tabs.move(tabIds, { windowId, index: 0 })
+    },
+
+    capturePage(tabId: number, url: string) {
+      return capturePage(chromeApi, tabId, url)
     },
 
     subscribe(listener: () => void): () => void {

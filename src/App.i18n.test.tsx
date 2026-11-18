@@ -110,6 +110,7 @@ function createApi(): ChromeTabsApi {
     activateTab: vi.fn(async () => undefined),
     closeTab: vi.fn(async () => undefined),
     moveTabs: vi.fn(async () => undefined),
+    capturePage: vi.fn(async () => ({ html: '<p>Page</p>', url: 'https://example.com/', title: 'Page' })),
     subscribe: vi.fn(() => () => undefined),
   }
 }
