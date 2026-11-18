@@ -3,42 +3,13 @@ import type { UiLanguagePreference } from './i18n/i18n'
 
 export type UiViewMode = 'list' | 'domain' | 'custom'
 export type PersistedTabFilter = 'all' | 'favorites'
-export const UI_THEMES = [
-  'classic',
-  'aurora',
-  'sunset',
-  'twilight',
-  'ocean',
-  'forest',
-  'sakura',
-  'graphite',
-  'lemon',
-  'coffee',
-  'midnight',
-  'lavender',
-  'mint',
-  'coral',
-  'sky',
-  'amber',
-  'teal',
-  'ruby',
-  'plum',
-  'sand',
-  'ice',
-  'moss',
-  'peach',
-  'cobalt',
-  'orchid',
-  'crimson',
-] as const
-
-export type UiTheme = (typeof UI_THEMES)[number]
+export type UiColorScheme = 'auto' | 'light' | 'dark'
 
 export interface UiPreferences {
   globalMasked: boolean
   viewMode: UiViewMode
   language: UiLanguagePreference
-  theme: UiTheme
+  colorScheme: UiColorScheme
   pinnedTabIds: number[]
   pinnedDomainKeys: string[]
   favoriteUrls: string[]

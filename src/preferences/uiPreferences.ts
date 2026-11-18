@@ -1,9 +1,8 @@
 import type { UiLanguagePreference } from '../i18n/i18n'
 import {
-  UI_THEMES,
   type PersistedTabFilter,
   type UiPreferences,
-  type UiTheme,
+  type UiColorScheme,
   type UiViewMode,
 } from '../types'
 
@@ -14,7 +13,7 @@ export const defaultUiPreferences: UiPreferences = {
   globalMasked: false,
   viewMode: 'list',
   language: 'auto',
-  theme: 'classic',
+  colorScheme: 'auto',
   pinnedTabIds: [],
   pinnedDomainKeys: [],
   favoriteUrls: [],
@@ -31,7 +30,7 @@ interface StoredUiPreferences {
   globalMasked: boolean
   viewMode: UiViewMode
   language?: UiLanguagePreference
-  theme?: UiTheme
+  colorScheme?: UiColorScheme
   pinnedTabIds?: number[]
   pinnedDomainKeys?: string[]
   favoriteUrls?: string[]
@@ -62,8 +61,8 @@ function isNonEmptyStringArray(value: unknown): value is string[] {
   )
 }
 
-function isTheme(value: unknown): value is UiTheme {
-  return typeof value === 'string' && UI_THEMES.some((theme) => theme === value)
+function isColorScheme(value: unknown): value is UiColorScheme {
+  return value === 'auto' || value === 'light' || value === 'dark'
 }
 
 function parseStoredPreferences(value: string): UiPreferences | null {
@@ -81,7 +80,7 @@ function parseStoredPreferences(value: string): UiPreferences | null {
       globalMasked: candidate.globalMasked,
       viewMode: candidate.viewMode,
       language: isLanguage(candidate.language) ? candidate.language : 'auto',
-      theme: isTheme(candidate.theme) ? candidate.theme : 'classic',
+      colorScheme: isColorScheme(candidate.colorScheme) ? candidate.colorScheme : 'auto',
       pinnedTabIds: isPositiveIntegerArray(candidate.pinnedTabIds)
         ? [...new Set(candidate.pinnedTabIds)]
         : [],
@@ -126,7 +125,7 @@ export function saveUiPreferences(
     globalMasked: preferences.globalMasked,
     viewMode: preferences.viewMode,
     language: preferences.language,
-    theme: preferences.theme,
+    colorScheme: preferences.colorScheme,
     pinnedTabIds: preferences.pinnedTabIds,
     pinnedDomainKeys: preferences.pinnedDomainKeys,
     favoriteUrls: preferences.favoriteUrls,
