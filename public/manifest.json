@@ -7,7 +7,11 @@
   "permissions": [
     "tabs",
     "favicon",
-    "clipboardWrite"
+    "clipboardWrite",
+    "scripting"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
   ],
   "action": {
     "default_popup": "index.html",

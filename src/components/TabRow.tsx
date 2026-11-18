@@ -11,12 +11,14 @@ interface TabRowProps {
   onToggleFavorite?: (tab: DisplayTab) => void
   onToggleMask: (tab: DisplayTab) => void
   onCopy: (tab: DisplayTab) => void
+  onCopyMarkdown?: (tab: DisplayTab) => void
   onClose: (tab: DisplayTab) => void
   t: Translator
   pinned?: boolean
   favorite?: boolean
   pending?: boolean
   copied?: boolean
+  markdownCopied?: boolean
 }
 
 export function TabRow({
@@ -26,12 +28,14 @@ export function TabRow({
   onToggleFavorite,
   onToggleMask,
   onCopy,
+  onCopyMarkdown,
   onClose,
   t,
   pinned = false,
   favorite = false,
   pending = false,
   copied = false,
+  markdownCopied = false,
 }: TabRowProps) {
   const rowClassName = `${tab.active ? 'tab-row is-active' : 'tab-row'}${pinned ? ' is-pinned' : ''}${favorite ? ' is-favorite' : ''}`
   const currentSuffix = tab.active ? t('currentTabSuffix') : ''
@@ -60,6 +64,7 @@ export function TabRow({
     </button>
     <button type="button" className="icon-button tab-action row-action-button row-privacy-action" aria-label={privacyLabel} onClick={(event) => isolateAction(event, onToggleMask)}><Icon name={tab.masked ? 'eye' : 'eye-off'} width={15} height={15} /></button>
     <button type="button" className={`icon-button tab-action row-action-button row-copy-action${copied ? ' is-copied' : ''}`} aria-label={t('copyTabLink')} data-copied={copied || undefined} disabled={pending} onClick={(event) => isolateAction(event, onCopy)}><Icon name={copied ? 'check' : 'copy'} width={15} height={15} /></button>
+    <button type="button" className={`icon-button tab-action row-action-button row-markdown-action${markdownCopied ? ' is-copied' : ''}`} aria-label={t('copyTabMarkdown')} title={t('copyTabMarkdown')} data-copied={markdownCopied || undefined} disabled={pending || !onCopyMarkdown} onClick={(event) => isolateAction(event, onCopyMarkdown)}><Icon name={markdownCopied ? 'check' : 'markdown'} width={15} height={15} /></button>
     <button type="button" className={`icon-button tab-action row-action-button row-favorite-action${favorite ? ' is-favorite' : ''}`} aria-label={favoriteLabel} title={favoriteLabel} aria-pressed={favorite} disabled={pending || !onToggleFavorite} onClick={(event) => isolateAction(event, onToggleFavorite)}><Icon name="star" width={15} height={15} /></button>
     <button type="button" className={`icon-button tab-action row-action-button row-pin-action${pinned ? ' is-pinned' : ''}`} aria-label={pinLabel} title={pinLabel} aria-pressed={pinned} onClick={(event) => isolateAction(event, onTogglePin)}><Icon name="pin" width={15} height={15} /></button>
     <button type="button" className="icon-button tab-action close-button row-action-button row-close-action" aria-label={t('closeTab')} disabled={pending} onClick={(event) => isolateAction(event, onClose)}><Icon name="close" width={15} height={15} /></button>

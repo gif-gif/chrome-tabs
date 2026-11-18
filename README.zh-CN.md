@@ -65,7 +65,9 @@ npm run build
 
 - `tabs`：读取标签页和窗口信息，并执行切换、聚焦与关闭操作。
 - `favicon`：安全使用 Chrome 提供的本地图标资源。
-- 不声明 `host_permissions`，不注入网页脚本。
+- `clipboardWrite`：复制标签链接和 Markdown 内容。
+- `scripting` + 可选的网站访问权限（`optional_host_permissions: <all_urls>`）：仅用于"复制为 Markdown"。第一次点击该按钮时才请求网站访问权限，安装时不申请；授权后，只在点击时向对应标签页注入一段只读脚本，读取页面当前的 HTML。HTML 在扩展内本地转换为 Markdown，不发起任何网络请求。
+- 不声明固定的 `host_permissions`。
 
 ## 构建安全
 

@@ -42,4 +42,4 @@ The popup closes automatically when it loses focus and does not reduce the webpa
 
 Tab information is visible by default. The global privacy setting, view mode, and language preference are stored locally. Search text, group expansion state, and per-tab or per-group privacy overrides live only for the current popup instance.
 
-The extension does not persist tab titles, URLs, or favicons and sends no browsing data to a remote service. It requests only the `tabs` and `favicon` permissions, with no host permissions.
+The extension does not persist tab titles, URLs, or favicons and sends no browsing data to a remote service. It requests the `tabs`, `favicon` and `clipboardWrite` permissions, plus `scripting` with optional site access (`optional_host_permissions: <all_urls>`) for "Copy as Markdown". Site access is only requested the first time that button is used. The page's current HTML is read by a read-only script injected on click and converted to Markdown locally, with no network request.

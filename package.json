@@ -11,9 +11,12 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "tldts": "^7.4.9"
+    "tldts": "^7.4.9",
+    "turndown": "^7.2.5",
+    "turndown-plugin-gfm": "^1.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
@@ -26,6 +29,7 @@
     "@types/parse-srcset": "^1.0.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
+    "@types/turndown": "^5.0.6",
     "@vitejs/plugin-react": "^5.0.4",
     "@xmldom/xmldom": "^0.9.10",
     "acorn": "^8.17.0",

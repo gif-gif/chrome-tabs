@@ -19,12 +19,14 @@ interface DomainGroupProps {
   onToggleFavorite?: (tab: DisplayTab) => void
   onToggleMask: (tab: DisplayTab) => void
   onCopy: (tab: DisplayTab) => void
+  onCopyMarkdown?: (tab: DisplayTab) => void
   onClose: (tab: DisplayTab) => void
   t: Translator
   pinnedTabIds?: ReadonlySet<number>
   favoriteTabIds?: ReadonlySet<number>
   pendingTabIds?: ReadonlySet<number>
   copiedTabIds?: ReadonlySet<number>
+  markdownCopiedTabIds?: ReadonlySet<number>
 }
 
 export function DomainGroup({
@@ -42,12 +44,14 @@ export function DomainGroup({
   onToggleFavorite,
   onToggleMask,
   onCopy,
+  onCopyMarkdown,
   onClose,
   t,
   pinnedTabIds,
   favoriteTabIds,
   pendingTabIds,
   copiedTabIds,
+  markdownCopiedTabIds,
 }: DomainGroupProps) {
   const reactId = useId()
   const headingId = `domain-heading-${reactId}`
@@ -70,6 +74,6 @@ export function DomainGroup({
         <button type="button" className="icon-button domain-group-action close-button row-action-button row-close-action" aria-label={closeLabel} title={closeLabel} onClick={(event) => { event.stopPropagation(); onCloseGroup(group) }} disabled={groupPending}><Icon name="close" width={15} height={15} /></button>
       </span>
     </h2>
-    <ul className="tab-list" id={listId} hidden={collapsed}>{!collapsed ? group.tabs.map((tab) => <TabRow key={tab.id} tab={tab} pinned={pinnedTabIds?.has(tab.id)} favorite={favoriteTabIds?.has(tab.id)} onActivate={onActivate} onTogglePin={onTogglePin} onToggleFavorite={onToggleFavorite} onToggleMask={onToggleMask} onCopy={onCopy} onClose={onClose} t={t} pending={pendingTabIds?.has(tab.id)} copied={copiedTabIds?.has(tab.id)} />) : null}</ul>
+    <ul className="tab-list" id={listId} hidden={collapsed}>{!collapsed ? group.tabs.map((tab) => <TabRow key={tab.id} tab={tab} pinned={pinnedTabIds?.has(tab.id)} favorite={favoriteTabIds?.has(tab.id)} onActivate={onActivate} onTogglePin={onTogglePin} onToggleFavorite={onToggleFavorite} onToggleMask={onToggleMask} onCopy={onCopy} onCopyMarkdown={onCopyMarkdown} onClose={onClose} t={t} pending={pendingTabIds?.has(tab.id)} copied={copiedTabIds?.has(tab.id)} markdownCopied={markdownCopiedTabIds?.has(tab.id)} />) : null}</ul>
   </section>
 }

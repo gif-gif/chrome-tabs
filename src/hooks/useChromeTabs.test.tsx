@@ -36,6 +36,7 @@ function createApi(
     activateTab: vi.fn(() => Promise.resolve()),
     closeTab: vi.fn(() => Promise.resolve()),
     moveTabs: vi.fn(() => Promise.resolve()),
+    capturePage: vi.fn(() => Promise.reject(new Error('unused'))),
   }
 }
 

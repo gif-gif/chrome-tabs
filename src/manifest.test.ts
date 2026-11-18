@@ -10,6 +10,7 @@ interface ExtensionManifest {
   minimum_chrome_version: string
   permissions: string[]
   host_permissions?: string[]
+  optional_host_permissions?: string[]
   content_security_policy: {
     extension_pages: string
   }
@@ -46,7 +47,8 @@ describe('Manifest V3 action popup wiring', () => {
     expect(manifest.minimum_chrome_version).toBe('141')
     expect(manifest.version).toBe('0.0.1')
     expect(JSON.parse(readFileSync(resolve(publicDir, '..', 'package.json'), 'utf8')).version).toBe(manifest.version)
-    expect(manifest.permissions).toEqual(['tabs', 'favicon', 'clipboardWrite'])
+    expect(manifest.permissions).toEqual(['tabs', 'favicon', 'clipboardWrite', 'scripting'])
+    expect(manifest.optional_host_permissions).toEqual(['<all_urls>'])
     expect(manifest.host_permissions ?? []).toEqual([])
     expect(manifest.action.default_popup).toBe('index.html')
     expect(existsSync(resolve(publicDir, '..', manifest.action.default_popup))).toBe(true)

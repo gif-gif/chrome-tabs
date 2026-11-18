@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createSafeChromeTabsApi } from './chrome/chromeTabs'
+import { PageCaptureError, type PageCaptureErrorCode } from './chrome/pageCapture'
 import { CustomGroup, type CustomGroupPickerOption } from './components/CustomGroup'
 import { CustomGroupCreator } from './components/CustomGroupCreator'
 import { DomainGroup } from './components/DomainGroup'
@@ -65,6 +66,20 @@ import type {
 } from './types'
 
 
+const markdownErrorMessages: Record<PageCaptureErrorCode, PlainTranslationKey> = {
+  unsupported: 'markdownUnsupportedError',
+  fileAccess: 'markdownFileAccessError',
+  permissionDenied: 'markdownPermissionError',
+  unloaded: 'markdownUnloadedError',
+  failed: 'markdownError',
+}
+
+function markdownErrorMessage(error: unknown): PlainTranslationKey {
+  if (error instanceof PageCaptureError) return markdownErrorMessages[error.code]
+  if (error instanceof Error && error.name === 'EmptyPageError') return 'markdownEmptyError'
+  return 'markdownError'
+}
+
 interface AppProps {
   api?: ChromeTabsApi
 }
@@ -121,8 +136,10 @@ export function App({ api }: AppProps) {
   const [operationMessage, setOperationMessage] = useState<PlainTranslationKey | null>(null)
   const [pendingTabIds, setPendingTabIds] = useState<Set<number>>(() => new Set())
   const [copiedTabIds, setCopiedTabIds] = useState<Set<number>>(() => new Set())
+  const [markdownCopiedTabIds, setMarkdownCopiedTabIds] = useState<Set<number>>(() => new Set())
   const pendingTabIdsRef = useRef(new Set<number>())
   const copiedResetTimersRef = useRef(new Map<number, ReturnType<typeof setTimeout>>())
+  const markdownCopiedResetTimersRef = useRef(new Map<number, ReturnType<typeof setTimeout>>())
   const operationSequenceRef = useRef(0)
   const [scrollContainer, setScrollContainer] = useState<HTMLElement | null>(null)
   const [stickyToolbar, setStickyToolbar] = useState<HTMLElement | null>(null)
@@ -168,10 +185,12 @@ export function App({ api }: AppProps) {
   }, [theme])
 
   useEffect(() => () => {
-    for (const timer of copiedResetTimersRef.current.values()) {
-      clearTimeout(timer)
+    for (const timers of [copiedResetTimersRef.current, markdownCopiedResetTimersRef.current]) {
+      for (const timer of timers.values()) {
+        clearTimeout(timer)
+      }
+      timers.clear()
     }
-    copiedResetTimersRef.current.clear()
   }, [])
 
   const existingWindowIds = useMemo(
@@ -221,6 +240,10 @@ export function App({ api }: AppProps) {
       const next = new Set([...current].filter((tabId) => existingTabIds.has(tabId)))
       return next.size === current.size ? current : next
     })
+    setMarkdownCopiedTabIds((current) => {
+      const next = new Set([...current].filter((tabId) => existingTabIds.has(tabId)))
+      return next.size === current.size ? current : next
+    })
     if (!loading) {
       setPinnedTabIds((current) => {
         const next = new Set([...current].filter((tabId) => existingTabIds.has(tabId)))
@@ -231,10 +254,12 @@ export function App({ api }: AppProps) {
         return next.size === current.size ? current : next
       })
     }
-    for (const [tabId, timer] of copiedResetTimersRef.current) {
-      if (!existingTabIds.has(tabId)) {
-        clearTimeout(timer)
-        copiedResetTimersRef.current.delete(tabId)
+    for (const timers of [copiedResetTimersRef.current, markdownCopiedResetTimersRef.current]) {
+      for (const [tabId, timer] of timers) {
+        if (!existingTabIds.has(tabId)) {
+          clearTimeout(timer)
+          timers.delete(tabId)
+        }
       }
     }
   }, [existingRawDomainKeys, existingTabIds, existingWindowIds, loading])
@@ -594,18 +619,22 @@ export function App({ api }: AppProps) {
     setPendingTabIds(new Set(pendingTabIdsRef.current))
   }
 
-  function showCopiedCheckmark(tabId: number) {
-    const existingTimer = copiedResetTimersRef.current.get(tabId)
+  function showCopiedCheckmark(
+    tabId: number,
+    timers = copiedResetTimersRef.current,
+    setCopied = setCopiedTabIds,
+  ) {
+    const existingTimer = timers.get(tabId)
     if (existingTimer) {
       clearTimeout(existingTimer)
     }
 
-    setCopiedTabIds((current) => new Set(current).add(tabId))
-    copiedResetTimersRef.current.set(
+    setCopied((current) => new Set(current).add(tabId))
+    timers.set(
       tabId,
       setTimeout(() => {
-        copiedResetTimersRef.current.delete(tabId)
-        setCopiedTabIds((current) => {
+        timers.delete(tabId)
+        setCopied((current) => {
           if (!current.has(tabId)) {
             return current
           }
@@ -660,6 +689,36 @@ export function App({ api }: AppProps) {
     } catch {
       if (operationSequence === operationSequenceRef.current) {
         setOperationMessage('copyLinkError')
+      }
+    } finally {
+      finishOperation(tab.id)
+    }
+  }
+
+  async function handleCopyMarkdown(tab: DisplayTab) {
+    const operationSequence = beginOperation(tab.id)
+    if (operationSequence === null) {
+      return
+    }
+
+    try {
+      const sourceTab = rawTabsById.get(tab.id)
+      if (!sourceTab?.url || !globalThis.navigator?.clipboard?.writeText) {
+        throw new Error('Clipboard unavailable')
+      }
+
+      // Capture first so the permission prompt still follows the click.
+      const snapshot = await resolvedApi.capturePage(sourceTab.id, sourceTab.url)
+      const { convertPageToMarkdown } = await import('./domain/markdown')
+      const { markdown } = convertPageToMarkdown(snapshot)
+      await globalThis.navigator.clipboard.writeText(markdown)
+      showCopiedCheckmark(tab.id, markdownCopiedResetTimersRef.current, setMarkdownCopiedTabIds)
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage(null)
+      }
+    } catch (error) {
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage(markdownErrorMessage(error))
       }
     } finally {
       finishOperation(tab.id)
@@ -963,11 +1022,13 @@ export function App({ api }: AppProps) {
                   onToggleFavorite={handleTabFavoriteToggle}
                   onToggleMask={handleTabMaskToggle}
                   onCopy={(tab) => void handleCopy(tab)}
+                  onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
                   onClose={(tab) => void handleClose(tab)}
                   pinnedTabIds={pinnedTabIds}
                   favoriteTabIds={favoriteTabIds}
                   pendingTabIds={pendingTabIds}
                   copiedTabIds={copiedTabIds}
+                  markdownCopiedTabIds={markdownCopiedTabIds}
                   t={t}
                 />
               ))
@@ -1010,11 +1071,13 @@ export function App({ api }: AppProps) {
                         onToggleFavorite={handleTabFavoriteToggle}
                         onToggleMask={handleTabMaskToggle}
                         onCopy={(tab) => void handleCopy(tab)}
+                  onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
                         onClose={(tab) => void handleClose(tab)}
                         pinnedTabIds={pinnedTabIds}
                         favoriteTabIds={favoriteTabIds}
                         pendingTabIds={pendingTabIds}
                         copiedTabIds={copiedTabIds}
+                  markdownCopiedTabIds={markdownCopiedTabIds}
                         t={t}
                       />
                     )
@@ -1039,11 +1102,13 @@ export function App({ api }: AppProps) {
                   onToggleFavorite={handleTabFavoriteToggle}
                   onToggleMask={handleTabMaskToggle}
                   onCopy={(tab) => void handleCopy(tab)}
+                  onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
                   onClose={(tab) => void handleClose(tab)}
                   pinnedTabIds={pinnedTabIds}
                   favoriteTabIds={favoriteTabIds}
                   pendingTabIds={pendingTabIds}
                   copiedTabIds={copiedTabIds}
+                  markdownCopiedTabIds={markdownCopiedTabIds}
                   t={t}
                 />
               ))

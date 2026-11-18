@@ -1,3 +1,4 @@
+import type { PageSnapshot } from './domain/markdown'
 import type { UiLanguagePreference } from './i18n/i18n'
 
 export type UiViewMode = 'list' | 'domain' | 'custom'
@@ -113,5 +114,7 @@ export interface ChromeTabsApi {
   activateTab(tabId: number, windowId: number): Promise<void>
   closeTab(tabId: number): Promise<void>
   moveTabs(tabIds: number[], windowId: number): Promise<void>
+  /** Reads a tab's live HTML for Markdown conversion. */
+  capturePage(tabId: number, url: string): Promise<PageSnapshot>
   subscribe(listener: () => void): () => void
 }
