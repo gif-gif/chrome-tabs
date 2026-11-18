@@ -1013,13 +1013,13 @@ describe('App integration', () => {
     expect(Array.from(headerActions!.children)).toEqual([
       screen.getByRole('button', { name: '按域名升序排列标签页' }),
       screen.getByRole('button', { name: '显示语言' }).closest('.language-menu-root'),
-      screen.getByRole('button', { name: '外观: 自动（跟随系统）' }).closest('.color-scheme-menu-root'),
+      screen.getByRole('button', { name: '外观: 自动（跟随系统）' }),
       globalMaskButton,
       toggleAllButton,
     ])
   })
 
-  it('switches appearance from the menu beside the language control and restores it after remount', async () => {
+  it('cycles appearance with the icon beside the language control and restores it after remount', async () => {
     storeUiPreferences(false)
     const api = createTestApi()
     const user = userEvent.setup()
@@ -1027,31 +1027,21 @@ describe('App integration', () => {
 
     await screen.findByText('GitHub - Chrome Tabs')
     const languageButton = screen.getByRole('button', { name: '显示语言' })
-    const trigger = screen.getByRole('button', { name: '外观: 自动（跟随系统）' })
-    expect(languageButton.closest('.language-menu-root')?.nextElementSibling).toBe(trigger.closest('.color-scheme-menu-root'))
+    const toggle = screen.getByRole('button', { name: '外观: 自动（跟随系统）' })
+    expect(languageButton.closest('.language-menu-root')?.nextElementSibling).toBe(toggle)
     expect(document.documentElement).toHaveAttribute('data-color-scheme', 'auto')
 
-    await user.click(trigger)
-    const menu = screen.getByRole('menu', { name: '外观' })
-    expect(within(menu).getAllByRole('menuitemradio').map((item) => item.textContent)).toEqual(['自动（跟随系统）', '浅色', '暗色'])
-    expect(within(menu).getByRole('menuitemradio', { name: '自动（跟随系统）' })).toHaveAttribute('aria-checked', 'true')
-
-    await user.click(within(menu).getByRole('menuitemradio', { name: '暗色' }))
-    expect(document.documentElement).toHaveAttribute('data-color-scheme', 'dark')
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '外观: 暗色' })).toHaveFocus()
-
-    await user.click(screen.getByRole('button', { name: '外观: 暗色' }))
-    await user.click(screen.getByRole('menuitemradio', { name: '浅色' }))
+    await user.click(toggle)
     expect(document.documentElement).toHaveAttribute('data-color-scheme', 'light')
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '外观: 浅色' }))
+    expect(document.documentElement).toHaveAttribute('data-color-scheme', 'dark')
+    await user.click(screen.getByRole('button', { name: '外观: 暗色' }))
+    expect(document.documentElement).toHaveAttribute('data-color-scheme', 'auto')
+    await user.click(screen.getByRole('button', { name: '外观: 自动（跟随系统）' }))
     await waitFor(() =>
       expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '')).toMatchObject({ colorScheme: 'light' }),
     )
-
-    await user.click(screen.getByRole('button', { name: '外观: 浅色' }))
-    await user.click(screen.getByRole('button', { name: '显示语言' }))
-    expect(screen.getAllByRole('menu')).toHaveLength(1)
-    expect(screen.getByRole('menu', { name: '显示语言' })).toBeInTheDocument()
 
     firstView.unmount()
     render(<App api={api} />)

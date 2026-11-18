@@ -1210,13 +1210,3 @@ main {
   cursor: not-allowed;
   opacity: 0.4;
 }
-
-.color-scheme-menu-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.color-scheme-menu-label > svg {
-  color: var(--color-text-muted);
-}
