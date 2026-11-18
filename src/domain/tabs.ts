@@ -236,6 +236,16 @@ export function toggleAllCollapsed<K>(
   return next
 }
 
+/** The tab the user is looking at: the active tab of the focused window. */
+export function findCurrentTab(
+  windows: readonly BrowserWindow[],
+  focusedWindowId: number,
+): BrowserTab | undefined {
+  const window = windows.find((candidate) => candidate.id === focusedWindowId)
+    ?? windows.find((candidate) => candidate.focused)
+  return window?.tabs.find((tab) => tab.active)
+}
+
 export function resolveMasked(
   globalMasked: boolean,
   overrides: ReadonlyMap<number, boolean>,
