@@ -261,6 +261,36 @@ describe('createChromeTabsApi queryWindows', () => {
   })
 })
 
+describe('createChromeTabsApi current window', () => {
+  it('marks the last focused normal window as focused when the popup holds focus', async () => {
+    const chromeApi = createChromeMock([
+      { id: 10, focused: false, tabs: [] },
+      { id: 20, focused: false, tabs: [] },
+    ])
+    const getLastFocused = vi.fn().mockResolvedValue({ id: 20 })
+    Object.assign(chromeApi.windows, { getLastFocused })
+
+    const windows = await createChromeTabsApi(chromeApi as unknown as typeof chrome).queryWindows()
+
+    expect(getLastFocused).toHaveBeenCalledWith({ windowTypes: ['normal'] })
+    expect(windows.map(({ id, focused }) => [id, focused])).toEqual([[10, false], [20, true]])
+  })
+
+  it('keeps an already focused window and survives a failing fallback', async () => {
+    const focused = createChromeMock([{ id: 10, focused: true, tabs: [] }, { id: 20, focused: false, tabs: [] }])
+    const getLastFocused = vi.fn().mockResolvedValue({ id: 20 })
+    Object.assign(focused.windows, { getLastFocused })
+    expect((await createChromeTabsApi(focused as unknown as typeof chrome).queryWindows())
+      .map((window) => window.focused)).toEqual([true, false])
+    expect(getLastFocused).not.toHaveBeenCalled()
+
+    const failing = createChromeMock([{ id: 10, focused: false, tabs: [] }])
+    Object.assign(failing.windows, { getLastFocused: vi.fn().mockRejectedValue(new Error('no window')) })
+    expect((await createChromeTabsApi(failing as unknown as typeof chrome).queryWindows())
+      .map((window) => window.focused)).toEqual([false])
+  })
+})
+
 describe('createChromeTabsApi operations', () => {
   it('starts tab activation and window focus before awaiting either popup-sensitive operation', async () => {
     const chromeApi = createChromeMock()
