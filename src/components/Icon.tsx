@@ -21,7 +21,9 @@ export type IconName =
   | 'all-tabs'
   | 'window'
   | 'globe'
-  | 'palette'
+  | 'sun'
+  | 'moon'
+  | 'contrast'
   | 'list'
   | 'group'
   | 'collapse-all'
@@ -136,13 +138,17 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
     </>
   ),
-  palette: (
+  sun: (
     <>
-      <path d="M12 3a9 9 0 0 0 0 18h1.2a1.8 1.8 0 0 0 1.4-2.9l-.5-.7a1.8 1.8 0 0 1 1.4-2.9H18a3 3 0 0 0 3-3C21 6.8 17 3 12 3Z" />
-      <circle cx="7.5" cy="11.5" r=".75" fill="currentColor" stroke="none" />
-      <circle cx="9.5" cy="7.5" r=".75" fill="currentColor" stroke="none" />
-      <circle cx="14.5" cy="7.5" r=".75" fill="currentColor" stroke="none" />
-      <circle cx="17.5" cy="10.5" r=".75" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </>
+  ),
+  moon: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />,
+  contrast: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3v18a9 9 0 0 0 0-18Z" fill="currentColor" />
     </>
   ),
   list: (

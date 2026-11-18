@@ -6,7 +6,7 @@ import { CustomGroupCreator } from './components/CustomGroupCreator'
 import { DomainGroup } from './components/DomainGroup'
 import { Header } from './components/Header'
 import { LanguageMenu } from './components/LanguageMenu'
-import { ThemeToggle } from './components/ThemeToggle'
+import { ColorSchemeMenu } from './components/ColorSchemeMenu'
 import { Icon } from './components/Icon'
 import { SearchFilters } from './components/SearchFilters'
 import { StatusView, type StatusViewState } from './components/StatusView'
@@ -110,7 +110,7 @@ export function App({ api }: AppProps) {
     initialPreferences.globalMasked,
   )
   const [viewMode, setViewMode] = useState(initialPreferences.viewMode)
-  const [theme, setTheme] = useState(initialPreferences.theme)
+  const [colorScheme, setColorScheme] = useState(initialPreferences.colorScheme)
   const [pinnedTabIds, setPinnedTabIds] = useState<Set<number>>(
     () => new Set(initialPreferences.pinnedTabIds),
   )
@@ -146,13 +146,14 @@ export function App({ api }: AppProps) {
   const [stickyToolbar, setStickyToolbar] = useState<HTMLElement | null>(null)
   const [auxiliaryControlsFocused, setAuxiliaryControlsFocused] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
+  const [colorSchemeMenuOpen, setColorSchemeMenuOpen] = useState(false)
   const auxiliaryControlsHidden = useStickySearchProgress(
     scrollContainer,
     stickyToolbar,
     {
       distance: 64,
       compactThreshold: 0.96,
-      paused: auxiliaryControlsFocused || languageMenuOpen,
+      paused: auxiliaryControlsFocused || languageMenuOpen || colorSchemeMenuOpen,
     },
   )
 
@@ -161,13 +162,13 @@ export function App({ api }: AppProps) {
       globalMasked,
       viewMode,
       language,
-      theme,
+      colorScheme,
       pinnedTabIds: [...pinnedTabIds],
       pinnedDomainKeys: [...pinnedDomainKeys],
       favoriteUrls: [...favoriteUrls],
       filter: filter === 'current-window' ? 'all' : filter,
     })
-  }, [favoriteUrls, filter, globalMasked, language, pinnedDomainKeys, pinnedTabIds, theme, viewMode])
+  }, [favoriteUrls, filter, globalMasked, language, pinnedDomainKeys, pinnedTabIds, colorScheme, viewMode])
 
   useEffect(() => {
     saveCustomGroups(customGroups)
@@ -182,8 +183,8 @@ export function App({ api }: AppProps) {
   }, [locale])
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-  }, [theme])
+    document.documentElement.dataset.colorScheme = colorScheme
+  }, [colorScheme])
 
   useEffect(() => () => {
     for (const timers of [copiedResetTimersRef.current, markdownCopiedResetTimersRef.current]) {
@@ -960,6 +961,7 @@ export function App({ api }: AppProps) {
                     value={language}
                     onOpenChange={(open, reason) => {
                       setLanguageMenuOpen(open)
+                      if (open) setColorSchemeMenuOpen(false)
                       if (!open && reason === 'outside-pointer') {
                         setAuxiliaryControlsFocused(false)
                       }
@@ -967,7 +969,19 @@ export function App({ api }: AppProps) {
                     onChange={setLanguage}
                     t={t}
                   />
-                  <ThemeToggle theme={theme} onChange={setTheme} t={t} />
+                  <ColorSchemeMenu
+                    open={colorSchemeMenuOpen}
+                    value={colorScheme}
+                    onOpenChange={(open, reason) => {
+                      setColorSchemeMenuOpen(open)
+                      if (open) setLanguageMenuOpen(false)
+                      if (!open && reason === 'outside-pointer') {
+                        setAuxiliaryControlsFocused(false)
+                      }
+                    }}
+                    onChange={setColorScheme}
+                    t={t}
+                  />
                 </>
               }
               afterMaskAction={

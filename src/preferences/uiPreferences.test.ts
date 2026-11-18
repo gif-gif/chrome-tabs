@@ -16,7 +16,7 @@ describe('UI preferences', () => {
       globalMasked: false,
       viewMode: 'list',
       language: 'auto',
-      theme: 'classic',
+      colorScheme: 'auto',
       pinnedTabIds: [],
       pinnedDomainKeys: [],
       favoriteUrls: [],
@@ -39,7 +39,7 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'auto',
-      theme: 'classic',
+      colorScheme: 'auto',
       pinnedTabIds: [],
       pinnedDomainKeys: [],
       favoriteUrls: [],
@@ -61,7 +61,7 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'en',
-      theme: 'classic',
+      colorScheme: 'auto',
       pinnedTabIds: [],
       pinnedDomainKeys: [],
       favoriteUrls: [],
@@ -81,7 +81,7 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'auto',
-      theme: 'classic',
+      colorScheme: 'auto',
       pinnedTabIds: [],
       pinnedDomainKeys: [],
       favoriteUrls: [],
@@ -162,61 +162,12 @@ describe('UI preferences', () => {
     }
   })
 
-  it.each([
-    'aurora',
-    'sunset',
-    'twilight',
-    'ocean',
-    'forest',
-    'sakura',
-    'graphite',
-    'lemon',
-    'coffee',
-    'midnight',
-    'lavender',
-    'mint',
-    'coral',
-    'sky',
-    'amber',
-    'teal',
-    'ruby',
-    'plum',
-    'sand',
-    'ice',
-    'moss',
-    'peach',
-    'cobalt',
-    'orchid',
-    'crimson',
-  ] as const)(
-    'restores the supported %s theme',
-    (theme) => {
+  it.each(['auto', 'light', 'dark'] as const)('restores the supported %s color scheme', (colorScheme) => {
     localStorage.setItem(
       UI_PREFERENCES_KEY,
-      JSON.stringify({
-        version: 1,
-        globalMasked: false,
-        viewMode: 'list',
-        language: 'en',
-        theme,
-      }),
+      JSON.stringify({ version: 1, globalMasked: false, viewMode: 'list', language: 'en', colorScheme }),
     )
-    expect(loadUiPreferences()).toMatchObject({ theme })
-    },
-  )
-
-  it('falls back only an invalid theme field', () => {
-    localStorage.setItem(
-      UI_PREFERENCES_KEY,
-      JSON.stringify({
-        version: 1,
-        globalMasked: false,
-        viewMode: 'list',
-        language: 'en',
-        theme: 'unknown',
-      }),
-    )
-    expect(loadUiPreferences()).toMatchObject({ theme: 'classic' })
+    expect(loadUiPreferences()).toMatchObject({ colorScheme })
   })
 
   it.each([
@@ -250,7 +201,7 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'zh-CN',
-      theme: 'aurora',
+      colorScheme: 'dark',
       pinnedTabIds: [102],
       pinnedDomainKeys: ['example.com'],
       favoriteUrls: ['https://example.com/favorite'],
@@ -263,7 +214,7 @@ describe('UI preferences', () => {
       globalMasked: true,
       viewMode: 'domain',
       language: 'zh-CN',
-      theme: 'aurora',
+      colorScheme: 'dark',
       pinnedTabIds: [102],
       pinnedDomainKeys: ['example.com'],
       favoriteUrls: ['https://example.com/favorite'],
@@ -288,6 +239,18 @@ describe('UI preferences', () => {
   it('persists the custom group view mode', () => {
     saveUiPreferences({ ...defaultUiPreferences, viewMode: 'custom' })
     expect(loadUiPreferences().viewMode).toBe('custom')
+  })
+
+
+  it('restores a valid color scheme and ignores the removed theme field', () => {
+    saveUiPreferences({ ...defaultUiPreferences, colorScheme: 'dark' })
+    expect(loadUiPreferences().colorScheme).toBe('dark')
+
+    localStorage.setItem(UI_PREFERENCES_KEY, JSON.stringify({
+      version: 1, globalMasked: false, viewMode: 'list', theme: 'aurora', colorScheme: 'sepia',
+    }))
+    expect(loadUiPreferences()).toMatchObject({ colorScheme: 'auto' })
+    expect(loadUiPreferences()).not.toHaveProperty('theme')
   })
 
 })
