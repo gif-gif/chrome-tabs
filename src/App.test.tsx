@@ -1080,16 +1080,14 @@ describe('App integration', () => {
     expect(container.innerHTML).not.toContain('Google private close failure')
   })
 
-  it('places the domain collapse-all control directly beside the global privacy button only in domain mode', async () => {
+  it('places the collapse-all control directly beside the global privacy button', async () => {
     storeUiPreferences(false)
     const api = createTestApi()
     const user = userEvent.setup()
     const { container } = render(<App api={api} />)
 
     await screen.findByText('GitHub - Chrome Tabs')
-    expect(
-      screen.queryByRole('button', { name: '全部折叠分组' }),
-    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '全部折叠分组' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '域名分组视图' }))
 
@@ -2289,6 +2287,34 @@ describe('progressive sticky search toolbar', () => {
 
     await user.click(screen.getByRole('button', { name: '取消' }))
     expect(screen.queryByRole('textbox', { name: '新分组名称' })).not.toBeInTheDocument()
+  })
+
+
+  it('collapses and expands all windows in list view and all groups in custom view', async () => {
+    storeUiPreferences(false)
+    localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+      version: 1,
+      groups: [{ id: 'g1', name: '工作', urls: ['https://github.com/example/chrome-tabs'] }],
+    }))
+    const user = userEvent.setup()
+    render(<App api={createTestApi()} />)
+    await screen.findByText('GitHub - Chrome Tabs')
+
+    const expanded = () => screen.getAllByRole('region')
+      .map((region) => region.querySelector('[aria-expanded]')?.getAttribute('aria-expanded'))
+
+    await user.click(screen.getByRole('button', { name: '全部折叠分组' }))
+    expect(expanded()).toEqual(['false', 'false'])
+    expect(screen.queryByText('GitHub - Chrome Tabs')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '全部展开分组' }))
+    expect(expanded()).toEqual(['true', 'true'])
+
+    await user.click(screen.getByRole('button', { name: '自定义分组视图' }))
+    await user.click(screen.getByRole('button', { name: '全部折叠分组' }))
+    expect(expanded().every((value) => value === 'false')).toBe(true)
+    expect(screen.queryByText('GitHub - Chrome Tabs')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '全部展开分组' }))
+    expect(expanded().every((value) => value === 'true')).toBe(true)
   })
 
 })

@@ -218,6 +218,24 @@ export function createRestoredTabIds(
   ]
 }
 
+/**
+ * Collapse-all toggle for a set of visible sections: expands them all when
+ * every one is collapsed, otherwise collapses them all. Keys of hidden
+ * sections keep their state.
+ */
+export function toggleAllCollapsed<K>(
+  collapsed: ReadonlySet<K>,
+  visibleKeys: readonly K[],
+): Set<K> {
+  const next = new Set(collapsed)
+  const allCollapsed = visibleKeys.length > 0 && visibleKeys.every((key) => collapsed.has(key))
+  for (const key of visibleKeys) {
+    if (allCollapsed) next.delete(key)
+    else next.add(key)
+  }
+  return next
+}
+
 export function resolveMasked(
   globalMasked: boolean,
   overrides: ReadonlyMap<number, boolean>,

@@ -15,6 +15,7 @@ import {
   resolveMasked,
   resolveSafeFaviconUrl,
   sortWindowsCurrentFirst,
+  toggleAllCollapsed,
 } from './tabs'
 
 type RawDisplayTabFields = Extract<
@@ -901,5 +902,13 @@ describe('registrable domain grouping', () => {
     expect(filteredGroups[0].key).not.toBe(allGroups[0].key)
     expect(JSON.stringify(allGroups)).not.toContain('google.com')
     expect(JSON.stringify(allGroups)).not.toContain('example.com')
+  })
+})
+
+describe('toggleAllCollapsed', () => {
+  it('collapses all visible keys unless all are already collapsed, keeping hidden keys', () => {
+    expect(toggleAllCollapsed(new Set(['a', 'z']), ['a', 'b'])).toEqual(new Set(['a', 'b', 'z']))
+    expect(toggleAllCollapsed(new Set(['a', 'b', 'z']), ['a', 'b'])).toEqual(new Set(['z']))
+    expect(toggleAllCollapsed(new Set(['z']), [])).toEqual(new Set(['z']))
   })
 })

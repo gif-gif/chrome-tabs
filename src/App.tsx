@@ -35,6 +35,7 @@ import {
   getTabDomainGroupKey,
   resolveMasked,
   sortWindowsCurrentFirst,
+  toggleAllCollapsed,
 } from './domain/tabs'
 import { useChromeTabs } from './hooks/useChromeTabs'
 import { useStickySearchProgress } from './hooks/useStickySearchProgress'
@@ -355,9 +356,18 @@ export function App({ api }: AppProps) {
     () => windows.reduce((count, window) => count + window.tabs.length, 0),
     [windows],
   )
-  const allDomainGroupsCollapsed =
-    displayDomainGroups.length > 0 &&
-    displayDomainGroups.every((group) => collapsedDomainGroupKeys.has(group.key))
+  const visibleSectionKeys = {
+    list: displayWindows.map((window) => window.id),
+    domain: displayDomainGroups.map((group) => group.key),
+    custom: displayCustomGroups.map((group) => group.key),
+  }
+  const visibleSectionCount = visibleSectionKeys[viewMode].length
+  const allSectionsCollapsed =
+    viewMode === 'list'
+      ? visibleSectionKeys.list.length > 0 && visibleSectionKeys.list.every((id) => collapsedWindowIds.has(id))
+      : viewMode === 'domain'
+        ? visibleSectionKeys.domain.length > 0 && visibleSectionKeys.domain.every((key) => collapsedDomainGroupKeys.has(key))
+        : visibleSectionKeys.custom.length > 0 && visibleSectionKeys.custom.every((key) => collapsedCustomGroupKeys.has(key))
 
   useEffect(() => {
     setCollapsedDomainGroupKeys((current) => {
@@ -473,25 +483,14 @@ export function App({ api }: AppProps) {
     })
   }
 
-  function handleToggleAllDomainGroups() {
-    setCollapsedDomainGroupKeys((current) => {
-      if (
-        displayDomainGroups.length > 0 &&
-        displayDomainGroups.every((group) => current.has(group.key))
-      ) {
-        const next = new Set(current)
-        for (const group of displayDomainGroups) {
-          next.delete(group.key)
-        }
-        return next
-      }
-
-      const next = new Set(current)
-      for (const group of displayDomainGroups) {
-        next.add(group.key)
-      }
-      return next
-    })
+  function handleToggleAllSections() {
+    if (viewMode === 'list') {
+      setCollapsedWindowIds((current) => toggleAllCollapsed(current, visibleSectionKeys.list))
+    } else if (viewMode === 'domain') {
+      setCollapsedDomainGroupKeys((current) => toggleAllCollapsed(current, visibleSectionKeys.domain))
+    } else {
+      setCollapsedCustomGroupKeys((current) => toggleAllCollapsed(current, visibleSectionKeys.custom))
+    }
   }
 
   function handleCustomGroupCollapseToggle(groupKey: string) {
@@ -972,15 +971,15 @@ export function App({ api }: AppProps) {
                 </>
               }
               afterMaskAction={
-                viewMode === 'domain' && displayDomainGroups.length > 0 ? (
+                visibleSectionCount > 0 ? (
                   <button
                     type="button"
                     className="compact-icon-button domain-collapse-all-button"
-                    aria-label={allDomainGroupsCollapsed ? t('expandAllGroups') : t('collapseAllGroups')}
-                    title={allDomainGroupsCollapsed ? t('expandAllGroups') : t('collapseAllGroups')}
-                    onClick={handleToggleAllDomainGroups}
+                    aria-label={allSectionsCollapsed ? t('expandAllGroups') : t('collapseAllGroups')}
+                    title={allSectionsCollapsed ? t('expandAllGroups') : t('collapseAllGroups')}
+                    onClick={handleToggleAllSections}
                   >
-                    <Icon name={allDomainGroupsCollapsed ? 'expand-all' : 'collapse-all'} width={16} height={16} />
+                    <Icon name={allSectionsCollapsed ? 'expand-all' : 'collapse-all'} width={16} height={16} />
                   </button>
                 ) : null
               }
