@@ -62,7 +62,7 @@ export function TabRow({
   return <li className={rowClassName} data-tab-id={tab.id} aria-busy={pending || undefined}>
     <button type="button" className="tab-main" aria-label={activationLabel} aria-current={tab.active ? 'page' : undefined} disabled={pending} onClick={() => onActivate(tab)}>
       {faviconUrl ? <img src={faviconUrl} alt="" /> : <Icon name="tab" />}
-      <span className="tab-copy"><span className="tab-title">{tab.displayTitle}</span>{!tab.masked && tab.displayUrl ? <span className="tab-url">{tab.displayUrl}</span> : null}{tab.active ? <span className="current-label">{t('currentTab')}</span> : null}</span>
+      <span className="tab-copy"><span className="tab-title">{tab.displayTitle}</span>{!tab.masked && tab.displayUrl ? <span className="tab-url">{tab.displayUrl}</span> : null}</span>
     </button>
     <button type="button" className="icon-button tab-action row-action-button row-privacy-action" aria-label={privacyLabel} onClick={(event) => isolateAction(event, onToggleMask)}><Icon name={tab.masked ? 'eye' : 'eye-off'} width={15} height={15} /></button>
     <button type="button" className={`icon-button tab-action row-action-button row-copy-action${copied ? ' is-copied' : ''}`} aria-label={t('copyTabLink')} data-copied={copied || undefined} disabled={pending} onClick={(event) => isolateAction(event, onCopy)}><Icon name={copied ? 'check' : 'copy'} width={15} height={15} /></button>
