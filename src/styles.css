@@ -21,11 +21,13 @@
   --color-focus: #0b57d0;
   --color-on-accent: #ffffff;
   /* Group headers (window, domain and custom groups) sit on a tinted band
-     so they read apart from the white tab rows. */
+     so they read apart from the white tab rows. The tab count is plain
+     text a step lighter than the name; its color keeps 4.5:1 contrast on
+     the header's rest, hover and pressed tints. */
   --color-group-header: #eceef2;
   --color-group-header-hover: #e1e4e9;
   --color-group-header-pressed: #d6dae0;
-  --color-group-count: #dadde3;
+  --color-group-count-text: #55595e;
   --shadow-sticky: 0 1px 3px rgb(60 64 67 / 18%);
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -65,7 +67,7 @@
   --color-group-header: #3c3f44;
   --color-group-header-hover: #46494f;
   --color-group-header-pressed: #4f535a;
-  --color-group-count: #53575e;
+  --color-group-count-text: #c8cbd0;
   --shadow-sticky: 0 1px 4px rgb(0 0 0 / 45%);
 }
 
@@ -90,7 +92,7 @@
     --color-group-header: #3c3f44;
     --color-group-header-hover: #46494f;
     --color-group-header-pressed: #4f535a;
-    --color-group-count: #53575e;
+    --color-group-count-text: #c8cbd0;
     --shadow-sticky: 0 1px 4px rgb(0 0 0 / 45%);
   }
 }
@@ -494,10 +496,7 @@ main {
 }
 
 .window-toggle > span:last-child {
-  padding: 1px 8px;
-  color: var(--color-text);
-  background: var(--color-group-count);
-  border-radius: 999px;
+  color: var(--color-group-count-text);
   font-size: 12px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
