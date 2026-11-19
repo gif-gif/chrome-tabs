@@ -104,7 +104,7 @@ describe('Manifest V3 action popup wiring', () => {
 })
 
 describe('localized extension metadata', () => {
-  it('uses Chrome message placeholders and matching non-empty English and Chinese resources', () => {
+  it('uses Chrome message placeholders and matching non-empty English, Simplified Chinese, and Traditional Chinese resources', () => {
     const manifest = readManifest() as ExtensionManifest & {
       default_locale?: string
       name?: string
@@ -117,8 +117,10 @@ describe('localized extension metadata', () => {
 
     const englishPath = resolve(publicDir, '_locales/en/messages.json')
     const chinesePath = resolve(publicDir, '_locales/zh_CN/messages.json')
+    const traditionalChinesePath = resolve(publicDir, '_locales/zh_TW/messages.json')
     expect(existsSync(englishPath)).toBe(true)
     expect(existsSync(chinesePath)).toBe(true)
+    expect(existsSync(traditionalChinesePath)).toBe(true)
 
     const english = JSON.parse(readFileSync(englishPath, 'utf8')) as Record<
       string,
@@ -128,13 +130,17 @@ describe('localized extension metadata', () => {
       string,
       { message?: string }
     >
+    const traditionalChinese = JSON.parse(
+      readFileSync(traditionalChinesePath, 'utf8'),
+    ) as Record<string, { message?: string }>
     expect(Object.keys(english).sort()).toEqual(Object.keys(chinese).sort())
+    expect(Object.keys(english).sort()).toEqual(Object.keys(traditionalChinese).sort())
     expect(Object.keys(english).sort()).toEqual([
       'actionTitle',
       'extensionDescription',
       'extensionName',
     ])
-    for (const messages of [english, chinese]) {
+    for (const messages of [english, chinese, traditionalChinese]) {
       for (const entry of Object.values(messages)) {
         expect(entry.message?.trim()).toBeTruthy()
       }

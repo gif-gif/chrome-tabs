@@ -74,7 +74,7 @@ it('does not reset a moved menu focus when the parent callback identity changes'
 
   expect(screen.getByRole('menuitemradio', { name: 'Auto (browser language)' })).toHaveFocus()
   await user.keyboard('{ArrowDown}')
-  const chinese = screen.getByRole('menuitemradio', { name: '中文' })
+  const chinese = screen.getByRole('menuitemradio', { name: '简体中文' })
   expect(chinese).toHaveFocus()
 
   view.rerender(

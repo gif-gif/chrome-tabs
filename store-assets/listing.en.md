@@ -49,7 +49,7 @@ PRIVACY FIRST
 
 COMFORTABLE TO USE
 • Light, dark or follow-the-system appearance.
-• English and Simplified Chinese interface; follows your browser language by default.
+• English, Simplified Chinese, and Traditional Chinese interface; follows your browser language by default.
 • Popup closes when it loses focus and never takes space from the web page.
 
 HOW TO USE
@@ -69,8 +69,9 @@ Requires Chrome 141 or later.
 
 - English (default locale, `en`)
 - Chinese (Simplified) (`zh_CN`)
+- Chinese (Traditional) (`zh_TW`)
 
-The store uses the localized strings from `_locales`; paste the Chinese detailed description from `listing.zh-CN.md` into the zh_CN listing tab in the dashboard.
+The store uses the localized strings from `_locales`; paste the Chinese detailed description from `listing.zh-CN.md` into the zh_CN listing tab in the dashboard. There is no separate Traditional Chinese listing copy yet; the zh_TW tab can stay on the English fallback or be filled with a Traditional conversion of `listing.zh-CN.md`.
 
 ### Assets for this locale
 

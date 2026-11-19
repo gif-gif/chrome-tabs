@@ -163,7 +163,9 @@ describe('App internationalization', () => {
   })
 
   it.each([
-    { languages: ['zh-TW'], toolbar: '标签页工具栏', lang: 'zh-CN' },
+    { languages: ['zh-CN'], toolbar: '标签页工具栏', lang: 'zh-CN' },
+    { languages: ['zh-TW'], toolbar: '分頁工具列', lang: 'zh-TW' },
+    { languages: ['zh-HK'], toolbar: '分頁工具列', lang: 'zh-TW' },
     { languages: ['en-US'], toolbar: 'Tab toolbar', lang: 'en' },
     { languages: ['fr-FR'], toolbar: 'Tab toolbar', lang: 'en' },
   ])('resolves automatic browser language for $languages', async ({ languages, toolbar, lang }) => {
@@ -194,7 +196,14 @@ describe('App internationalization', () => {
     expect(menu.parentElement?.parentElement).toHaveClass('app-header-actions')
     expect(trigger).toHaveAttribute('aria-expanded', 'true')
     expect(within(menu).getByRole('menuitemradio', { name: 'Auto (browser language)' })).toHaveAttribute('aria-checked', 'true')
-    expect(within(menu).getByRole('menuitemradio', { name: '中文' })).toBeInTheDocument()
+    expect(within(menu).getByRole('menuitemradio', { name: '简体中文' })).toBeInTheDocument()
+    expect(within(menu).getByRole('menuitemradio', { name: '繁體中文' })).toBeInTheDocument()
+    expect(within(menu).getAllByRole('menuitemradio').map((item) => item.textContent)).toEqual([
+      'Auto (browser language)',
+      '简体中文',
+      '繁體中文',
+      'English',
+    ])
     expect(within(menu).getByRole('menuitemradio', { name: 'English' })).toBeInTheDocument()
   })
 
@@ -213,7 +222,7 @@ describe('App internationalization', () => {
     await user.keyboard('{ArrowDown}')
     expect(automaticOption).toHaveFocus()
     await user.keyboard('{ArrowDown}')
-    expect(screen.getByRole('menuitemradio', { name: '中文' })).toHaveFocus()
+    expect(screen.getByRole('menuitemradio', { name: '简体中文' })).toHaveFocus()
     await user.keyboard('{End}')
     expect(screen.getByRole('menuitemradio', { name: 'English' })).toHaveFocus()
     await user.keyboard('{Home}')
@@ -315,7 +324,7 @@ describe('App internationalization', () => {
     await user.click(groupToggle)
     expect(groupToggle).toHaveAttribute('aria-expanded', 'false')
 
-    await chooseLanguage(user, 'Display language', '中文')
+    await chooseLanguage(user, 'Display language', '简体中文')
 
     expect(screen.getByRole('searchbox', { name: '搜索标签页' })).toHaveValue('github')
     expect(within(screen.getByRole('group', { name: '标签页筛选' })).getByRole('button', { name: '收藏标签' })).toHaveAttribute('aria-pressed', 'true')
@@ -357,7 +366,7 @@ describe('App internationalization', () => {
     )
     const group = screen.getByRole('region', { name: /example\.com/ })
     await user.click(within(group).getByRole('button', { expanded: true }))
-    await chooseLanguage(user, 'Display language', '中文')
+    await chooseLanguage(user, 'Display language', '简体中文')
 
     await setToolbarScroll(container, 64, '标签页工具栏')
     expect(screen.getByRole('searchbox', { name: '搜索标签页' })).toHaveValue('example')
@@ -392,6 +401,28 @@ describe('App internationalization', () => {
     await chooseLanguage(user, 'Display language', 'Auto (browser language)')
     expect(await screen.findByRole('toolbar', { name: '标签页工具栏' })).toBeInTheDocument()
     expect(document.documentElement.lang).toBe('zh-CN')
+  })
+
+  it('switches to Traditional Chinese manually and restores it after remount', async () => {
+    setBrowserLanguages(['en-US'])
+    const user = userEvent.setup()
+    const first = render(<App api={createApi()} />)
+    await screen.findByRole('toolbar', { name: 'Tab toolbar' })
+    await chooseLanguage(user, 'Display language', '繁體中文')
+    expect(await screen.findByRole('toolbar', { name: '分頁工具列' })).toBeInTheDocument()
+    expect(screen.getByRole('searchbox', { name: '搜尋分頁' })).toBeInTheDocument()
+    expect(document.documentElement.lang).toBe('zh-TW')
+    await waitFor(() => {
+      expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '')).toMatchObject({
+        language: 'zh-TW',
+      })
+    })
+    first.unmount()
+
+    render(<App api={createApi()} />)
+    expect(await screen.findByRole('toolbar', { name: '分頁工具列' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '顯示語言' }))
+    expect(screen.getByRole('menuitemradio', { name: '繁體中文' })).toHaveAttribute('aria-checked', 'true')
   })
 
   it('translates English search, filters, grouping, status, confirmation, and operation errors', async () => {
@@ -433,7 +464,7 @@ describe('App internationalization', () => {
     expect(container.innerHTML).not.toContain('GitHub - Chrome Tabs')
     expect(screen.getByText('Mail Inbox')).toBeInTheDocument()
 
-    await chooseLanguage(user, 'Display language', '中文')
+    await chooseLanguage(user, 'Display language', '简体中文')
 
     expect(screen.getAllByText('内容已隐藏')).toHaveLength(1)
     expect(container.innerHTML).not.toContain('GitHub - Chrome Tabs')
@@ -464,7 +495,7 @@ describe('App internationalization', () => {
       within(pendingRow as HTMLElement).getByRole('button', { name: 'Close tab' }),
     ).toBeDisabled()
 
-    await chooseLanguage(user, 'Display language', '中文')
+    await chooseLanguage(user, 'Display language', '简体中文')
 
     const pendingButton = screen.getByRole('button', { name: 'Mail Inbox' })
     await setToolbarScroll(container, 64, '标签页工具栏')
@@ -496,7 +527,7 @@ describe('App internationalization', () => {
       'Unable to switch to this tab. Please try again.',
     )
 
-    await chooseLanguage(user, 'Display language', '中文')
+    await chooseLanguage(user, 'Display language', '简体中文')
 
     expect(screen.getByRole('status')).toHaveTextContent(
       '无法切换到该标签页，请重试。',
@@ -521,7 +552,7 @@ describe('App internationalization', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Unable to load tabs. Please try again.',
     )
-    await chooseLanguage(user, 'Display language', '中文')
+    await chooseLanguage(user, 'Display language', '简体中文')
     expect(screen.getByRole('alert')).toHaveTextContent(
       '无法加载标签页，请重试。',
     )
@@ -547,7 +578,7 @@ describe('App internationalization', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Live synchronization is temporarily unavailable. Please try again.',
     )
-    await chooseLanguage(user, 'Display language', '中文')
+    await chooseLanguage(user, 'Display language', '简体中文')
     expect(screen.getByRole('alert')).toHaveTextContent(
       '实时同步暂时不可用，请重试。',
     )

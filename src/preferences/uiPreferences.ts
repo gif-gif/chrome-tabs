@@ -46,7 +46,7 @@ function isPersistedTabFilter(value: unknown): value is PersistedTabFilter {
 }
 
 function isLanguage(value: unknown): value is UiLanguagePreference {
-  return value === 'auto' || value === 'zh-CN' || value === 'en'
+  return value === 'auto' || value === 'zh-CN' || value === 'zh-TW' || value === 'en'
 }
 
 function isPositiveIntegerArray(value: unknown): value is number[] {

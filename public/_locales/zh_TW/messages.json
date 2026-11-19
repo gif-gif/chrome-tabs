@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "分頁管理器"
+  },
+  "extensionDescription": {
+    "message": "透過精簡的 Chrome 工具列彈出視窗管理並快速存取瀏覽器分頁。"
+  },
+  "actionTitle": {
+    "message": "開啟分頁管理器"
+  }
+}

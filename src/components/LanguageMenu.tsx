@@ -12,7 +12,7 @@ interface LanguageMenuProps {
   t: Translator
 }
 
-const values: UiLanguagePreference[] = ['auto', 'zh-CN', 'en']
+const values: UiLanguagePreference[] = ['auto', 'zh-CN', 'zh-TW', 'en']
 
 export function LanguageMenu({ open, value, onOpenChange, onChange, t }: LanguageMenuProps) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -22,7 +22,8 @@ export function LanguageMenu({ open, value, onOpenChange, onChange, t }: Languag
 
   const labels: Record<UiLanguagePreference, string> = {
     auto: t('autoLanguage'),
-    'zh-CN': t('chineseLanguage'),
+    'zh-CN': t('simplifiedChineseLanguage'),
+    'zh-TW': t('traditionalChineseLanguage'),
     en: t('englishLanguage'),
   }
 
