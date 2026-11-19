@@ -211,23 +211,6 @@ main {
   white-space: nowrap;
 }
 
-.tab-count {
-  display: inline-grid;
-  flex: 0 0 auto;
-  min-width: 28px;
-  height: 24px;
-  margin: 0;
-  padding: 0 4px;
-  place-items: center;
-  color: var(--color-text-muted);
-  background: transparent;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-figures);
-  font-size: 12px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 
 .app-header-actions,
 .view-mode-switch {
@@ -829,10 +812,6 @@ main {
 
   .app-header {
     gap: 1px;
-  }
-
-  .tab-count {
-    padding-inline: 5px;
   }
 
   .app-header-actions {

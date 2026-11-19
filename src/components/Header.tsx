@@ -4,7 +4,6 @@ import type { TabSortStep } from '../types'
 import { Icon, type IconName } from './Icon'
 
 interface HeaderProps {
-  count: number
   globalMasked: boolean
   onToggleMask: () => void
   onSortTabs?: () => void
@@ -22,7 +21,6 @@ const sortIcons: Record<TabSortStep, IconName> = {
 }
 
 export function Header({
-  count,
   globalMasked,
   onToggleMask,
   onSortTabs,
@@ -38,13 +36,9 @@ export function Header({
     : sortStep === 'desc'
       ? sortingTabs ? t('sortingTabsByDomainDescending') : t('sortTabsByDomainDescending')
       : sortingTabs ? t('restoringOriginalTabOrder') : t('restoreOriginalTabOrder')
-  const countLabel = t('tabCount', { count })
 
   return (
     <header className="app-header">
-      <p className="tab-count" title={countLabel} aria-label={countLabel}>
-        {count}
-      </p>
       <div className="app-header-actions">
         {onSortTabs ? (
           <button

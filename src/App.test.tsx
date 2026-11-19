@@ -133,21 +133,18 @@ describe('Icon', () => {
 })
 
 describe('Header', () => {
-  it('renders a compact count and icon-only dynamic global privacy action', async () => {
+  it('renders icon-only actions without a tab count', async () => {
     const user = userEvent.setup()
     const onToggleMask = vi.fn()
 
     const { container, rerender } = render(
-      <Header t={zh} count={41} globalMasked onToggleMask={onToggleMask} />,
+      <Header t={zh} globalMasked onToggleMask={onToggleMask} />,
     )
 
     expect(screen.queryByText('标签页管理器')).not.toBeInTheDocument()
     expect(screen.queryByRole('heading')).not.toBeInTheDocument()
-    const count = screen.getByText('41')
-    expect(count).toHaveTextContent(/^41$/)
-    expect(count).toHaveAttribute('title', '41 个标签')
-    expect(count).toHaveAttribute('aria-label', '41 个标签')
-    expect(screen.queryByText('41 个标签')).not.toBeInTheDocument()
+    expect(container.querySelector('.tab-count')).not.toBeInTheDocument()
+    expect(container.querySelector('.app-header')).toHaveTextContent('')
     const revealButton = screen.getByRole('button', {
       name: '显示全部标签信息',
     })
@@ -164,7 +161,7 @@ describe('Header', () => {
     await user.click(revealButton)
     expect(onToggleMask).toHaveBeenCalledTimes(1)
 
-    rerender(<Header t={zh} count={41} globalMasked={false} onToggleMask={onToggleMask} />)
+    rerender(<Header t={zh} globalMasked={false} onToggleMask={onToggleMask} />)
     const hideButton = screen.getByRole('button', {
       name: '隐藏全部标签信息',
     })
@@ -519,7 +516,7 @@ async function renderReadyApp(api = createTestApi()) {
     value: { writeText: clipboardWriteText },
   })
   const view = render(<App api={api} />)
-  await screen.findByLabelText('3 个标签')
+  await waitFor(() => expect(document.querySelectorAll('.tab-row')).toHaveLength(3))
   await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(1))
   await waitFor(() =>
     expect(screen.queryByText('正在加载标签页…')).not.toBeInTheDocument(),
@@ -585,13 +582,14 @@ describe('App integration', () => {
     )
   })
 
-  it('keeps count, privacy, search, and the view switch inside one sticky toolbar without filter tabs', async () => {
+  it('keeps privacy, search, and the view switch inside one sticky toolbar without a tab count or filter tabs', async () => {
     const { container } = await renderReadyApp()
 
     expect(screen.queryByText('标签页管理器')).not.toBeInTheDocument()
     const toolbar = screen.getByRole('toolbar', { name: '标签页工具栏' })
     expect(toolbar).toHaveClass('sticky-controls')
-    expect(within(toolbar).getByLabelText('3 个标签')).toHaveTextContent(/^3$/)
+    expect(within(toolbar).queryByLabelText('3 个标签')).not.toBeInTheDocument()
+    expect(toolbar.querySelector('.tab-count')).not.toBeInTheDocument()
     expect(
       within(toolbar).getByRole('button', { name: '显示全部标签信息' }),
     ).toHaveTextContent('')
@@ -1055,7 +1053,7 @@ describe('App integration', () => {
     const api = createTestApi(async () => [...fixtureWindows].reverse())
     const { container } = await renderReadyApp(api)
 
-    expect(screen.getByLabelText('3 个标签')).toHaveTextContent(/^3$/)
+    expect(container.querySelectorAll('.tab-row')).toHaveLength(3)
     const groups = screen.getAllByRole('region', { name: /窗口/ })
     expect(within(groups[0]).getByText('当前窗口')).toBeInTheDocument()
     expect(within(groups[1]).getByText('窗口 2')).toBeInTheDocument()
@@ -1197,7 +1195,7 @@ describe('App integration', () => {
 
     expect(screen.getByText('正在加载标签页…')).toBeInTheDocument()
     resolveInitial(fixtureWindows)
-    await screen.findByLabelText('3 个标签')
+    await waitFor(() => expect(document.querySelectorAll('.tab-row')).toHaveLength(3))
 
     // A rejected operation forces the hook through its generic query error state.
     api.activateTab.mockRejectedValueOnce(new Error('GitHub - Chrome Tabs secret'))
@@ -1527,7 +1525,7 @@ describe('progressive sticky search toolbar', () => {
     const api = createTestApi()
     const user = userEvent.setup()
     const { container } = render(<App api={api} />)
-    await screen.findByLabelText('3 tabs')
+    await waitFor(() => expect(document.querySelectorAll('.tab-row')).toHaveLength(3))
     const search = screen.getByRole('searchbox', { name: 'Search tabs' })
     await user.type(search, 'github')
     await user.click(screen.getByRole('button', { name: 'Hide all tab information' }))
@@ -1626,7 +1624,7 @@ describe('progressive sticky search toolbar', () => {
     const user = userEvent.setup()
     render(<App api={api} />)
 
-    await screen.findByLabelText('6 个标签')
+    await waitFor(() => expect(document.querySelectorAll('.tab-row')).toHaveLength(6))
     await user.click(screen.getByRole('button', { name: '按域名升序排列标签页' }))
 
     await waitFor(() => expect(api.moveTabs).toHaveBeenCalledTimes(1))

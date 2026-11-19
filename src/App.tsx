@@ -339,10 +339,6 @@ export function App({ api }: AppProps) {
     () => new Set(allDomainGroups.map((group) => group.key)),
     [allDomainGroups],
   )
-  const tabCount = useMemo(
-    () => windows.reduce((count, window) => count + window.tabs.length, 0),
-    [windows],
-  )
   const visibleSectionKeys = {
     list: displayWindows.map((window) => window.id),
     domain: displayDomainGroups.map((group) => group.key),
@@ -967,7 +963,6 @@ export function App({ api }: AppProps) {
             aria-hidden={auxiliaryControlsHidden || undefined}
           >
             <Header
-              count={tabCount}
               globalMasked={globalMasked}
               onToggleMask={handleGlobalMaskToggle}
               onSortTabs={() => void handleSortTabs()}
