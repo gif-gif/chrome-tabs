@@ -340,12 +340,12 @@ describe('TabRow', () => {
     expect(
       screen.getByRole('button', { name: '隐藏此标签信息' }),
     ).not.toHaveAttribute('title')
-    expect(screen.getByText('当前标签')).toHaveClass('current-label')
-    expect(screen.getByText('当前标签').closest('li')).toHaveClass('is-active')
+    expect(screen.queryByText('当前标签')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: `${originalTitle}，当前标签` })).toHaveAttribute(
       'aria-current',
       'page',
     )
+    expect(screen.getByRole('button', { name: `${originalTitle}，当前标签` }).closest('li')).toHaveClass('is-active')
 
     await user.click(screen.getByRole('button', { name: `${originalTitle}，当前标签` }))
     expect(onActivate).toHaveBeenCalledTimes(1)
