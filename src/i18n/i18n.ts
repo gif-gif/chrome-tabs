@@ -3,6 +3,8 @@ export type UiLanguagePreference = 'auto' | SupportedLocale
 
 export const messages = {
   'zh-CN': {
+    extensionName: '标签页管理器',
+    viewInChromeWebStore: '在 Chrome 应用商店中查看',
     informationHidden: '内容已隐藏',
     maskedDomainGroup: '网站分组 {number}',
     otherPages: '其他页面',
@@ -109,6 +111,8 @@ export const messages = {
     englishLanguage: 'English',
   },
   'zh-TW': {
+    extensionName: '分頁管理器',
+    viewInChromeWebStore: '在 Chrome 線上應用程式商店中查看',
     informationHidden: '內容已隱藏',
     maskedDomainGroup: '網站群組 {number}',
     otherPages: '其他頁面',
@@ -215,6 +219,8 @@ export const messages = {
     englishLanguage: 'English',
   },
   en: {
+    extensionName: 'Tab Manager',
+    viewInChromeWebStore: 'View in the Chrome Web Store',
     informationHidden: 'Information hidden',
     maskedDomainGroup: 'Website group {number}',
     otherPages: 'Other pages',

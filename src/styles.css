@@ -228,6 +228,45 @@ main {
 }
 
 
+.extension-brand {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  height: var(--compact-control-size);
+  gap: 6px;
+  padding: 0 6px 0 4px;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--motion-fast) var(--ease);
+}
+
+a.extension-brand:hover {
+  background: var(--color-hover);
+}
+
+a.extension-brand:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.extension-brand-icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.extension-brand-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .app-header-actions,
 .view-mode-switch {
   display: inline-flex;

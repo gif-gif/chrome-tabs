@@ -135,7 +135,7 @@ describe('App internationalization', () => {
     )
 
     expect(container.querySelector('.tab-count')).not.toBeInTheDocument()
-    expect(container.querySelector('.app-header')).toHaveTextContent('')
+    expect(container.querySelector('.app-header-actions')).toHaveTextContent('')
     expect(screen.getByRole('button', { name: 'Hide all tab information' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'All tabs' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Favorite tabs' })).not.toBeInTheDocument()
@@ -667,7 +667,7 @@ describe('App internationalization', () => {
     expect(container.innerHTML).not.toContain('GitHub - Chrome Tabs')
     expect(container.innerHTML).not.toContain('TOKEN=SECRET')
     expect(container.innerHTML).not.toContain('github.com')
-    expect(container.querySelector('img')).toBeNull()
+    expect(container.querySelector('img:not(.extension-brand-icon)')).toBeNull()
     expect(screen.getAllByText('Information hidden').length).toBeGreaterThan(0)
     expect(screen.getByRole('region', { name: /Website group 1/ })).toBeInTheDocument()
   })

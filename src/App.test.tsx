@@ -16,6 +16,10 @@ import { createTranslator } from './i18n/i18n'
 
 const UI_PREFERENCES_KEY = 'chrome-tabs.ui-preferences.v1'
 const stylesSource = readFileSync('src/styles.css', 'utf8')
+const cssRule = (selector: string) =>
+  stylesSource
+    .split('\n}')
+    .find((block) => block.trimStart().startsWith(`${selector} {`)) ?? ''
 const zh = createTranslator('zh-CN')
 let clipboardWriteText: ReturnType<typeof vi.fn>
 
@@ -141,10 +145,9 @@ describe('Header', () => {
       <Header t={zh} globalMasked onToggleMask={onToggleMask} />,
     )
 
-    expect(screen.queryByText('标签页管理器')).not.toBeInTheDocument()
     expect(screen.queryByRole('heading')).not.toBeInTheDocument()
     expect(container.querySelector('.tab-count')).not.toBeInTheDocument()
-    expect(container.querySelector('.app-header')).toHaveTextContent('')
+    expect(container.querySelector('.app-header-actions')).toHaveTextContent('')
     const revealButton = screen.getByRole('button', {
       name: '显示全部标签信息',
     })
@@ -167,7 +170,66 @@ describe('Header', () => {
     })
     expect(hideButton).toHaveTextContent('')
     expect(hideButton).toHaveAttribute('title', '隐藏全部标签信息')
-    expect(container).not.toHaveTextContent('标签页管理器')
+  })
+
+  it.each([
+    ['zh-CN', '标签页管理器', '在 Chrome 应用商店中查看'],
+    ['zh-TW', '分頁管理器', '在 Chrome 線上應用程式商店中查看'],
+    ['en', 'Tab Manager', 'View in the Chrome Web Store'],
+  ] as const)('shows the extension icon and %s name as a store link', async (locale, name, hint) => {
+    const user = userEvent.setup()
+    const create = vi.fn().mockResolvedValue({})
+    const close = vi.fn()
+    vi.stubGlobal('chrome', { runtime: { id: 'abcdefghijklmnop' }, tabs: { create } })
+    vi.stubGlobal('close', close)
+
+    const { container } = render(
+      <Header t={createTranslator(locale)} globalMasked onToggleMask={vi.fn()} />,
+    )
+
+    const link = screen.getByRole('link', { name: `${name} – ${hint}` })
+    expect(link).toHaveTextContent(name)
+    expect(link).toHaveAttribute('title', hint)
+    expect(link).toHaveAttribute('href', 'https://chromewebstore.google.com/detail/abcdefghijklmnop')
+    const icon = link.querySelector('img')
+    expect(icon).toHaveAttribute('src', 'icons/icon-32.png')
+    expect(icon).toHaveAttribute('width', '16')
+    expect(icon).toHaveAttribute('alt', '')
+    expect(container.querySelector('.app-header')?.firstElementChild).toBe(link)
+
+    await user.click(link)
+    expect(create).toHaveBeenCalledTimes(1)
+    expect(create).toHaveBeenCalledWith({ url: 'https://chromewebstore.google.com/detail/abcdefghijklmnop' })
+    await waitFor(() => expect(close).toHaveBeenCalledTimes(1))
+  })
+
+  it('opens the store page from the keyboard', async () => {
+    const user = userEvent.setup()
+    const create = vi.fn().mockResolvedValue({})
+    vi.stubGlobal('chrome', { runtime: { id: 'abcdefghijklmnop' }, tabs: { create } })
+    vi.stubGlobal('close', vi.fn())
+
+    render(<Header t={zh} globalMasked onToggleMask={vi.fn()} />)
+
+    await user.tab()
+    expect(screen.getByRole('link', { name: /标签页管理器/ })).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(create).toHaveBeenCalledWith({ url: 'https://chromewebstore.google.com/detail/abcdefghijklmnop' })
+  })
+
+  it('shows the brand without a link when the extension ID is unavailable', () => {
+    render(<Header t={zh} globalMasked onToggleMask={vi.fn()} />)
+
+    expect(screen.getByText('标签页管理器')).toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+  })
+
+  it('truncates a long name instead of squeezing the header actions', () => {
+    expect(cssRule('.extension-brand')).toMatch(/min-width:\s*0/)
+    expect(cssRule('.extension-brand')).toMatch(/flex:\s*0 1 auto/)
+    expect(cssRule('.extension-brand-name')).toMatch(/text-overflow:\s*ellipsis/)
+    expect(cssRule('.extension-brand-name')).toMatch(/overflow:\s*hidden/)
+    expect(cssRule('.app-header-actions')).toMatch(/margin-left:\s*auto/)
   })
 })
 
@@ -596,7 +658,6 @@ describe('App integration', () => {
   it('keeps privacy, search, and the view switch inside one sticky toolbar without a tab count or filter tabs', async () => {
     const { container } = await renderReadyApp()
 
-    expect(screen.queryByText('标签页管理器')).not.toBeInTheDocument()
     const toolbar = screen.getByRole('toolbar', { name: '标签页工具栏' })
     expect(toolbar).toHaveClass('sticky-controls')
     expect(within(toolbar).queryByLabelText('3 个标签')).not.toBeInTheDocument()
@@ -1799,7 +1860,7 @@ describe('progressive sticky search toolbar', () => {
     expect(screen.getByRole('checkbox', { name: /未打开/ })).toBeChecked()
     expect(container).not.toHaveTextContent('GitHub')
     expect(container).not.toHaveTextContent('closed.example.com')
-    expect(container.querySelector('img')).toBeNull()
+    expect(container.querySelector('img:not(.extension-brand-icon)')).toBeNull()
   })
 
 
