@@ -31,9 +31,23 @@ const COPY = {
       ['dark-private', '隐私模式与暗色主题', '共享屏幕时一键隐藏标题和网址。支持浅色、暗色或跟随系统。'],
     ],
   },
+  'zh-TW': {
+    name: '分頁管理器',
+    tagline: '在一個精簡的彈出視窗裡尋找、分組和整理所有分頁。',
+    shots: [
+      ['list', '所有視窗，一覽無遺', '一眼看到全部開啟的分頁，點一下即可切換，還能直接關閉、複製連結、收藏或置頂。'],
+      ['domain', '依網站自動分組', '子網域歸到同一個網站下。常用群組可以置頂，整組分頁一鍵關閉。'],
+      ['search', '即時搜尋', '輸入幾個字，即可在所有視窗中依標題或網址篩選。'],
+      ['custom', '自訂群組', '建立「工作」「旅行」等群組並長期保留，拖曳即可調整順序。'],
+      ['dark-private', '隱私模式與深色主題', '分享螢幕時一鍵隱藏標題和網址。支援淺色、深色或跟隨系統。'],
+    ],
+  },
 }
 
-const FONT = `-apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`
+// LOCALES=zh-TW node compose.mjs ... renders only the listed locales.
+const LOCALES = process.env.LOCALES ? process.env.LOCALES.split(',') : Object.keys(COPY)
+
+const fontFor = (locale) => `-apple-system, BlinkMacSystemFont, ${locale === 'zh-TW' ? '"PingFang TC"' : '"PingFang SC"'}, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`
 
 function screenshotHtml(locale, [scene, title, body], dark) {
   const bg = dark ? '#17181b' : '#eef3f6'
@@ -43,7 +57,7 @@ function screenshotHtml(locale, [scene, title, body], dark) {
   const bar = dark ? '#35363a' : '#ffffff'
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   *{box-sizing:border-box;margin:0}
-  body{width:1280px;height:800px;overflow:hidden;font-family:${FONT};background:${bg};color:${fg};position:relative}
+  body{width:1280px;height:800px;overflow:hidden;font-family:${fontFor(locale)};background:${bg};color:${fg};position:relative}
   .copy{position:absolute;left:80px;top:0;bottom:0;width:470px;display:flex;flex-direction:column;justify-content:center;gap:22px}
   .brand{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:600;color:${muted}}
   .brand img{width:40px;height:40px}
@@ -74,7 +88,7 @@ function promoHtml(locale, w, h) {
   const big = w > 1000
   return `<!doctype html><html><head><meta charset="utf-8"><style>
   *{box-sizing:border-box;margin:0}
-  body{width:${w}px;height:${h}px;overflow:hidden;font-family:${FONT};background:linear-gradient(135deg,#0f5f86 0%,#1788b1 55%,#45b9df 100%);color:#fff;position:relative}
+  body{width:${w}px;height:${h}px;overflow:hidden;font-family:${fontFor(locale)};background:linear-gradient(135deg,#0f5f86 0%,#1788b1 55%,#45b9df 100%);color:#fff;position:relative}
   .copy{position:absolute;left:${big ? 110 : 30}px;top:0;bottom:0;width:${big ? 620 : 250}px;display:flex;flex-direction:column;justify-content:center;gap:${big ? 22 : 10}px}
   .icon{width:${big ? 112 : 64}px;height:${big ? 112 : 64}px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
   h1{font-size:${big ? 64 : 30}px;font-weight:700;letter-spacing:-0.5px;line-height:1.1}
@@ -94,7 +108,7 @@ async function render(html, w, h, file) {
   await page.screenshot({ path: file, type: 'png', omitBackground: false })
   await page.close()
 }
-for (const locale of Object.keys(COPY)) {
+for (const locale of LOCALES) {
   const dir = path.join(outDir, locale)
   fs.mkdirSync(path.join(dir, 'screenshots'), { recursive: true })
   let n = 0
