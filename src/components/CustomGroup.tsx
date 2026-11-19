@@ -42,7 +42,9 @@ interface CustomGroupProps {
   onToggleMask: (tab: DisplayTab) => void
   onCopy: (tab: DisplayTab) => void
   onCopyMarkdown?: (tab: DisplayTab) => void
+  onOpenInNewWindow?: (tab: DisplayTab) => void
   onClose: (tab: DisplayTab) => void
+  soleWindowTabIds?: ReadonlySet<number>
   t: Translator
   pinnedTabIds?: ReadonlySet<number>
   pendingTabIds?: ReadonlySet<number>
@@ -76,7 +78,9 @@ export function CustomGroup({
   onToggleMask,
   onCopy,
   onCopyMarkdown,
+  onOpenInNewWindow,
   onClose,
+  soleWindowTabIds,
   t,
   pinnedTabIds,
   pendingTabIds,
@@ -212,7 +216,7 @@ export function CustomGroup({
       {!collapsed && editable && group.tabs.length === 0 && hiddenTabCount === 0 && !picking
         ? <li className="custom-group-empty">{group.savedUrlCount === 0 ? t('customGroupEmpty') : t('customGroupNoOpenTabs')}</li>
         : null}
-      {!collapsed ? group.tabs.map((tab) => <TabRow key={tab.id} tab={tab} pinned={pinnedTabIds?.has(tab.id)} onActivate={onActivate} onTogglePin={onTogglePin} onToggleMask={onToggleMask} onCopy={onCopy} onCopyMarkdown={onCopyMarkdown} onClose={onClose} t={t} pending={pendingTabIds?.has(tab.id)} copied={copiedTabIds?.has(tab.id)} markdownCopied={markdownCopiedTabIds?.has(tab.id)} />) : null}
+      {!collapsed ? group.tabs.map((tab) => <TabRow key={tab.id} tab={tab} pinned={pinnedTabIds?.has(tab.id)} onActivate={onActivate} onTogglePin={onTogglePin} onToggleMask={onToggleMask} onCopy={onCopy} onCopyMarkdown={onCopyMarkdown} onOpenInNewWindow={onOpenInNewWindow} onClose={onClose} t={t} aloneInWindow={soleWindowTabIds?.has(tab.id)} pending={pendingTabIds?.has(tab.id)} copied={copiedTabIds?.has(tab.id)} markdownCopied={markdownCopiedTabIds?.has(tab.id)} />) : null}
       {!collapsed && hiddenTabCount > 0
         ? <li className="custom-group-empty custom-group-hidden-count">{t('customGroupHiddenByFilter', { count: hiddenTabCount })}</li>
         : null}

@@ -202,6 +202,12 @@ export function App({ api }: AppProps) {
     () => new Map(windows.flatMap((window) => window.tabs.map((tab) => [tab.id, tab] as const))),
     [windows],
   )
+  // Counted over every open tab, not the filtered view, so search never
+  // re-enables the action for a tab that is alone in its window.
+  const soleWindowTabIds = useMemo(
+    () => new Set(windows.flatMap((window) => window.tabs.length === 1 ? [window.tabs[0].id] : [])),
+    [windows],
+  )
   const tabIdToDomainKey = useMemo(
     () => new Map(
       windows.flatMap((window) => window.tabs.map((tab) => [
@@ -743,6 +749,31 @@ export function App({ api }: AppProps) {
     }
   }
 
+  async function handleOpenInNewWindow(tab: DisplayTab) {
+    if (soleWindowTabIds.has(tab.id)) {
+      return
+    }
+
+    const operationSequence = beginOperation(tab.id)
+    if (operationSequence === null) {
+      return
+    }
+
+    try {
+      await resolvedApi.openTabInNewWindow(tab.id)
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage(null)
+      }
+    } catch {
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage('openTabInNewWindowError')
+      }
+    } finally {
+      finishOperation(tab.id)
+    }
+    await refresh()
+  }
+
   async function handleClose(tab: DisplayTab) {
     const operationSequence = beginOperation(tab.id)
     if (operationSequence === null) {
@@ -1048,7 +1079,9 @@ export function App({ api }: AppProps) {
                   onToggleMask={handleTabMaskToggle}
                   onCopy={(tab) => void handleCopy(tab)}
                   onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
+                  onOpenInNewWindow={(tab) => void handleOpenInNewWindow(tab)}
                   onClose={(tab) => void handleClose(tab)}
+                  soleWindowTabIds={soleWindowTabIds}
                   pinnedTabIds={pinnedTabIds}
                   pendingTabIds={pendingTabIds}
                   copiedTabIds={copiedTabIds}
@@ -1095,7 +1128,9 @@ export function App({ api }: AppProps) {
                               onToggleMask={handleTabMaskToggle}
                         onCopy={(tab) => void handleCopy(tab)}
                   onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
+                        onOpenInNewWindow={(tab) => void handleOpenInNewWindow(tab)}
                         onClose={(tab) => void handleClose(tab)}
+                        soleWindowTabIds={soleWindowTabIds}
                         pinnedTabIds={pinnedTabIds}
                               pendingTabIds={pendingTabIds}
                         copiedTabIds={copiedTabIds}
@@ -1124,7 +1159,9 @@ export function App({ api }: AppProps) {
                   onToggleMask={handleTabMaskToggle}
                   onCopy={(tab) => void handleCopy(tab)}
                   onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
+                  onOpenInNewWindow={(tab) => void handleOpenInNewWindow(tab)}
                   onClose={(tab) => void handleClose(tab)}
+                  soleWindowTabIds={soleWindowTabIds}
                   pinnedTabIds={pinnedTabIds}
                   pendingTabIds={pendingTabIds}
                   copiedTabIds={copiedTabIds}

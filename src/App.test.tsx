@@ -491,6 +491,7 @@ function createTestApi(
   queryWindows: ReturnType<typeof vi.fn<ChromeTabsApi['queryWindows']>>
   activateTab: ReturnType<typeof vi.fn<ChromeTabsApi['activateTab']>>
   closeTab: ReturnType<typeof vi.fn<ChromeTabsApi['closeTab']>>
+  openTabInNewWindow: ReturnType<typeof vi.fn<ChromeTabsApi['openTabInNewWindow']>>
   moveTabs: ReturnType<typeof vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>>
   capturePage: ReturnType<typeof vi.fn<ChromeTabsApi['capturePage']>>
 } {
@@ -498,6 +499,7 @@ function createTestApi(
     queryWindows: vi.fn(queryWindows),
     activateTab: vi.fn<ChromeTabsApi['activateTab']>(async () => undefined),
     closeTab: vi.fn<ChromeTabsApi['closeTab']>(async () => undefined),
+    openTabInNewWindow: vi.fn<ChromeTabsApi['openTabInNewWindow']>(async () => undefined),
     moveTabs: vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>(async () => undefined),
     capturePage: vi.fn<ChromeTabsApi['capturePage']>(async (_tabId, url) => ({
       html: '<html><head><title>Captured</title></head><body><p>Captured page text</p></body></html>',
@@ -521,6 +523,15 @@ async function renderReadyApp(api = createTestApi()) {
   await waitFor(() =>
     expect(screen.queryByText('正在加载标签页…')).not.toBeInTheDocument(),
   )
+  return { api, user, ...view }
+}
+
+async function renderUnmaskedApp(api = createTestApi()) {
+  storeUiPreferences(false)
+  const user = userEvent.setup()
+  const view = render(<App api={api} />)
+  await screen.findByText('Mail Inbox')
+  await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(1))
   return { api, user, ...view }
 }
 
@@ -1956,7 +1967,7 @@ describe('progressive sticky search toolbar', () => {
   })
 
 
-  it('orders tab row actions as hide, copy link, copy Markdown, pin, close', async () => {
+  it('orders tab row actions as hide, copy link, copy Markdown, open in new window, pin, close', async () => {
     storeUiPreferences(false)
     render(<App api={createTestApi()} />)
 
@@ -1966,9 +1977,78 @@ describe('progressive sticky search toolbar', () => {
       '隐藏此标签信息',
       '复制标签链接',
       '复制为 Markdown',
+      '在新窗口中打开',
       '置顶标签',
       '关闭标签页',
     ])
+  })
+
+  it('moves a tab into a new window without activating the row', async () => {
+    const { api, user } = await renderUnmaskedApp()
+    const row = screen.getByText('Mail Inbox').closest('li')!
+    const button = within(row).getByRole('button', { name: '在新窗口中打开' })
+
+    expect(button).toHaveAttribute('title', '在新窗口中打开')
+    expect(button).not.toHaveAttribute('aria-disabled')
+    await user.click(button)
+
+    await waitFor(() => expect(api.openTabInNewWindow).toHaveBeenCalledWith(102))
+    expect(api.openTabInNewWindow).toHaveBeenCalledTimes(1)
+    expect(api.activateTab).not.toHaveBeenCalled()
+    await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
+  })
+
+  it('keeps the new-window action reachable by keyboard', async () => {
+    const { api, user } = await renderUnmaskedApp()
+    const row = screen.getByText('Mail Inbox').closest('li')!
+    within(row).getByRole('button', { name: '在新窗口中打开' }).focus()
+
+    await user.keyboard('{Enter}')
+
+    await waitFor(() => expect(api.openTabInNewWindow).toHaveBeenCalledWith(102))
+    expect(api.activateTab).not.toHaveBeenCalled()
+  })
+
+  it('disables the new-window action for a tab alone in its window', async () => {
+    const { api, user } = await renderUnmaskedApp()
+    const row = screen.getByText('Project Documentation').closest('li')!
+    const button = within(row).getByRole('button', { name: '已是所在窗口中唯一的标签页' })
+
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    expect(button).toHaveAttribute('title', '已是所在窗口中唯一的标签页')
+    expect(button).toHaveClass('is-unavailable')
+    await user.click(button)
+
+    expect(api.openTabInNewWindow).not.toHaveBeenCalled()
+    expect(api.activateTab).not.toHaveBeenCalled()
+  })
+
+  it('shows a sanitized error when a tab cannot move to a new window', async () => {
+    const api = createTestApi()
+    api.openTabInNewWindow.mockRejectedValueOnce(new Error('private window failure'))
+    const { user, container } = await renderUnmaskedApp(api)
+    const row = screen.getByText('Mail Inbox').closest('li')!
+
+    await user.click(within(row).getByRole('button', { name: '在新窗口中打开' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('无法在新窗口中打开该标签页，请重试。')
+    expect(container.innerHTML).not.toContain('private window failure')
+  })
+
+  it.each([
+    ['域名分组视图'],
+    ['自定义分组视图'],
+  ])('offers the new-window action in the %s', async (viewName) => {
+    const { api, user } = await renderUnmaskedApp()
+    await user.click(screen.getByRole('button', { name: viewName }))
+    const row = (await screen.findByText('Mail Inbox')).closest('li')!
+
+    await user.click(within(row).getByRole('button', { name: '在新窗口中打开' }))
+
+    await waitFor(() => expect(api.openTabInNewWindow).toHaveBeenCalledWith(102))
+    expect(api.activateTab).not.toHaveBeenCalled()
+    const loneRow = screen.getByText('Project Documentation').closest('li')!
+    expect(within(loneRow).getByRole('button', { name: '已是所在窗口中唯一的标签页' })).toHaveAttribute('aria-disabled', 'true')
   })
 
 
