@@ -21,14 +21,13 @@
   --color-focus: #0b57d0;
   --color-on-accent: #ffffff;
   /* Group headers (window, domain and custom groups) sit on a tinted band
-     with an accent marker so they read apart from the white tab rows.
-     The tab count is plain text a step lighter than the name; its color
-     keeps 4.5:1 contrast on the header's rest, hover and pressed tints. */
+     so they read apart from the white tab rows. The tab count is plain
+     text a step lighter than the name; its color keeps 4.5:1 contrast on
+     the header's rest, hover and pressed tints. */
   --color-group-header: #eceef2;
   --color-group-header-hover: #e1e4e9;
   --color-group-header-pressed: #d6dae0;
   --color-group-count-text: #55595e;
-  --color-group-marker: var(--color-accent);
   --shadow-sticky: 0 1px 3px rgb(60 64 67 / 18%);
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -429,7 +428,6 @@ main {
   align-items: stretch;
   background: var(--color-group-header);
   border-bottom: 1px solid var(--color-border-subtle);
-  box-shadow: inset 3px 0 0 var(--color-group-marker);
 }
 
 .window-toggle {
@@ -445,14 +443,12 @@ main {
   background: var(--color-group-header);
   border: 0;
   border-bottom: 1px solid var(--color-border-subtle);
-  box-shadow: inset 3px 0 0 var(--color-group-marker);
 }
 
 .domain-group-heading .window-toggle {
   background: transparent;
   border-bottom: 0;
   border-left: 0;
-  box-shadow: none;
 }
 
 .domain-group-actions {
