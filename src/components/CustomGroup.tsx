@@ -39,14 +39,12 @@ interface CustomGroupProps {
   onCloseGroup: (group: DisplayCustomGroup) => void
   onActivate: (tab: DisplayTab) => void
   onTogglePin?: (tab: DisplayTab) => void
-  onToggleFavorite?: (tab: DisplayTab) => void
   onToggleMask: (tab: DisplayTab) => void
   onCopy: (tab: DisplayTab) => void
   onCopyMarkdown?: (tab: DisplayTab) => void
   onClose: (tab: DisplayTab) => void
   t: Translator
   pinnedTabIds?: ReadonlySet<number>
-  favoriteTabIds?: ReadonlySet<number>
   pendingTabIds?: ReadonlySet<number>
   copiedTabIds?: ReadonlySet<number>
   markdownCopiedTabIds?: ReadonlySet<number>
@@ -75,14 +73,12 @@ export function CustomGroup({
   onCloseGroup,
   onActivate,
   onTogglePin,
-  onToggleFavorite,
   onToggleMask,
   onCopy,
   onCopyMarkdown,
   onClose,
   t,
   pinnedTabIds,
-  favoriteTabIds,
   pendingTabIds,
   copiedTabIds,
   markdownCopiedTabIds,
@@ -216,7 +212,7 @@ export function CustomGroup({
       {!collapsed && editable && group.tabs.length === 0 && hiddenTabCount === 0 && !picking
         ? <li className="custom-group-empty">{group.savedUrlCount === 0 ? t('customGroupEmpty') : t('customGroupNoOpenTabs')}</li>
         : null}
-      {!collapsed ? group.tabs.map((tab) => <TabRow key={tab.id} tab={tab} pinned={pinnedTabIds?.has(tab.id)} favorite={favoriteTabIds?.has(tab.id)} onActivate={onActivate} onTogglePin={onTogglePin} onToggleFavorite={onToggleFavorite} onToggleMask={onToggleMask} onCopy={onCopy} onCopyMarkdown={onCopyMarkdown} onClose={onClose} t={t} pending={pendingTabIds?.has(tab.id)} copied={copiedTabIds?.has(tab.id)} markdownCopied={markdownCopiedTabIds?.has(tab.id)} />) : null}
+      {!collapsed ? group.tabs.map((tab) => <TabRow key={tab.id} tab={tab} pinned={pinnedTabIds?.has(tab.id)} onActivate={onActivate} onTogglePin={onTogglePin} onToggleMask={onToggleMask} onCopy={onCopy} onCopyMarkdown={onCopyMarkdown} onClose={onClose} t={t} pending={pendingTabIds?.has(tab.id)} copied={copiedTabIds?.has(tab.id)} markdownCopied={markdownCopiedTabIds?.has(tab.id)} />) : null}
       {!collapsed && hiddenTabCount > 0
         ? <li className="custom-group-empty custom-group-hidden-count">{t('customGroupHiddenByFilter', { count: hiddenTabCount })}</li>
         : null}

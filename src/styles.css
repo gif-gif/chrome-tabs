@@ -229,40 +229,12 @@ main {
   white-space: nowrap;
 }
 
-.compact-filter-group {
-  display: inline-flex;
-  align-items: center;
-  flex: 0 0 auto;
-  height: 30px;
-  gap: 2px;
-  margin-left: 8px;
-  padding: 2px;
-  background: var(--color-hover);
-  border-radius: var(--radius-md);
-}
-
 .app-header-actions,
 .view-mode-switch {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
   gap: 2px;
-}
-
-.compact-filter-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  min-width: 0;
-  height: 26px;
-  gap: 4px;
-  padding: 0 8px;
-  color: var(--color-text-muted);
-  background: transparent;
-  border: 0;
-  border-radius: var(--radius-sm);
-  transition: background-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease);
 }
 
 .compact-icon-button {
@@ -282,33 +254,19 @@ main {
   transition: background-color var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
 
-.compact-filter-button > svg,
 .compact-icon-button > svg {
   width: 16px;
   height: 16px;
 }
 
-.compact-filter-button:hover,
 .compact-icon-button:hover {
   background: var(--color-hover);
-}
-
-.compact-filter-button.is-active {
-  color: var(--color-text);
-  background: var(--color-surface);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
 }
 
 .view-mode-switch button[aria-pressed="true"] {
   color: var(--color-text);
   background: var(--color-hover);
   border-color: color-mix(in srgb, var(--color-text) 8%, transparent);
-}
-
-.compact-filter-label {
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
 }
 
 .app-header-actions {
@@ -718,23 +676,12 @@ main {
   fill: currentColor;
 }
 
-.row-favorite-action:hover:not(:disabled),
-.row-favorite-action:focus-visible,
-.row-favorite-action.is-favorite {
-  color: var(--color-accent);
-}
-
-.row-favorite-action.is-favorite svg {
-  fill: currentColor;
-}
-
 .row-deduplicate-action:hover:not(:disabled),
 .row-deduplicate-action:focus-visible {
   color: var(--color-accent);
 }
 
 .sort-tabs-button:disabled,
-.row-favorite-action:disabled,
 .row-deduplicate-action:disabled {
   cursor: default;
   opacity: 0.4;
@@ -886,21 +833,6 @@ main {
 
   .tab-count {
     padding-inline: 5px;
-  }
-
-  .compact-filter-group {
-    gap: 0;
-    margin-left: 3px;
-    padding-inline: 1px;
-  }
-
-  .compact-filter-button {
-    gap: 0;
-    padding-inline: 3px;
-  }
-
-  .compact-filter-button > svg {
-    display: none;
   }
 
   .app-header-actions {
@@ -1117,7 +1049,7 @@ main {
 /* Row and group actions stay out of the way until the row or header is
    hovered or one of its controls has keyboard focus. Hidden actions
    collapse to zero width, so the title and URL run across the row and any
-   action that shows a state (pinned, favorite, copied, picking) sits at
+   action that shows a state (pinned, copied, picking) sits at
    the right edge. On hover every action takes its usual place again.
    Collapsed buttons stay focusable, and touch screens without hover keep
    every action visible. */
@@ -1130,14 +1062,14 @@ main {
     flex: 1 1 auto;
   }
 
-  .tab-row .row-action-button:not(.is-pinned, .is-favorite, .is-copied),
+  .tab-row .row-action-button:not(.is-pinned, .is-copied),
   .domain-group-heading .domain-group-action:not(.is-pinned, .is-active) {
     width: 0;
     min-width: 0;
     overflow: hidden;
   }
 
-  .tab-row .row-action-button:not(.is-pinned, .is-favorite, .is-copied) > svg,
+  .tab-row .row-action-button:not(.is-pinned, .is-copied) > svg,
   .domain-group-heading .domain-group-action:not(.is-pinned, .is-active) > svg {
     opacity: 0;
   }
@@ -1150,11 +1082,11 @@ main {
     min-width: var(--row-action-size);
   }
 
-  /* A row with a lit pin or star keeps the pin, star and close slots, and
+  /* A row with a lit pin keeps the pin and close slots, and
      a pinned domain group keeps its pin, deduplicate and close slots, so
      the lit icons stay put on hover and only the actions to their left
      open up. */
-  .tab-row:has(.is-pinned, .is-favorite) :is(.row-pin-action, .row-favorite-action, .row-close-action),
+  .tab-row:has(.is-pinned) :is(.row-pin-action, .row-close-action),
   .domain-group-heading:not(.has-drag-handle):has(.row-pin-action.is-pinned) :is(.row-pin-action, .row-deduplicate-action, .row-close-action),
   .domain-group-heading.has-drag-handle:has(.row-pin-action.is-pinned) :is(.row-pin-action, .row-close-action) {
     width: var(--row-action-size);

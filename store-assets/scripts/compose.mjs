@@ -13,7 +13,7 @@ const COPY = {
     name: 'Tab Manager',
     tagline: 'Find, group and tidy your open tabs from one compact popup.',
     shots: [
-      ['list', 'Every tab, every window', 'See all open tabs at a glance. Click to jump, close, copy the link, save or pin, right from the list.'],
+      ['list', 'Every tab, every window', 'See all open tabs at a glance. Click to jump, close, copy the link or pin, right from the list.'],
       ['domain', 'Grouped by website', 'Subdomains roll up under one site. Pin the groups you use most and close a whole group in one click.'],
       ['search', 'Instant search', 'Type a few letters to filter by title or URL across all windows.'],
       ['custom', 'Your own groups', 'Build groups like “Work” or “Trip” and keep them across sessions. Drag to reorder.'],
@@ -24,7 +24,7 @@ const COPY = {
     name: '标签页管理器',
     tagline: '在一个紧凑的弹窗里查找、分组和整理所有标签页。',
     shots: [
-      ['list', '所有窗口，一览无余', '一眼看到全部打开的标签页，点击即可切换，还能直接关闭、复制链接、收藏或置顶。'],
+      ['list', '所有窗口，一览无余', '一眼看到全部打开的标签页，点击即可切换，还能直接关闭、复制链接或置顶。'],
       ['domain', '按网站自动分组', '子域名归到同一个网站下。常用分组可以置顶，整组标签一键关闭。'],
       ['search', '即时搜索', '输入几个字，即可在所有窗口中按标题或网址筛选。'],
       ['custom', '自定义分组', '建立“工作”“旅行”等分组并长期保留，拖动即可调整顺序。'],
@@ -35,7 +35,7 @@ const COPY = {
     name: '分頁管理器',
     tagline: '在一個精簡的彈出視窗裡尋找、分組和整理所有分頁。',
     shots: [
-      ['list', '所有視窗，一覽無遺', '一眼看到全部開啟的分頁，點一下即可切換，還能直接關閉、複製連結、收藏或置頂。'],
+      ['list', '所有視窗，一覽無遺', '一眼看到全部開啟的分頁，點一下即可切換，還能直接關閉、複製連結或置頂。'],
       ['domain', '依網站自動分組', '子網域歸到同一個網站下。常用群組可以置頂，整組分頁一鍵關閉。'],
       ['search', '即時搜尋', '輸入幾個字，即可在所有視窗中依標題或網址篩選。'],
       ['custom', '自訂群組', '建立「工作」「旅行」等群組並長期保留，拖曳即可調整順序。'],

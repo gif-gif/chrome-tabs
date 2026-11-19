@@ -19,8 +19,6 @@ describe('UI preferences', () => {
       colorScheme: 'auto',
       pinnedTabIds: [],
       pinnedDomainKeys: [],
-      favoriteUrls: [],
-      filter: 'all',
     })
   })
 
@@ -42,8 +40,6 @@ describe('UI preferences', () => {
       colorScheme: 'auto',
       pinnedTabIds: [],
       pinnedDomainKeys: [],
-      favoriteUrls: [],
-      filter: 'all',
     })
   })
 
@@ -72,8 +68,6 @@ describe('UI preferences', () => {
       colorScheme: 'auto',
       pinnedTabIds: [],
       pinnedDomainKeys: [],
-      favoriteUrls: [],
-      filter: 'all',
     })
 
     localStorage.setItem(
@@ -92,12 +86,10 @@ describe('UI preferences', () => {
       colorScheme: 'auto',
       pinnedTabIds: [],
       pinnedDomainKeys: [],
-      favoriteUrls: [],
-      filter: 'all',
     })
   })
 
-  it('loads valid pin and favorite arrays, removes duplicates, and rejects malformed arrays', () => {
+  it('loads valid pin arrays, removes duplicates, and rejects malformed arrays', () => {
     localStorage.setItem(
       UI_PREFERENCES_KEY,
       JSON.stringify({
@@ -106,17 +98,11 @@ describe('UI preferences', () => {
         viewMode: 'list',
         pinnedTabIds: [102, 102, 201],
         pinnedDomainKeys: ['example.com', 'example.com', 'google.com'],
-        favoriteUrls: [
-          'https://example.com/a',
-          'https://example.com/a',
-          'https://example.com/b',
-        ],
       }),
     )
     expect(loadUiPreferences()).toMatchObject({
       pinnedTabIds: [102, 201],
       pinnedDomainKeys: ['example.com', 'google.com'],
-      favoriteUrls: ['https://example.com/a', 'https://example.com/b'],
     })
 
     localStorage.setItem(
@@ -127,47 +113,33 @@ describe('UI preferences', () => {
         viewMode: 'list',
         pinnedTabIds: [0, '102'],
         pinnedDomainKeys: ['example.com', ''],
-        favoriteUrls: ['https://example.com/a', '   '],
       }),
     )
     expect(loadUiPreferences()).toMatchObject({
       pinnedTabIds: [],
       pinnedDomainKeys: [],
-      favoriteUrls: [],
     })
   })
 
-  it.each(['all', 'favorites'] as const)(
-    'restores the supported %s tab filter',
-    (filter) => {
-      localStorage.setItem(
-        UI_PREFERENCES_KEY,
-        JSON.stringify({
-          version: 1,
-          globalMasked: false,
-          viewMode: 'list',
-          filter,
-        }),
-      )
+  it('ignores legacy favorites and tab filter fields and drops them on the next save', () => {
+    localStorage.setItem(
+      UI_PREFERENCES_KEY,
+      JSON.stringify({
+        version: 1,
+        globalMasked: false,
+        viewMode: 'list',
+        favoriteUrls: ['https://example.com/favorite'],
+        filter: 'favorites',
+      }),
+    )
 
-      expect(loadUiPreferences()).toMatchObject({ filter })
-    },
-  )
+    const preferences = loadUiPreferences()
+    expect(preferences).toEqual(defaultUiPreferences)
 
-  it('falls back to all for missing or invalid stored tab filters', () => {
-    for (const filter of [undefined, 'current-window', 'active', 'unknown']) {
-      localStorage.setItem(
-        UI_PREFERENCES_KEY,
-        JSON.stringify({
-          version: 1,
-          globalMasked: false,
-          viewMode: 'list',
-          ...(filter === undefined ? {} : { filter }),
-        }),
-      )
-
-      expect(loadUiPreferences()).toMatchObject({ filter: 'all' })
-    }
+    saveUiPreferences(preferences)
+    const stored = JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '')
+    expect(stored).not.toHaveProperty('favoriteUrls')
+    expect(stored).not.toHaveProperty('filter')
   })
 
   it.each(['auto', 'light', 'dark'] as const)('restores the supported %s color scheme', (colorScheme) => {
@@ -212,8 +184,6 @@ describe('UI preferences', () => {
       colorScheme: 'dark',
       pinnedTabIds: [102],
       pinnedDomainKeys: ['example.com'],
-      favoriteUrls: ['https://example.com/favorite'],
-      filter: 'favorites',
     })
 
     expect(UI_PREFERENCES_KEY).toBe('chrome-tabs.ui-preferences.v1')
@@ -225,8 +195,6 @@ describe('UI preferences', () => {
       colorScheme: 'dark',
       pinnedTabIds: [102],
       pinnedDomainKeys: ['example.com'],
-      favoriteUrls: ['https://example.com/favorite'],
-      filter: 'favorites',
     })
   })
 

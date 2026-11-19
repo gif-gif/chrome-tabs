@@ -78,11 +78,9 @@ describe('sortWindowsCurrentFirst', () => {
 })
 
 describe('filterWindows', () => {
-  it('returns all tabs for the all filter and a blank query', () => {
+  it('returns all tabs for a blank query', () => {
     const result = filterWindows(windows, {
       query: '',
-      filter: 'all',
-      focusedWindowId: 10,
     })
 
     expect(result).toEqual(windows)
@@ -94,8 +92,6 @@ describe('filterWindows', () => {
   it('matches titles case-insensitively after trimming the query', () => {
     const result = filterWindows(windows, {
       query: '  gItHuB  ',
-      filter: 'all',
-      focusedWindowId: 10,
     })
 
     expect(result).toHaveLength(1)
@@ -105,67 +101,10 @@ describe('filterWindows', () => {
   it('matches the complete URL case-insensitively', () => {
     const result = filterWindows(windows, {
       query: 'token=secret',
-      filter: 'all',
-      focusedWindowId: 10,
     })
 
     expect(result).toHaveLength(1)
     expect(result[0].tabs[0].url).toContain('TOKEN=SECRET')
-  })
-
-  it('keeps only the focused window for the current-window filter', () => {
-    const result = filterWindows(windows, {
-      query: '',
-      filter: 'current-window',
-      focusedWindowId: 10,
-    })
-
-    expect(result.map((window) => window.id)).toEqual([10])
-    expect(result[0].tabs).toHaveLength(2)
-  })
-
-  it('combines the query with the current-window filter', () => {
-    const result = filterWindows(windows, {
-      query: 'docs.example.com',
-      filter: 'current-window',
-      focusedWindowId: 10,
-    })
-
-    expect(result).toEqual([])
-  })
-
-  it('keeps only currently open tabs whose exact non-empty URLs are favorites', () => {
-    const result = filterWindows(windows, {
-      query: '',
-      filter: 'favorites',
-      focusedWindowId: 10,
-      favoriteUrls: new Set([
-        windows[0].tabs[1].url,
-        'https://closed.example.com/favorite',
-        '',
-      ]),
-    })
-
-    expect(result.map((window) => window.id)).toEqual([10])
-    expect(result[0].tabs.map((tab) => tab.id)).toEqual([102])
-  })
-
-  it('combines favorites with search and uses exact URL matching', () => {
-    const favoriteUrl = windows[1].tabs[0].url
-
-    expect(filterWindows(windows, {
-      query: 'documentation',
-      filter: 'favorites',
-      focusedWindowId: 10,
-      favoriteUrls: new Set([favoriteUrl]),
-    }).flatMap((window) => window.tabs.map((tab) => tab.id))).toEqual([201])
-
-    expect(filterWindows(windows, {
-      query: '',
-      filter: 'favorites',
-      focusedWindowId: 10,
-      favoriteUrls: new Set([favoriteUrl.toLocaleUpperCase()]),
-    })).toEqual([])
   })
 
   it('does not mutate the source windows or tabs', () => {
@@ -173,8 +112,6 @@ describe('filterWindows', () => {
 
     filterWindows(windows, {
       query: 'github',
-      filter: 'all',
-      focusedWindowId: 10,
     })
 
     expect(windows).toEqual(snapshot)
@@ -402,8 +339,6 @@ describe('createDisplayWindows', () => {
   it('keeps the original background label when only that window survives filtering', () => {
     const filtered = filterWindows(windows, {
       query: 'documentation',
-      filter: 'all',
-      focusedWindowId: 10,
     })
 
     const result = createDisplayWindows(
@@ -428,13 +363,7 @@ describe('createDisplayWindows', () => {
       backgroundWindow30,
     ]
     const filtered = filterWindows(originalWindows, {
-      query: '',
-      filter: 'favorites',
-      focusedWindowId: 10,
-      favoriteUrls: new Set([
-        windows[0].tabs[0].url,
-        backgroundWindow30.tabs[0].url,
-      ]),
+      query: 'b',
     })
 
     const result = createDisplayWindows(

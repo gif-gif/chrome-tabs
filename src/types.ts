@@ -2,7 +2,6 @@ import type { PageSnapshot } from './domain/markdown'
 import type { UiLanguagePreference } from './i18n/i18n'
 
 export type UiViewMode = 'list' | 'domain' | 'custom'
-export type PersistedTabFilter = 'all' | 'favorites'
 export type UiColorScheme = 'auto' | 'light' | 'dark'
 
 export interface UiPreferences {
@@ -12,11 +11,7 @@ export interface UiPreferences {
   colorScheme: UiColorScheme
   pinnedTabIds: number[]
   pinnedDomainKeys: string[]
-  favoriteUrls: string[]
-  filter: PersistedTabFilter
 }
-
-export type TabFilter = 'all' | 'current-window' | 'favorites'
 
 export interface BrowserTab {
   id: number

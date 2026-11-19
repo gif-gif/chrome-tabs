@@ -7,7 +7,6 @@ import type {
   DisplayDomainGroup,
   DisplayTab,
   DisplayWindow,
-  TabFilter,
 } from '../types'
 
 const LOCAL_FAVICON_PATH = '/_favicon/'
@@ -79,9 +78,6 @@ export function resolveSafeFaviconUrl(
 
 interface FilterWindowsOptions {
   query: string
-  filter: TabFilter
-  focusedWindowId: number
-  favoriteUrls?: ReadonlySet<string>
 }
 
 export function sortWindowsCurrentFirst(
@@ -105,20 +101,12 @@ export function sortWindowsCurrentFirst(
 
 export function filterWindows(
   windows: BrowserWindow[],
-  { query, filter, focusedWindowId, favoriteUrls = new Set() }: FilterWindowsOptions,
+  { query }: FilterWindowsOptions,
 ): BrowserWindow[] {
   const normalizedQuery = query.trim().toLocaleLowerCase()
 
   return windows.flatMap((window) => {
-    if (filter === 'current-window' && window.id !== focusedWindowId) {
-      return []
-    }
-
     const tabs = window.tabs.filter((tab) => {
-      if (filter === 'favorites' && (tab.url.length === 0 || !favoriteUrls.has(tab.url))) {
-        return false
-      }
-
       if (!normalizedQuery) {
         return true
       }

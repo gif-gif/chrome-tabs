@@ -124,16 +124,12 @@ afterEach(() => {
 })
 
 describe('App internationalization', () => {
-  it('shows the numeric count and always-visible English short filter labels with complete names', async () => {
-    const user = userEvent.setup()
-    const onFilterChange = vi.fn()
+  it('shows the numeric count with an English accessible name and no filter tabs', () => {
     render(
       <Header
         t={createTranslator('en')}
         count={41}
-        filter="all"
         globalMasked={false}
-        onFilterChange={onFilterChange}
         onToggleMask={vi.fn()}
       />,
     )
@@ -143,23 +139,8 @@ describe('App internationalization', () => {
     expect(count).toHaveAttribute('title', '41 tabs')
     expect(count).toHaveAttribute('aria-label', '41 tabs')
     expect(screen.queryByText('41 tabs')).not.toBeInTheDocument()
-
-    const allButton = screen.getByRole('button', { name: 'All tabs' })
-    const favoritesButton = screen.getByRole('button', { name: 'Favorite tabs' })
-    expect(allButton.querySelector('.compact-filter-label')).toHaveTextContent(/^All$/)
-    expect(favoritesButton.querySelector('.compact-filter-label')).toHaveTextContent(/^Saved$/)
-    expect(allButton).toHaveAttribute('title', 'All tabs')
-    expect(favoritesButton).toHaveAttribute('title', 'Favorite tabs')
-    expect(allButton).toHaveAttribute('aria-pressed', 'true')
-    expect(favoritesButton).toHaveAttribute('aria-pressed', 'false')
-    expect(screen.queryByRole('button', { name: 'Current window' })).not.toBeInTheDocument()
-
-    await user.click(allButton)
-    await user.click(favoritesButton)
-    expect(onFilterChange.mock.calls).toEqual([
-      ['all'],
-      ['favorites'],
-    ])
+    expect(screen.queryByRole('button', { name: 'All tabs' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Favorite tabs' })).not.toBeInTheDocument()
   })
 
   it.each([
@@ -307,7 +288,7 @@ describe('App internationalization', () => {
     expect(trigger.closest('.toolbar-auxiliary')).toHaveAttribute('aria-hidden', 'true')
   })
 
-  it('switches manually without resetting search, filter, view, collapse, or privacy state and persists the preference', async () => {
+  it('switches manually without resetting search, view, collapse, or privacy state and persists the preference', async () => {
     setBrowserLanguages(['en-US'])
     const user = userEvent.setup()
     render(<App api={createApi()} />)
@@ -315,8 +296,6 @@ describe('App internationalization', () => {
 
     const search = screen.getByRole('searchbox', { name: 'Search tabs' })
     await user.type(search, 'github')
-    await user.click(screen.getByRole('button', { name: 'Add tab to favorites' }))
-    await user.click(within(screen.getByRole('group', { name: 'Tab filters' })).getByRole('button', { name: 'Favorite tabs' }))
     await user.click(screen.getByRole('button', { name: 'Group by domain view' }))
     await user.click(screen.getByRole('button', { name: 'Hide all tab information' }))
     const maskedGroup = screen.getByRole('region', { name: /Website group 1/ })
@@ -327,7 +306,6 @@ describe('App internationalization', () => {
     await chooseLanguage(user, 'Display language', '简体中文')
 
     expect(screen.getByRole('searchbox', { name: '搜索标签页' })).toHaveValue('github')
-    expect(within(screen.getByRole('group', { name: '标签页筛选' })).getByRole('button', { name: '收藏标签' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '域名分组视图' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '显示全部标签信息' })).toBeInTheDocument()
     const translatedMaskedGroup = screen.getByRole('region', { name: /网站分组 1/ })
@@ -373,7 +351,6 @@ describe('App internationalization', () => {
     await setToolbarScroll(container, 0, '标签页工具栏')
 
     expect(screen.queryByRole('button', { name: '当前窗口' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '全部标签页' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '域名分组视图' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '显示全部标签信息' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '显示语言' })).toHaveAttribute('aria-expanded', 'false')
@@ -425,7 +402,7 @@ describe('App internationalization', () => {
     expect(screen.getByRole('menuitemradio', { name: '繁體中文' })).toHaveAttribute('aria-checked', 'true')
   })
 
-  it('translates English search, filters, grouping, status, confirmation, and operation errors', async () => {
+  it('translates English search, grouping, status, confirmation, and operation errors', async () => {
     setBrowserLanguages(['en-US'])
     const api = createApi()
     const user = userEvent.setup()
@@ -434,7 +411,7 @@ describe('App internationalization', () => {
     await screen.findByLabelText('3 tabs')
 
     expect(screen.getByPlaceholderText('Search titles or URLs…')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'All tabs' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'All tabs' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Current window' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Active tabs' })).not.toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Copy tab link' })).toHaveLength(3)
@@ -745,7 +722,7 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(compactButton.get('min-width')).toBe('var(--compact-control-size)')
     expect(compactButton.get('height')).toBe('var(--compact-control-size)')
 
-    const toolbarIcons = declarationsFor('.compact-filter-button>svg,.compact-icon-button>svg')
+    const toolbarIcons = declarationsFor('.compact-icon-button>svg')
     expect(toolbarIcons.get('width')).toBe('16px')
     expect(toolbarIcons.get('height')).toBe('16px')
 
@@ -793,13 +770,13 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     const hover = '(hover:hover)'
     expect(declarationsFor('.tab-row', hover).get('display')).toBe('flex')
     const collapsed = declarationsFor(
-      '.tab-row .row-action-button:not(.is-pinned,.is-favorite,.is-copied),.domain-group-heading .domain-group-action:not(.is-pinned,.is-active)',
+      '.tab-row .row-action-button:not(.is-pinned,.is-copied),.domain-group-heading .domain-group-action:not(.is-pinned,.is-active)',
       hover,
     )
     expect(collapsed.get('width')).toBe('0')
     expect(collapsed.get('overflow')).toBe('hidden')
     expect(declarationsFor(
-      '.tab-row .row-action-button:not(.is-pinned,.is-favorite,.is-copied)>svg,.domain-group-heading .domain-group-action:not(.is-pinned,.is-active)>svg',
+      '.tab-row .row-action-button:not(.is-pinned,.is-copied)>svg,.domain-group-heading .domain-group-action:not(.is-pinned,.is-active)>svg',
       hover,
     ).get('opacity')).toBe('0')
     expect(declarationsFor(
@@ -807,7 +784,7 @@ describe('compact progressive sticky toolbar CSS contract', () => {
       hover,
     ).get('width')).toBe('var(--row-action-size)')
     expect(declarationsFor(
-      '.tab-row:has(.is-pinned,.is-favorite) :is(.row-pin-action,.row-favorite-action,.row-close-action),.domain-group-heading:not(.has-drag-handle):has(.row-pin-action.is-pinned) :is(.row-pin-action,.row-deduplicate-action,.row-close-action),.domain-group-heading.has-drag-handle:has(.row-pin-action.is-pinned) :is(.row-pin-action,.row-close-action)',
+      '.tab-row:has(.is-pinned) :is(.row-pin-action,.row-close-action),.domain-group-heading:not(.has-drag-handle):has(.row-pin-action.is-pinned) :is(.row-pin-action,.row-deduplicate-action,.row-close-action),.domain-group-heading.has-drag-handle:has(.row-pin-action.is-pinned) :is(.row-pin-action,.row-close-action)',
       hover,
     ).get('width')).toBe('var(--row-action-size)')
     expect(declarationsFor(
@@ -863,7 +840,7 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(cssRules.some((rule) => rule.selector.includes('.search-row') && rule.declarations.get('visibility') === 'hidden')).toBe(false)
   })
 
-  it('uses quiet segmented controls and keeps all short labels visible at narrow widths', () => {
+  it('keeps the compact header controls quiet and within narrow widths without filter tabs', () => {
     const count = declarationsFor('.tab-count')
     expect(count.get('display')).toBe('inline-grid')
     expect(count.get('flex')).toBe('0 0 auto')
@@ -878,27 +855,9 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(count.has('overflow')).toBe(false)
     expect(count.has('text-overflow')).toBe(false)
 
-    const filters = declarationsFor('.compact-filter-group')
-    expect(filters.get('height')).toBe('30px')
-    expect(filters.get('padding')).toBe('2px')
-    expect(filters.get('gap')).toBe('2px')
-    expect(filters.get('margin-left')).toBe('8px')
-    expect(filters.get('background')).toBe('var(--color-hover)')
-    expect(filters.get('border-radius')).toBe('var(--radius-md)')
+    expect(cssRules.some((rule) => rule.selector.includes('.compact-filter'))).toBe(false)
     expect(declarationsFor(':root').get('--radius-sm')).toBe('4px')
     expect(declarationsFor(':root').get('--radius-md')).toBe('6px')
-
-    const filterButton = declarationsFor('.compact-filter-button')
-    expect(filterButton.get('height')).toBe('26px')
-    expect(filterButton.get('min-width')).toBe('0')
-    expect(filterButton.get('padding')).toBe('0 8px')
-    expect(filterButton.get('background')).toBe('transparent')
-    expect(filterButton.get('border-radius')).toBe('var(--radius-sm)')
-
-    const selected = declarationsFor('.compact-filter-button.is-active')
-    expect(selected.get('color')).toBe('var(--color-text)')
-    expect(selected.get('background')).toBe('var(--color-surface)')
-    expect(selected.get('box-shadow')).toBe('0 1px 2px rgb(0 0 0/8%)')
 
     const viewModeSelected = declarationsFor('.view-mode-switch button[aria-pressed="true"]')
     expect(viewModeSelected.get('background')).toBe('var(--color-hover)')
@@ -923,42 +882,17 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     )
     expect(media340HeaderIndex).toBeGreaterThan(media420HeaderIndex)
     expect(declarationsFor('.tab-count', media340).get('padding-inline')).toBe('5px')
-    expect(declarationsFor('.compact-filter-group', media340).get('margin-left')).toBe('3px')
-    expect(declarationsFor('.compact-filter-group', media340).get('gap')).toBe('0')
-    expect(declarationsFor('.compact-filter-group', media340).get('padding-inline')).toBe('1px')
-    expect(declarationsFor('.compact-filter-button', media340).get('gap')).toBe('0')
-    expect(declarationsFor('.compact-filter-button', media340).get('padding-inline')).toBe('3px')
-    expect(declarationsFor('.compact-filter-button>svg', media340).get('display')).toBe('none')
     expect(declarationsFor('.app-header-actions', media340).get('gap')).toBe('0')
     expect(declarationsFor('.compact-icon-button', media340).get('width')).toBe('24px')
     expect(declarationsFor('.compact-icon-button', media340).get('min-width')).toBe('24px')
     expect(declarationsFor('.compact-icon-button').get('height')).toBe('var(--compact-control-size)')
 
-    const hiddenLabelRules = cssRules.filter(
-      (rule) =>
-        rule.selector.includes('.compact-filter-label') &&
-        (rule.declarations.get('display') === 'none' ||
-          rule.declarations.get('visibility') === 'hidden'),
-    )
-    expect(hiddenLabelRules).toHaveLength(0)
-    expect(
-      cssRules.some(
-        (rule) =>
-          rule.media === '(max-width:300px)' &&
-          (rule.selector.includes('.compact-filter-label') ||
-            rule.selector.includes('.compact-filter-button.is-active')),
-      ),
-    ).toBe(false)
-
     const availableHeaderWidth = 280 - (2 * 8)
     const threeDigitCountWidth = Math.max(28, (3 * 7.2) + (2 * 5))
-    const englishFilterTextWidth = ('All'.length + 'Saved'.length) * 7.2
-    const filterButtonPaddingWidth = 3 * (2 * 3)
-    const filterGroupWidth = 3 + 1 + englishFilterTextWidth + filterButtonPaddingWidth + 1
     const actionButtonsWidth = 3 * 24
     const headerChildrenGaps = 2 * 1
     const worstCaseHeaderWidth =
-      threeDigitCountWidth + filterGroupWidth + actionButtonsWidth + headerChildrenGaps
+      threeDigitCountWidth + actionButtonsWidth + headerChildrenGaps
 
     expect(availableHeaderWidth).toBe(264)
     expect(worstCaseHeaderWidth).toBeLessThanOrEqual(availableHeaderWidth)

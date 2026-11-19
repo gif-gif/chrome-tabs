@@ -5,7 +5,6 @@ export type IconName =
   | 'close'
   | 'copy'
   | 'pin'
-  | 'star'
   | 'deduplicate'
   | 'sort-ascending'
   | 'sort-descending'
@@ -18,7 +17,6 @@ export type IconName =
   | 'tab'
   | 'refresh'
   | 'clear'
-  | 'all-tabs'
   | 'window'
   | 'globe'
   | 'sun'
@@ -56,7 +54,6 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M7 3h10l-2 6 3 3v2H6v-2l3-3-2-6Z" />
     </>
   ),
-  star: <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2-4.5-4.4 6.2-.9L12 3Z" />,
   deduplicate: (
     <>
       <rect x="4" y="5" width="11" height="11" rx="2" />
@@ -119,12 +116,6 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <circle cx="12" cy="12" r="9" />
       <path d="m9 9 6 6M15 9l-6 6" />
-    </>
-  ),
-  'all-tabs': (
-    <>
-      <rect x="3" y="5" width="14" height="12" rx="2" />
-      <path d="M7 3h12a2 2 0 0 1 2 2v12M7 9h6" />
     </>
   ),
   window: (

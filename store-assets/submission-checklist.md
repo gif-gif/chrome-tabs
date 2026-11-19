@@ -70,4 +70,4 @@ Screenshots are rendered from the real built popup (`dist/index.html`) with demo
 
 ### Known mismatch to fix separately / 需另行修正
 
-The repository `README.md` / `README.zh-CN.md` say the extension "does not persist tab titles, URLs". Favorites and custom groups do store the chosen URLs locally (`src/preferences/uiPreferences.ts`, `src/preferences/customGroups.ts`). The privacy materials here describe the actual behavior; the README wording should be updated in a separate change.
+The repository `README.md` / `README.zh-CN.md` say the extension "does not persist tab titles, URLs". Custom groups do store the chosen URLs locally (`src/preferences/customGroups.ts`). The privacy materials here describe the actual behavior; the README wording should be updated in a separate change.
