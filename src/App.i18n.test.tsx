@@ -732,6 +732,30 @@ describe('compact progressive sticky toolbar CSS contract', () => {
   })
 
 
+  it('sets group headers apart from tab rows in light and dark schemes', () => {
+    const light = declarationsFor(':root')
+    const dark = declarationsFor(':root[data-color-scheme="dark"]')
+    expect(light.get('--color-group-header')).toBe('#eceef2')
+    expect(dark.get('--color-group-header')).toBe('#3c3f44')
+    expect(light.get('--color-group-marker')).toBe('var(--color-accent)')
+
+    for (const selector of ['.domain-group-heading', '.window-toggle']) {
+      const header = declarationsFor(selector)
+      expect(header.get('background')).toBe('var(--color-group-header)')
+      expect(header.get('box-shadow')).toBe('inset 3px 0 0 var(--color-group-marker)')
+    }
+    expect(declarationsFor('.domain-group-heading .window-toggle').get('box-shadow')).toBe('none')
+    expect(declarationsFor('.window-toggle:hover').get('background')).toBe('var(--color-group-header-hover)')
+    expect(declarationsFor('.window-toggle:active').get('background')).toBe('var(--color-group-header-pressed)')
+    expect(declarationsFor('.domain-group-heading:has(.window-toggle:active)').get('background')).toBe('var(--color-group-header-pressed)')
+
+    expect(declarationsFor('.window-toggle>span:first-of-type').get('font-weight')).toBe('600')
+    const count = declarationsFor('.window-toggle>span:last-child')
+    expect(count.get('color')).toBe('var(--color-text)')
+    expect(count.get('background')).toBe('var(--color-group-count)')
+    expect(declarationsFor('.tab-list').get('padding')).toBe('4px 0 4px 8px')
+  })
+
   it('scopes compact background-free row actions without changing generic icon buttons', () => {
     const root = declarationsFor(':root')
     expect(root.get('--row-action-size')).toBe('26px')
@@ -762,7 +786,7 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     expect(focus.get('outline')).toBe('2px solid var(--color-focus)')
     expect(focus.get('outline-offset')).toBe('1px')
 
-    expect(declarationsFor('.domain-group-heading:hover').get('background')).toBe('var(--color-hover)')
+    expect(declarationsFor('.domain-group-heading:hover').get('background')).toBe('var(--color-group-header-hover)')
     expect(declarationsFor(
       '.domain-group-heading .window-toggle:hover,.domain-group-heading .window-toggle:active,.domain-group-heading .custom-group-drag-handle:hover:not(:disabled),.domain-group-heading .domain-group-action:hover:not(:disabled),.domain-group-heading .domain-group-action:active:not(:disabled),.domain-group-heading .domain-group-action.row-close-action:hover:not(:disabled)',
     ).get('background')).toBe('transparent')
