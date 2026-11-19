@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { validateOutputDirectory } from './escapeUrlProtocols'
 
-const REQUIRED_LOCALES = ['en', 'zh_CN'] as const
+const REQUIRED_LOCALES = ['en', 'zh_CN', 'zh_TW'] as const
 const MESSAGE_REFERENCE_PATTERN = /^__MSG_([A-Za-z0-9_@]+)__$/
 
 interface LocaleMessage {
@@ -70,15 +70,16 @@ function validateLocaleMessages(
 
 function assertMatchingLocaleKeys(
   enMessages: LocaleMessages,
-  zhCnMessages: LocaleMessages,
+  locale: string,
+  localeMessages: LocaleMessages,
 ): void {
   const enKeys = Object.keys(enMessages).sort()
-  const zhCnKeys = Object.keys(zhCnMessages).sort()
+  const localeKeys = Object.keys(localeMessages).sort()
   if (
-    enKeys.length !== zhCnKeys.length ||
-    enKeys.some((key, index) => key !== zhCnKeys[index])
+    enKeys.length !== localeKeys.length ||
+    enKeys.some((key, index) => key !== localeKeys[index])
   ) {
-    throw new Error('Locale keys must match exactly between en and zh_CN.')
+    throw new Error(`Locale keys must match exactly between en and ${locale}.`)
   }
 }
 
@@ -99,8 +100,9 @@ export async function validateLocaleResources(directory: string): Promise<void> 
   }
 
   const enMessages = localeMessages.get('en')!
-  const zhCnMessages = localeMessages.get('zh_CN')!
-  assertMatchingLocaleKeys(enMessages, zhCnMessages)
+  for (const [locale, messages] of localeMessages) {
+    if (locale !== 'en') assertMatchingLocaleKeys(enMessages, locale, messages)
+  }
 
   const referencedKeys = new Set<string>()
   collectManifestMessageKeys(manifest, referencedKeys)

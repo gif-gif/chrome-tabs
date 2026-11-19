@@ -11,7 +11,7 @@ A compact local Chrome extension for finding and managing many open tabs from a 
 - Switch between a window list and registrable-domain groups. Subdomains such as `docs.google.com` and `drive.google.com` are grouped under `google.com`.
 - Hide sensitive tab information globally, by domain group, or per tab.
 - Use a compact sticky toolbar with privacy, grouping, view, and language controls.
-- Use Simplified Chinese or English; the default follows the browser language and falls back to English.
+- Use Simplified Chinese, Traditional Chinese, or English; the default follows the browser language (zh-TW / zh-HK / zh-MO / zh-Hant map to Traditional Chinese) and falls back to English.
 
 ## Requirements
 

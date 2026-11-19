@@ -1,7 +1,7 @@
-export type SupportedLocale = 'zh-CN' | 'en'
+export type SupportedLocale = 'zh-CN' | 'zh-TW' | 'en'
 export type UiLanguagePreference = 'auto' | SupportedLocale
 
-const messages = {
+export const messages = {
   'zh-CN': {
     informationHidden: '内容已隐藏',
     maskedDomainGroup: '网站分组 {number}',
@@ -109,7 +109,119 @@ const messages = {
     colorSchemeAuto: '自动（跟随系统）',
     colorSchemeLight: '浅色',
     colorSchemeDark: '暗色',
-    chineseLanguage: '中文',
+    simplifiedChineseLanguage: '简体中文',
+    traditionalChineseLanguage: '繁體中文',
+    englishLanguage: 'English',
+  },
+  'zh-TW': {
+    informationHidden: '內容已隱藏',
+    maskedDomainGroup: '網站群組 {number}',
+    otherPages: '其他頁面',
+    currentWindow: '目前視窗',
+    numberedWindow: '視窗 {number}',
+    queryError: '無法載入分頁，請重試。',
+    subscriptionError: '即時同步暫時無法使用，請重試。',
+    activateError: '無法切換到該分頁，請重試。',
+    closeTabError: '無法關閉該分頁，請重試。',
+    copyLinkError: '無法複製連結，請重試。',
+    markdownUnsupportedTip: '此頁面不支援複製為 Markdown',
+    markdownFileAccessError: '要複製本機檔案，請在擴充功能詳細資料頁開啟「允許存取檔案網址」。',
+    markdownPermissionError: '需要允許存取網站內容才能複製為 Markdown。',
+    markdownUnloadedError: '這個分頁尚未載入，請先開啟再複製。',
+    markdownEmptyError: '這個頁面沒有可複製的文字內容。',
+    markdownError: '無法複製為 Markdown，請重試。',
+    closeGroupError: '無法關閉該群組，請重試。',
+    closeGroupConfirm: '關閉該群組中的 {count} 個分頁？',
+    removeDuplicatesConfirm: '關閉該群組中的 {count} 個重複分頁？',
+    removeDuplicatesError: '無法移除重複分頁，請重試。',
+    sortTabsError: '無法依網域排序分頁，請重試。',
+    restoreTabOrderError: '無法還原分頁原始順序，請重試。',
+    toolbar: '分頁工具列',
+    expandAllGroups: '全部展開群組',
+    collapseAllGroups: '全部收合群組',
+    locateCurrentTab: '定位目前分頁',
+    expand: '展開',
+    collapse: '收合',
+    viewMode: '分頁顯示模式',
+    listView: '清單檢視',
+    domainView: '網域分組檢視',
+    customView: '自訂群組檢視',
+    ungroupedTabs: '未分組',
+    newCustomGroupName: '新群組名稱',
+    newCustomGroupPlaceholder: '新增群組，例如：工作',
+    createCustomGroup: '新增群組',
+    customGroupName: '群組名稱',
+    saveCustomGroupName: '儲存群組名稱',
+    cancel: '取消',
+    chooseGroupTabsHint: '勾選要放進這個群組的分頁',
+    noTabsToChoose: '目前沒有可選的分頁',
+    savedTabNotOpen: '未開啟',
+    customGroupEmpty: '這個群組還沒有分頁，點選勾選按鈕新增。',
+    customGroupNoOpenTabs: '這個群組裡的分頁目前都沒有開啟或不符合篩選條件。',
+    customGroupHiddenByFilter: '另有 {count} 個已選分頁被目前的搜尋或篩選隱藏',
+    noCustomGroups: '還沒有自訂群組',
+    noCustomGroupsHint: '在上方輸入名稱新增一個群組，再勾選要放進去的分頁。',
+    list: '清單',
+    group: '分組',
+    showAllInformation: '顯示全部分頁資訊',
+    hideAllInformation: '隱藏全部分頁資訊',
+    tabCount: '{count} 個分頁',
+    currentTab: '目前分頁',
+    currentTabSuffix: '，目前分頁',
+    activateMaskedTab: '切換到隱藏的分頁{current}',
+    showTabInformation: '顯示此分頁資訊',
+    hideTabInformation: '隱藏此分頁資訊',
+    copyTabLink: '複製分頁連結',
+    copyTabMarkdown: '複製為 Markdown',
+    addTabToFavorites: '收藏分頁',
+    removeTabFromFavorites: '取消收藏分頁',
+    pinTab: '置頂分頁',
+    unpinTab: '取消置頂分頁',
+    pinGroup: '置頂群組',
+    unpinGroup: '取消置頂群組',
+    closeTab: '關閉分頁',
+    showGroupInformation: '顯示此群組資訊',
+    hideGroupInformation: '隱藏此群組資訊',
+    closeDomainGroup: '關閉 {label} 群組中的 {count} 個分頁',
+    chooseGroupTabs: '選擇 {label} 群組的分頁',
+    renameCustomGroup: '重新命名 {label} 群組',
+    deleteCustomGroup: '刪除 {label} 群組',
+    dragCustomGroup: '拖曳調整 {label} 群組的順序，也可以使用上下方向鍵',
+    finishChoosingGroupTabs: '完成選擇 {label} 群組的分頁',
+    deleteCustomGroupConfirm: '刪除「{label}」群組？群組裡的分頁不會被關閉。',
+    removeDuplicateTabs: '移除 {count} 個重複分頁',
+    noDuplicateTabs: '沒有重複分頁',
+    loading: '正在載入分頁…',
+    emptyTitle: '找不到符合的分頁',
+    emptyHint: '請嘗試清除搜尋字詞或調整篩選條件。',
+    retry: '重試',
+    all: '全部',
+    allTabs: '全部分頁',
+    allShort: '全部',
+    currentWindowFilter: '目前視窗',
+    currentWindowShort: '目前',
+    favoriteTabs: '收藏分頁',
+    favoritesShort: '收藏',
+    sortTabsByDomainAscending: '依網域遞增排列分頁',
+    sortingTabsByDomainAscending: '正在依網域遞增排列分頁',
+    sortTabsByDomainDescending: '依網域遞減排列分頁',
+    sortingTabsByDomainDescending: '正在依網域遞減排列分頁',
+    restoreOriginalTabOrder: '還原分頁原始順序',
+    restoringOriginalTabOrder: '正在還原分頁原始順序',
+    searchAndFilter: '搜尋和篩選',
+    searchAndView: '搜尋和顯示模式',
+    searchTabs: '搜尋分頁',
+    searchPlaceholder: '搜尋標題或網址…',
+    clearSearch: '清除搜尋',
+    tabFilters: '分頁篩選',
+    displayLanguage: '顯示語言',
+    autoLanguage: '自動（瀏覽器語言）',
+    colorScheme: '外觀',
+    colorSchemeAuto: '自動（跟隨系統）',
+    colorSchemeLight: '淺色',
+    colorSchemeDark: '深色',
+    simplifiedChineseLanguage: '简体中文',
+    traditionalChineseLanguage: '繁體中文',
     englishLanguage: 'English',
   },
   en: {
@@ -219,7 +331,8 @@ const messages = {
     colorSchemeAuto: 'Auto (system)',
     colorSchemeLight: 'Light',
     colorSchemeDark: 'Dark',
-    chineseLanguage: '中文',
+    simplifiedChineseLanguage: '简体中文',
+    traditionalChineseLanguage: '繁體中文',
     englishLanguage: 'English',
   },
 } as const
@@ -259,6 +372,14 @@ export interface Translator {
   ): string
 }
 
+const traditionalChineseSubtags = new Set(['hant', 'tw', 'hk', 'mo'])
+
+function isTraditionalChinese(normalizedLanguage: string): boolean {
+  const subtags = normalizedLanguage.split('-').slice(1)
+  if (subtags.includes('hans')) return false
+  return subtags.some((subtag) => traditionalChineseSubtags.has(subtag))
+}
+
 export function resolveLocale(
   preference: UiLanguagePreference,
   browserLanguages: readonly string[],
@@ -266,7 +387,9 @@ export function resolveLocale(
   if (preference !== 'auto') return preference
   for (const language of browserLanguages) {
     const normalized = language.toLowerCase()
-    if (normalized === 'zh' || normalized.startsWith('zh-')) return 'zh-CN'
+    if (normalized === 'zh' || normalized.startsWith('zh-')) {
+      return isTraditionalChinese(normalized) ? 'zh-TW' : 'zh-CN'
+    }
     if (normalized === 'en' || normalized.startsWith('en-')) return 'en'
   }
   return 'en'

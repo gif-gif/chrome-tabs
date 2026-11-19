@@ -16,7 +16,7 @@ Items marked 👤 need a human (account, payment, decisions). Everything else wa
 | --- | --- | --- |
 | `manifest_version` | 3 ✅ | — |
 | `version` | `0.0.1` | 👤 Optional: bump to e.g. `1.0.0` in both `public/manifest.json` and `package.json` before the first release. Each later upload needs a higher version. |
-| `name` / `description` | Localized via `_locales/en` and `_locales/zh_CN` ✅ (≤ 75 / ≤ 132 characters) | 👤 Optional: adopt the more descriptive name/summary in `listing.*.md` (code change). |
+| `name` / `description` | Localized via `_locales/en`, `_locales/zh_CN`, and `_locales/zh_TW` ✅ (≤ 75 / ≤ 132 characters) | 👤 Optional: adopt the more descriptive name/summary in `listing.*.md` (code change). |
 | `default_locale` | `en` ✅ | — |
 | Icons | 16 / 32 / 48 / 128 PNG present ✅ | — |
 | `minimum_chrome_version` | `141` | 👤 Confirm this is intended; older Chrome users cannot install. |

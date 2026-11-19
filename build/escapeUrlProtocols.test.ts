@@ -602,6 +602,7 @@ describe('generated output policy', () => {
       manifest?: Record<string, unknown>
       en?: Record<string, unknown>
       zhCn?: Record<string, unknown>
+      zhTw?: Record<string, unknown>
     } = {},
   ) {
     const manifest = options.manifest ?? {
@@ -621,9 +622,15 @@ describe('generated output policy', () => {
       extensionDescription: { message: '管理标签页。' },
       extensionActionTitle: { message: '打开标签页管理器' },
     }
+    const zhTw = options.zhTw ?? {
+      extensionName: { message: '分頁管理器' },
+      extensionDescription: { message: '管理分頁。' },
+      extensionActionTitle: { message: '開啟分頁管理器' },
+    }
 
     await mkdir(join(directory, '_locales', 'en'), { recursive: true })
     await mkdir(join(directory, '_locales', 'zh_CN'), { recursive: true })
+    await mkdir(join(directory, '_locales', 'zh_TW'), { recursive: true })
     await writeFile(join(directory, 'manifest.json'), JSON.stringify(manifest))
     await writeFile(
       join(directory, '_locales', 'en', 'messages.json'),
@@ -632,6 +639,10 @@ describe('generated output policy', () => {
     await writeFile(
       join(directory, '_locales', 'zh_CN', 'messages.json'),
       JSON.stringify(zhCn),
+    )
+    await writeFile(
+      join(directory, '_locales', 'zh_TW', 'messages.json'),
+      JSON.stringify(zhTw),
     )
   }
 
@@ -670,13 +681,19 @@ describe('generated output policy', () => {
     }
   })
 
-  it('requires both English and Chinese locale files to exist', async () => {
+  it('requires English, Simplified Chinese, and Traditional Chinese locale files to exist', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'chrome-tabs-locales-'))
     try {
       await writeLocalizedDist(directory)
       await rm(join(directory, '_locales', 'zh_CN', 'messages.json'))
       await expect(validateFinalDist(directory)).rejects.toThrow(
         /zh_CN.*messages\.json/,
+      )
+
+      await writeLocalizedDist(directory)
+      await rm(join(directory, '_locales', 'zh_TW', 'messages.json'))
+      await expect(validateFinalDist(directory)).rejects.toThrow(
+        /zh_TW.*messages\.json/,
       )
     } finally {
       await rm(directory, { recursive: true, force: true })
@@ -693,6 +710,14 @@ describe('generated output policy', () => {
         },
       })
       await expect(validateFinalDist(directory)).rejects.toThrow(/locale keys/i)
+
+      await writeLocalizedDist(directory, {
+        zhTw: {
+          extensionName: { message: '分頁管理器' },
+          extensionDescription: { message: '管理分頁。' },
+        },
+      })
+      await expect(validateFinalDist(directory)).rejects.toThrow(/locale keys.*zh_TW/i)
 
       await writeLocalizedDist(directory, {
         en: {

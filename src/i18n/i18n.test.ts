@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { createTranslator, resolveLocale, type Translator } from './i18n'
+import {
+  createTranslator,
+  messages,
+  resolveLocale,
+  type SupportedLocale,
+  type TranslationKey,
+  type Translator,
+} from './i18n'
 
 
 
@@ -32,10 +39,17 @@ function assertTranslatorTypeContract(t: Translator) {
 void assertTranslatorTypeContract
 
 describe('resolveLocale', () => {
-  it.each(['zh', 'zh-CN', 'zh-TW', 'zh-HK', 'zh-Hans', 'ZH-cn'])(
+  it.each(['zh', 'zh-CN', 'zh-SG', 'zh-Hans', 'zh-Hans-HK', 'ZH-cn'])(
     'maps %s to Simplified Chinese in auto mode',
     (language) => {
       expect(resolveLocale('auto', [language])).toBe('zh-CN')
+    },
+  )
+
+  it.each(['zh-TW', 'zh-HK', 'zh-MO', 'zh-Hant', 'zh-Hant-TW', 'ZH-tw'])(
+    'maps %s to Traditional Chinese in auto mode',
+    (language) => {
+      expect(resolveLocale('auto', [language])).toBe('zh-TW')
     },
   )
 
@@ -47,7 +61,8 @@ describe('resolveLocale', () => {
   )
 
   it('uses the first supported browser language and skips unsupported entries', () => {
-    expect(resolveLocale('auto', ['fr-FR', 'zh-TW', 'en-US'])).toBe('zh-CN')
+    expect(resolveLocale('auto', ['fr-FR', 'zh-TW', 'en-US'])).toBe('zh-TW')
+    expect(resolveLocale('auto', ['fr-FR', 'zh-CN', 'zh-TW'])).toBe('zh-CN')
     expect(resolveLocale('auto', ['de', 'en-GB', 'zh-CN'])).toBe('en')
   })
 
@@ -59,10 +74,62 @@ describe('resolveLocale', () => {
   it('lets a manual preference override browser languages', () => {
     expect(resolveLocale('zh-CN', ['en-US'])).toBe('zh-CN')
     expect(resolveLocale('en', ['zh-CN'])).toBe('en')
+    expect(resolveLocale('zh-TW', ['zh-CN'])).toBe('zh-TW')
+    expect(resolveLocale('zh-CN', ['zh-TW'])).toBe('zh-CN')
   })
 })
 
 describe('createTranslator', () => {
+  const locales: SupportedLocale[] = ['zh-CN', 'zh-TW', 'en']
+  const translationKeys = Object.keys(
+    messages.en,
+  ) as TranslationKey[]
+
+  it.each(locales)('defines every translation key with non-empty text for %s', (locale) => {
+    const localeMessages = messages[locale]
+    expect(Object.keys(localeMessages).sort()).toEqual([...translationKeys].sort())
+    for (const key of translationKeys) {
+      expect(localeMessages[key].trim(), `${locale}.${key}`).not.toBe('')
+    }
+  })
+
+  it.each(locales.filter((locale) => locale !== 'en'))(
+    'keeps the same interpolation placeholders as English for %s',
+    (locale) => {
+      const placeholders = (template: string) =>
+        [...template.matchAll(/(?<!(?:one|other) )\{(\w+)[,}]/g)].map((match) => match[1]).sort()
+      const localeMessages = messages[locale]
+      for (const key of translationKeys) {
+        expect(
+          [...new Set(placeholders(localeMessages[key]))],
+          `${locale}.${key}`,
+        ).toEqual([...new Set(placeholders(messages.en[key]))])
+      }
+    },
+  )
+
+  it('labels each language by its own name in every interface language', () => {
+    for (const locale of locales) {
+      const t = createTranslator(locale)
+      expect(t('simplifiedChineseLanguage')).toBe('简体中文')
+      expect(t('traditionalChineseLanguage')).toBe('繁體中文')
+      expect(t('englishLanguage')).toBe('English')
+    }
+  })
+
+  it('translates Traditional Chinese copy with interpolation', () => {
+    const zhTw = createTranslator('zh-TW')
+    expect(zhTw('toolbar')).toBe('分頁工具列')
+    expect(zhTw('displayLanguage')).toBe('顯示語言')
+    expect(zhTw('tabCount', { count: 2 })).toBe('2 個分頁')
+    expect(zhTw('closeDomainGroup', { label: 'google.com', count: 2 })).toBe(
+      '關閉 google.com 群組中的 2 個分頁',
+    )
+    expect(zhTw('deleteCustomGroupConfirm', { label: '工作' })).toBe(
+      '刪除「工作」群組？群組裡的分頁不會被關閉。',
+    )
+  })
+
   it('translates static copy and interpolates variables', () => {
     const zh = createTranslator('zh-CN')
     const en = createTranslator('en')

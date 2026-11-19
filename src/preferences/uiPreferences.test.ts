@@ -47,6 +47,14 @@ describe('UI preferences', () => {
     })
   })
 
+  it.each(['auto', 'zh-CN', 'zh-TW', 'en'] as const)('restores the %s language preference', (language) => {
+    localStorage.setItem(
+      UI_PREFERENCES_KEY,
+      JSON.stringify({ version: 1, globalMasked: false, viewMode: 'list', language }),
+    )
+    expect(loadUiPreferences()).toMatchObject({ language })
+  })
+
   it('restores a valid manual language and falls back only an invalid language field', () => {
     localStorage.setItem(
       UI_PREFERENCES_KEY,
