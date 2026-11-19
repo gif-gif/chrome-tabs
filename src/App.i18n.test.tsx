@@ -749,8 +749,14 @@ describe('compact progressive sticky toolbar CSS contract', () => {
 
     expect(declarationsFor('.window-toggle>span:first-of-type').get('font-weight')).toBe('600')
     const count = declarationsFor('.window-toggle>span:last-child')
-    expect(count.get('color')).toBe('var(--color-text)')
-    expect(count.get('background')).toBe('var(--color-group-count)')
+    expect(count.get('color')).toBe('var(--color-group-count-text)')
+    for (const property of ['background', 'background-color', 'border-radius', 'padding']) {
+      expect(count.has(property)).toBe(false)
+    }
+    expect(light.get('--color-group-count-text')).toBe('#55595e')
+    expect(dark.get('--color-group-count-text')).toBe('#c8cbd0')
+    expect(light.has('--color-group-count')).toBe(false)
+    expect(dark.has('--color-group-count')).toBe(false)
     expect(declarationsFor('.tab-list').get('padding')).toBe('4px 0 4px 8px')
   })
 
