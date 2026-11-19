@@ -1,6 +1,5 @@
 import type { UiLanguagePreference } from '../i18n/i18n'
 import {
-  type PersistedTabFilter,
   type UiPreferences,
   type UiColorScheme,
   type UiViewMode,
@@ -16,8 +15,6 @@ export const defaultUiPreferences: UiPreferences = {
   colorScheme: 'auto',
   pinnedTabIds: [],
   pinnedDomainKeys: [],
-  favoriteUrls: [],
-  filter: 'all',
 }
 
 interface PreferencesStorage {
@@ -33,16 +30,10 @@ interface StoredUiPreferences {
   colorScheme?: UiColorScheme
   pinnedTabIds?: number[]
   pinnedDomainKeys?: string[]
-  favoriteUrls?: string[]
-  filter?: PersistedTabFilter
 }
 
 function isViewMode(value: unknown): value is UiViewMode {
   return value === 'list' || value === 'domain' || value === 'custom'
-}
-
-function isPersistedTabFilter(value: unknown): value is PersistedTabFilter {
-  return value === 'all' || value === 'favorites'
 }
 
 function isLanguage(value: unknown): value is UiLanguagePreference {
@@ -87,10 +78,6 @@ function parseStoredPreferences(value: string): UiPreferences | null {
       pinnedDomainKeys: isNonEmptyStringArray(candidate.pinnedDomainKeys)
         ? [...new Set(candidate.pinnedDomainKeys)]
         : [],
-      favoriteUrls: isNonEmptyStringArray(candidate.favoriteUrls)
-        ? [...new Set(candidate.favoriteUrls)]
-        : [],
-      filter: isPersistedTabFilter(candidate.filter) ? candidate.filter : 'all',
     }
   } catch {
     return null
@@ -128,8 +115,6 @@ export function saveUiPreferences(
     colorScheme: preferences.colorScheme,
     pinnedTabIds: preferences.pinnedTabIds,
     pinnedDomainKeys: preferences.pinnedDomainKeys,
-    favoriteUrls: preferences.favoriteUrls,
-    filter: preferences.filter,
   }
   try { storage.setItem(UI_PREFERENCES_KEY, JSON.stringify(storedPreferences)) } catch {
     // Preferences are best-effort and must never prevent the panel from loading.

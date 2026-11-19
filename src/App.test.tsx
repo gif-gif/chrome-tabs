@@ -91,7 +91,6 @@ describe('Icon', () => {
       'tab',
       'refresh',
       'clear',
-      'all-tabs',
       'window',
       'globe',
       'sun',
@@ -103,7 +102,6 @@ describe('Icon', () => {
       'expand-all',
       'check',
       'locate',
-      'star',
       'deduplicate',
       'sort-ascending',
       'sort-descending',
@@ -140,7 +138,7 @@ describe('Header', () => {
     const onToggleMask = vi.fn()
 
     const { container, rerender } = render(
-      <Header t={zh} count={41} filter="all" globalMasked onFilterChange={vi.fn()} onToggleMask={onToggleMask} />,
+      <Header t={zh} count={41} globalMasked onToggleMask={onToggleMask} />,
     )
 
     expect(screen.queryByText('标签页管理器')).not.toBeInTheDocument()
@@ -159,16 +157,14 @@ describe('Header', () => {
     expect(revealIcon).toHaveAttribute('width', '16')
     expect(revealIcon).toHaveAttribute('height', '16')
 
-    for (const name of ['全部标签页', '收藏标签']) {
-      const filterButton = screen.getByRole('button', { name })
-      expect(filterButton.querySelector('svg')).toHaveAttribute('width', '16')
-      expect(filterButton.querySelector('svg')).toHaveAttribute('height', '16')
-    }
+    expect(screen.queryByRole('group', { name: '标签页筛选' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '全部标签页' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '收藏标签' })).not.toBeInTheDocument()
 
     await user.click(revealButton)
     expect(onToggleMask).toHaveBeenCalledTimes(1)
 
-    rerender(<Header t={zh} count={41} filter="all" globalMasked={false} onFilterChange={vi.fn()} onToggleMask={onToggleMask} />)
+    rerender(<Header t={zh} count={41} globalMasked={false} onToggleMask={onToggleMask} />)
     const hideButton = screen.getByRole('button', {
       name: '隐藏全部标签信息',
     })
@@ -453,7 +449,7 @@ describe('StatusView', () => {
     rerender(<StatusView t={zh} state="empty" />)
     expect(screen.getByText('没有找到匹配的标签页')).toBeInTheDocument()
     expect(
-      screen.getByText('请尝试清除搜索词或调整筛选条件。'),
+      screen.getByText('请尝试清除搜索词。'),
     ).toBeInTheDocument()
 
     rerender(
@@ -585,41 +581,11 @@ describe('App integration', () => {
         colorScheme: 'auto',
         pinnedTabIds: [],
         pinnedDomainKeys: [],
-        favoriteUrls: [],
-        filter: 'all',
       }),
     )
   })
 
-  it.each([
-    { filter: 'all', label: '全部标签页', prepareLabels: ['收藏标签', '全部标签页'] },
-    { filter: 'favorites', label: '收藏标签', prepareLabels: ['收藏标签'] },
-  ] as const)(
-    'restores the $filter filter after the popup is reopened',
-    async ({ filter, label, prepareLabels }) => {
-      storeUiPreferences(false)
-      const api = createTestApi()
-      const user = userEvent.setup()
-      const firstPopup = render(<App api={api} />)
-      await screen.findByText('GitHub - Chrome Tabs')
-
-      const filterGroup = screen.getByRole('group', { name: '标签页筛选' })
-      for (const prepareLabel of prepareLabels) {
-        await user.click(within(filterGroup).getByRole('button', { name: prepareLabel }))
-      }
-      await waitFor(() =>
-        expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '').filter).toBe(filter),
-      )
-
-      firstPopup.unmount()
-      render(<App api={api} />)
-      await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
-
-      expect(screen.getByRole('button', { name: label })).toHaveAttribute('aria-pressed', 'true')
-    },
-  )
-
-  it('keeps count, privacy, search, filters, and the view switch inside one sticky toolbar', async () => {
+  it('keeps count, privacy, search, and the view switch inside one sticky toolbar without filter tabs', async () => {
     const { container } = await renderReadyApp()
 
     expect(screen.queryByText('标签页管理器')).not.toBeInTheDocument()
@@ -633,8 +599,8 @@ describe('App integration', () => {
       within(toolbar).getByRole('searchbox', { name: '搜索标签页' }),
     ).toBeInTheDocument()
     expect(
-      within(toolbar).getByRole('group', { name: '标签页筛选' }),
-    ).toBeInTheDocument()
+      within(toolbar).queryByRole('group', { name: '标签页筛选' }),
+    ).not.toBeInTheDocument()
     const viewSwitch = within(toolbar).getByRole('group', {
       name: '标签页显示模式',
     })
@@ -645,41 +611,6 @@ describe('App integration', () => {
       within(viewSwitch).getByRole('button', { name: '域名分组视图' }),
     ).toBeInTheDocument()
     expect(container.querySelector('.sticky-controls')).toBe(toolbar)
-  })
-
-  it('always renders short filter labels with complete accessible names and unchanged callbacks', async () => {
-    const user = userEvent.setup()
-    const onFilterChange = vi.fn()
-    render(
-      <Header
-        t={zh}
-        count={41}
-        filter="all"
-        globalMasked={false}
-        onFilterChange={onFilterChange}
-        onToggleMask={vi.fn()}
-      />,
-    )
-
-    const filterGroup = screen.getByRole('group', { name: '标签页筛选' })
-    const allButton = within(filterGroup).getByRole('button', { name: '全部标签页' })
-    const favoritesButton = within(filterGroup).getByRole('button', { name: '收藏标签' })
-
-    expect(allButton.querySelector('.compact-filter-label')).toHaveTextContent(/^全部$/)
-    expect(favoritesButton.querySelector('.compact-filter-label')).toHaveTextContent(/^收藏$/)
-    expect(allButton).toHaveAttribute('title', '全部标签页')
-    expect(favoritesButton).toHaveAttribute('title', '收藏标签')
-    expect(allButton).toHaveAttribute('aria-pressed', 'true')
-    expect(favoritesButton).toHaveAttribute('aria-pressed', 'false')
-    expect(within(filterGroup).queryByRole('button', { name: '当前窗口' })).not.toBeInTheDocument()
-    expect(within(filterGroup).getAllByRole('button')).toHaveLength(2)
-
-    await user.click(allButton)
-    await user.click(favoritesButton)
-    expect(onFilterChange.mock.calls).toEqual([
-      ['all'],
-      ['favorites'],
-    ])
   })
 
   it('keeps list and domain view icon controls beside the search input', async () => {
@@ -1185,8 +1116,6 @@ describe('App integration', () => {
         colorScheme: 'auto',
         pinnedTabIds: [],
         pinnedDomainKeys: [],
-        favoriteUrls: [],
-        filter: 'all',
       }),
     )
 
@@ -1223,12 +1152,10 @@ describe('App integration', () => {
       colorScheme: 'auto',
       pinnedTabIds: [],
       pinnedDomainKeys: [],
-      favoriteUrls: [],
-      filter: 'all',
     })
   })
 
-  it('searches raw values case-insensitively while masked and composes filters and collapse state', async () => {
+  it('searches raw values case-insensitively while masked and composes search and collapse state', async () => {
     const { user } = await renderReadyApp()
     const search = screen.getByRole('searchbox', { name: '搜索标签页' })
 
@@ -1246,9 +1173,8 @@ describe('App integration', () => {
     const disclosure = screen.getByRole('button', { name: /当前窗口.*2 个标签/ })
     await user.click(disclosure)
     expect(disclosure).toHaveAttribute('aria-expanded', 'false')
-    const filterGroup = screen.getByRole('group', { name: '标签页筛选' })
-    await user.click(within(filterGroup).getByRole('button', { name: '收藏标签' }))
-    await user.click(within(filterGroup).getByRole('button', { name: '全部标签页' }))
+    await user.type(search, 'github')
+    await user.clear(search)
     expect(screen.getByRole('button', { name: /当前窗口.*2 个标签/ })).toHaveAttribute(
       'aria-expanded',
       'false',
@@ -1613,32 +1539,26 @@ describe('progressive sticky search toolbar', () => {
     expect(screen.getByRole('searchbox', { name: 'Search tabs' })).toHaveValue('github')
     expect(screen.getByText('Information hidden')).toBeInTheDocument()
   })
-  it('favorites tabs by URL, persists the choice, and filters to open favorites', async () => {
-    storeUiPreferences(false)
-    const api = createTestApi()
-    const user = userEvent.setup()
-    render(<App api={api} />)
+  it('shows every tab without favorite actions and drops legacy favorite preferences', async () => {
+    localStorage.setItem(UI_PREFERENCES_KEY, JSON.stringify({
+      version: 1,
+      globalMasked: false,
+      viewMode: 'list',
+      favoriteUrls: ['https://mail.example.com/inbox?TOKEN=SECRET'],
+      filter: 'favorites',
+    }))
+    render(<App api={createTestApi()} />)
 
-    await screen.findByText('GitHub - Chrome Tabs')
-    const mailRow = screen.getByText('Mail Inbox').closest('.tab-row')
-    expect(mailRow).toBeInTheDocument()
-    await user.click(within(mailRow as HTMLElement).getByRole('button', { name: '收藏标签' }))
-
-    expect(api.activateTab).not.toHaveBeenCalled()
-    expect(screen.getByRole('button', { name: '取消收藏标签' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    await waitFor(() =>
-      expect(JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '').favoriteUrls).toEqual([
-        'https://mail.example.com/inbox?TOKEN=SECRET',
-      ]),
-    )
-
-    await user.click(within(screen.getByRole('group', { name: '标签页筛选' })).getByRole('button', { name: '收藏标签' }))
+    expect(await screen.findByText('GitHub - Chrome Tabs')).toBeInTheDocument()
     expect(screen.getByText('Mail Inbox')).toBeInTheDocument()
-    expect(screen.queryByText('GitHub - Chrome Tabs')).not.toBeInTheDocument()
-    expect(screen.queryByText('Project Documentation')).not.toBeInTheDocument()
+    expect(screen.getByText('Project Documentation')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '收藏标签' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '取消收藏标签' })).not.toBeInTheDocument()
+    await waitFor(() => {
+      const stored = JSON.parse(localStorage.getItem(UI_PREFERENCES_KEY) ?? '')
+      expect(stored).not.toHaveProperty('favoriteUrls')
+      expect(stored).not.toHaveProperty('filter')
+    })
   })
 
   it('removes later exact-URL duplicates from the full domain group after confirmation', async () => {
@@ -2038,7 +1958,7 @@ describe('progressive sticky search toolbar', () => {
   })
 
 
-  it('orders tab row actions as hide, copy link, copy Markdown, favorite, pin, close', async () => {
+  it('orders tab row actions as hide, copy link, copy Markdown, pin, close', async () => {
     storeUiPreferences(false)
     render(<App api={createTestApi()} />)
 
@@ -2048,7 +1968,6 @@ describe('progressive sticky search toolbar', () => {
       '隐藏此标签信息',
       '复制标签链接',
       '复制为 Markdown',
-      '收藏标签',
       '置顶标签',
       '关闭标签页',
     ])

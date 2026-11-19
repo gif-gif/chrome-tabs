@@ -64,7 +64,6 @@ import type {
   DisplayCustomGroup,
   DisplayDomainGroup,
   DisplayTab,
-  TabFilter,
 } from './types'
 
 
@@ -100,7 +99,6 @@ export function App({ api }: AppProps) {
   )
   const t = useMemo(() => createTranslator(locale), [locale])
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState<TabFilter>(initialPreferences.filter)
   const [collapsedWindowIds, setCollapsedWindowIds] = useState<Set<number>>(
     () => new Set(),
   )
@@ -117,9 +115,6 @@ export function App({ api }: AppProps) {
   )
   const [pinnedDomainKeys, setPinnedDomainKeys] = useState<Set<string>>(
     () => new Set(initialPreferences.pinnedDomainKeys),
-  )
-  const [favoriteUrls, setFavoriteUrls] = useState<Set<string>>(
-    () => new Set(initialPreferences.favoriteUrls),
   )
   const [customGroups, setCustomGroups] = useState<CustomTabGroup[]>(loadCustomGroups)
   const [draggingCustomGroupKey, setDraggingCustomGroupKey] = useState<string | null>(null)
@@ -167,10 +162,8 @@ export function App({ api }: AppProps) {
       colorScheme,
       pinnedTabIds: [...pinnedTabIds],
       pinnedDomainKeys: [...pinnedDomainKeys],
-      favoriteUrls: [...favoriteUrls],
-      filter: filter === 'current-window' ? 'all' : filter,
     })
-  }, [favoriteUrls, filter, globalMasked, language, pinnedDomainKeys, pinnedTabIds, colorScheme, viewMode])
+  }, [globalMasked, language, pinnedDomainKeys, pinnedTabIds, colorScheme, viewMode])
 
   useEffect(() => {
     saveCustomGroups(customGroups)
@@ -208,10 +201,6 @@ export function App({ api }: AppProps) {
   const rawTabsById = useMemo(
     () => new Map(windows.flatMap((window) => window.tabs.map((tab) => [tab.id, tab] as const))),
     [windows],
-  )
-  const favoriteTabIds = useMemo(
-    () => new Set([...rawTabsById].filter(([, tab]) => tab.url.length > 0 && favoriteUrls.has(tab.url)).map(([tabId]) => tabId)),
-    [favoriteUrls, rawTabsById],
   )
   const tabIdToDomainKey = useMemo(
     () => new Map(
@@ -276,13 +265,8 @@ export function App({ api }: AppProps) {
   )
   const filteredWindows = useMemo(
     () =>
-      filterWindows(sortedWindows, {
-        query,
-        filter,
-        focusedWindowId: effectiveFocusedWindowId,
-        favoriteUrls,
-      }),
-    [effectiveFocusedWindowId, favoriteUrls, filter, query, sortedWindows],
+      filterWindows(sortedWindows, { query }),
+    [query, sortedWindows],
   )
   const presentationContext = useMemo(
     () =>
@@ -456,23 +440,6 @@ export function App({ api }: AppProps) {
     })
   }
 
-  function handleTabFavoriteToggle(tab: DisplayTab) {
-    const url = rawTabsById.get(tab.id)?.url
-    if (!url) {
-      return
-    }
-
-    setFavoriteUrls((current) => {
-      const next = new Set(current)
-      if (next.has(url)) {
-        next.delete(url)
-      } else {
-        next.add(url)
-      }
-      return next
-    })
-  }
-
   function handleDomainGroupPinToggle(group: DisplayDomainGroup) {
     const domainKey = group.tabs[0]
       ? tabIdToDomainKey.get(group.tabs[0].id)
@@ -535,7 +502,6 @@ export function App({ api }: AppProps) {
       .some((section) => section.tabs.some((tab) => tab.id === currentTab.id))
     if (!visible) {
       setQuery('')
-      setFilter('all')
     }
     setLocateTabId(currentTab.id)
   }
@@ -1002,9 +968,7 @@ export function App({ api }: AppProps) {
           >
             <Header
               count={tabCount}
-              filter={filter}
               globalMasked={globalMasked}
-              onFilterChange={setFilter}
               onToggleMask={handleGlobalMaskToggle}
               onSortTabs={() => void handleSortTabs()}
               sortStep={tabSortState.nextStep}
@@ -1086,13 +1050,11 @@ export function App({ api }: AppProps) {
                   onToggleCollapse={handleCollapseToggle}
                   onActivate={(tab) => void handleActivate(tab)}
                   onTogglePin={handleTabPinToggle}
-                  onToggleFavorite={handleTabFavoriteToggle}
                   onToggleMask={handleTabMaskToggle}
                   onCopy={(tab) => void handleCopy(tab)}
                   onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
                   onClose={(tab) => void handleClose(tab)}
                   pinnedTabIds={pinnedTabIds}
-                  favoriteTabIds={favoriteTabIds}
                   pendingTabIds={pendingTabIds}
                   copiedTabIds={copiedTabIds}
                   markdownCopiedTabIds={markdownCopiedTabIds}
@@ -1135,14 +1097,12 @@ export function App({ api }: AppProps) {
                         onCloseGroup={(customGroup) => void handleCloseDomainGroup(customGroup)}
                         onActivate={(tab) => void handleActivate(tab)}
                         onTogglePin={handleTabPinToggle}
-                        onToggleFavorite={handleTabFavoriteToggle}
-                        onToggleMask={handleTabMaskToggle}
+                              onToggleMask={handleTabMaskToggle}
                         onCopy={(tab) => void handleCopy(tab)}
                   onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
                         onClose={(tab) => void handleClose(tab)}
                         pinnedTabIds={pinnedTabIds}
-                        favoriteTabIds={favoriteTabIds}
-                        pendingTabIds={pendingTabIds}
+                              pendingTabIds={pendingTabIds}
                         copiedTabIds={copiedTabIds}
                   markdownCopiedTabIds={markdownCopiedTabIds}
                         t={t}
@@ -1166,13 +1126,11 @@ export function App({ api }: AppProps) {
                   onCloseGroup={(domainGroup) => void handleCloseDomainGroup(domainGroup)}
                   onActivate={(tab) => void handleActivate(tab)}
                   onTogglePin={handleTabPinToggle}
-                  onToggleFavorite={handleTabFavoriteToggle}
                   onToggleMask={handleTabMaskToggle}
                   onCopy={(tab) => void handleCopy(tab)}
                   onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
                   onClose={(tab) => void handleClose(tab)}
                   pinnedTabIds={pinnedTabIds}
-                  favoriteTabIds={favoriteTabIds}
                   pendingTabIds={pendingTabIds}
                   copiedTabIds={copiedTabIds}
                   markdownCopiedTabIds={markdownCopiedTabIds}

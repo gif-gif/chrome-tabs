@@ -15,8 +15,8 @@ The summary is read from the manifest `description` (`__MSG_extensionDescription
 
 - Current manifest description (75 characters):
   `Manage and quickly access browser tabs from a compact Chrome toolbar popup.`
-- Recommended (optional, 118 characters):
-  `Search, group and close open tabs from a compact toolbar popup. Save favorites, build custom groups, copy as Markdown.`
+- Recommended (optional, 112 characters):
+  `Search, group and close open tabs from a compact toolbar popup. Pin tabs, build custom groups, copy as Markdown.`
 
 ### Detailed description
 
@@ -25,7 +25,6 @@ Tab Manager lists every open tab in every Chrome window in one compact toolbar p
 
 FIND ANY TAB
 • Search tab titles and URLs as you type.
-• Filter by all tabs, the current window, or your saved tabs.
 • "Locate current tab" scrolls straight to the tab you are on.
 
 THREE WAYS TO VIEW
@@ -37,7 +36,7 @@ TIDY UP QUICKLY
 • Click a tab to jump to it; close single tabs or a whole group.
 • Remove duplicate tabs in a group with one click.
 • Sort the tabs in each window by domain, then restore the original order.
-• Pin important tabs and groups to the top; save tabs to favorites.
+• Pin important tabs and groups to the top.
 
 COPY
 • Copy a tab's link.

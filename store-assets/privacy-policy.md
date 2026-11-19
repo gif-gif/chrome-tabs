@@ -14,8 +14,8 @@ Tab Manager ("the extension") is a Chrome extension for finding and organizing o
 
 The extension saves the following in its own local storage on your computer so your setup is kept between sessions:
 
-- your preferences (view mode, language, appearance, privacy toggle, filter);
-- the URLs of tabs you save to favorites or add to a custom group, and the names of your custom groups;
+- your preferences (view mode, language, appearance, privacy toggle);
+- the URLs of tabs you add to a custom group, and the names of your custom groups;
 - tabs and domains you pin, and the tab order before you sort by domain (numeric tab IDs).
 
 This data is not synced to your Google account and is not sent anywhere. It is removed when you uninstall the extension.
@@ -53,8 +53,8 @@ _最后更新：2026-11-19_
 
 为了在下次打开时保留你的设置，本扩展在本机的扩展本地存储中保存：
 
-- 偏好设置（显示模式、语言、外观、隐私开关、筛选条件）；
-- 你收藏或加入自定义分组的标签页网址，以及自定义分组名称；
+- 偏好设置（显示模式、语言、外观、隐私开关）；
+- 你加入自定义分组的标签页网址，以及自定义分组名称；
 - 你置顶的标签页和域名，以及按域名排序前的标签顺序（数字 ID）。
 
 这些数据不会同步到你的 Google 账号，也不会发送到任何地方，卸载扩展时会一并删除。

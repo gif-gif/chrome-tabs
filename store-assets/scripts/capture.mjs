@@ -126,11 +126,11 @@ function stub({ windows, storage }) {
 
 const prefs = (extra) => JSON.stringify({
   version: 1, globalMasked: false, viewMode: 'list', language: 'auto', colorScheme: 'light',
-  pinnedTabIds: [], pinnedDomainKeys: [], favoriteUrls: [], filter: 'all', ...extra,
+  pinnedTabIds: [], pinnedDomainKeys: [], ...extra,
 })
 
 const SCENES = [
-  { name: 'list', prefs: { favoriteUrls: ['https://github.com/acme/web-app/pulls'] }, hover: 'drive.google.com/drive' },
+  { name: 'list', prefs: {}, hover: 'drive.google.com/drive' },
   { name: 'domain', prefs: { viewMode: 'domain', pinnedDomainKeys: ['google.com'] } },
   { name: 'search', prefs: {}, search: 'docs' },
   {
