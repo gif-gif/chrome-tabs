@@ -35,6 +35,7 @@ export type IconName =
   | 'checklist'
   | 'grip'
   | 'markdown'
+  | 'open-in-new-window'
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'children' | 'name'> {
   name: IconName
@@ -186,6 +187,12 @@ const paths: Record<IconName, React.ReactNode> = {
       <rect x="2.5" y="5" width="19" height="14" rx="2" />
       <path d="M6 15V9l2.5 3L11 9v6" />
       <path d="M16.5 9v6m0 0-2-2m2 2 2-2" />
+    </>
+  ),
+  'open-in-new-window': (
+    <>
+      <path d="M19 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4" />
+      <path d="M14 4h6v6M20 4l-9 9" />
     </>
   ),
   grip: (

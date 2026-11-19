@@ -226,23 +226,6 @@ main {
   white-space: nowrap;
 }
 
-.tab-count {
-  display: inline-grid;
-  flex: 0 0 auto;
-  min-width: 28px;
-  height: 24px;
-  margin: 0;
-  padding: 0 4px;
-  place-items: center;
-  color: var(--color-text-muted);
-  background: transparent;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-figures);
-  font-size: 12px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 
 .app-header-actions,
 .view-mode-switch {
@@ -718,6 +701,11 @@ main {
   color: var(--color-accent);
 }
 
+.row-new-window-action:not(.is-unavailable):hover:not(:disabled),
+.row-new-window-action:not(.is-unavailable):focus-visible {
+  color: var(--color-accent);
+}
+
 .row-close-action:hover:not(:disabled),
 .row-close-action:focus-visible {
   color: var(--color-danger);
@@ -851,10 +839,6 @@ main {
 
   .app-header {
     gap: 1px;
-  }
-
-  .tab-count {
-    padding-inline: 5px;
   }
 
   .app-header-actions {
@@ -1160,8 +1144,10 @@ main {
 }
 
 /* Pages Chrome does not let extensions read keep the Markdown action in
-   place, dimmed, with its reason in the tooltip instead of a banner. */
-.row-markdown-action.is-unavailable {
+   place, dimmed, with its reason in the tooltip instead of a banner. The
+   new-window action does the same for a tab already alone in its window. */
+.row-markdown-action.is-unavailable,
+.row-new-window-action.is-unavailable {
   cursor: not-allowed;
   opacity: 0.4;
 }

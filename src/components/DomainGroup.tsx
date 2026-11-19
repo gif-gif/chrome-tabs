@@ -19,7 +19,9 @@ interface DomainGroupProps {
   onToggleMask: (tab: DisplayTab) => void
   onCopy: (tab: DisplayTab) => void
   onCopyMarkdown?: (tab: DisplayTab) => void
+  onOpenInNewWindow?: (tab: DisplayTab) => void
   onClose: (tab: DisplayTab) => void
+  soleWindowTabIds?: ReadonlySet<number>
   t: Translator
   pinnedTabIds?: ReadonlySet<number>
   pendingTabIds?: ReadonlySet<number>
@@ -42,7 +44,9 @@ export function DomainGroup({
   onToggleMask,
   onCopy,
   onCopyMarkdown,
+  onOpenInNewWindow,
   onClose,
+  soleWindowTabIds,
   t,
   pinnedTabIds,
   pendingTabIds,
@@ -70,6 +74,6 @@ export function DomainGroup({
         <button type="button" className="icon-button domain-group-action close-button row-action-button row-close-action" aria-label={closeLabel} title={closeLabel} onClick={(event) => { event.stopPropagation(); onCloseGroup(group) }} disabled={groupPending}><Icon name="close" width={15} height={15} /></button>
       </span>
     </h2>
-    <ul className="tab-list" id={listId} hidden={collapsed}>{!collapsed ? group.tabs.map((tab) => <TabRow key={tab.id} tab={tab} pinned={pinnedTabIds?.has(tab.id)} onActivate={onActivate} onTogglePin={onTogglePin} onToggleMask={onToggleMask} onCopy={onCopy} onCopyMarkdown={onCopyMarkdown} onClose={onClose} t={t} pending={pendingTabIds?.has(tab.id)} copied={copiedTabIds?.has(tab.id)} markdownCopied={markdownCopiedTabIds?.has(tab.id)} />) : null}</ul>
+    <ul className="tab-list" id={listId} hidden={collapsed}>{!collapsed ? group.tabs.map((tab) => <TabRow key={tab.id} tab={tab} pinned={pinnedTabIds?.has(tab.id)} onActivate={onActivate} onTogglePin={onTogglePin} onToggleMask={onToggleMask} onCopy={onCopy} onCopyMarkdown={onCopyMarkdown} onOpenInNewWindow={onOpenInNewWindow} onClose={onClose} t={t} aloneInWindow={soleWindowTabIds?.has(tab.id)} pending={pendingTabIds?.has(tab.id)} copied={copiedTabIds?.has(tab.id)} markdownCopied={markdownCopiedTabIds?.has(tab.id)} />) : null}</ul>
   </section>
 }

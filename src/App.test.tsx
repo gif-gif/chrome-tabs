@@ -133,21 +133,18 @@ describe('Icon', () => {
 })
 
 describe('Header', () => {
-  it('renders a compact count and icon-only dynamic global privacy action', async () => {
+  it('renders icon-only actions without a tab count', async () => {
     const user = userEvent.setup()
     const onToggleMask = vi.fn()
 
     const { container, rerender } = render(
-      <Header t={zh} count={41} globalMasked onToggleMask={onToggleMask} />,
+      <Header t={zh} globalMasked onToggleMask={onToggleMask} />,
     )
 
     expect(screen.queryByText('标签页管理器')).not.toBeInTheDocument()
     expect(screen.queryByRole('heading')).not.toBeInTheDocument()
-    const count = screen.getByText('41')
-    expect(count).toHaveTextContent(/^41$/)
-    expect(count).toHaveAttribute('title', '41 个标签')
-    expect(count).toHaveAttribute('aria-label', '41 个标签')
-    expect(screen.queryByText('41 个标签')).not.toBeInTheDocument()
+    expect(container.querySelector('.tab-count')).not.toBeInTheDocument()
+    expect(container.querySelector('.app-header')).toHaveTextContent('')
     const revealButton = screen.getByRole('button', {
       name: '显示全部标签信息',
     })
@@ -164,7 +161,7 @@ describe('Header', () => {
     await user.click(revealButton)
     expect(onToggleMask).toHaveBeenCalledTimes(1)
 
-    rerender(<Header t={zh} count={41} globalMasked={false} onToggleMask={onToggleMask} />)
+    rerender(<Header t={zh} globalMasked={false} onToggleMask={onToggleMask} />)
     const hideButton = screen.getByRole('button', {
       name: '隐藏全部标签信息',
     })
@@ -494,6 +491,7 @@ function createTestApi(
   queryWindows: ReturnType<typeof vi.fn<ChromeTabsApi['queryWindows']>>
   activateTab: ReturnType<typeof vi.fn<ChromeTabsApi['activateTab']>>
   closeTab: ReturnType<typeof vi.fn<ChromeTabsApi['closeTab']>>
+  openTabInNewWindow: ReturnType<typeof vi.fn<ChromeTabsApi['openTabInNewWindow']>>
   moveTabs: ReturnType<typeof vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>>
   capturePage: ReturnType<typeof vi.fn<ChromeTabsApi['capturePage']>>
 } {
@@ -501,6 +499,7 @@ function createTestApi(
     queryWindows: vi.fn(queryWindows),
     activateTab: vi.fn<ChromeTabsApi['activateTab']>(async () => undefined),
     closeTab: vi.fn<ChromeTabsApi['closeTab']>(async () => undefined),
+    openTabInNewWindow: vi.fn<ChromeTabsApi['openTabInNewWindow']>(async () => undefined),
     moveTabs: vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>(async () => undefined),
     capturePage: vi.fn<ChromeTabsApi['capturePage']>(async (_tabId, url) => ({
       html: '<html><head><title>Captured</title></head><body><p>Captured page text</p></body></html>',
@@ -519,11 +518,20 @@ async function renderReadyApp(api = createTestApi()) {
     value: { writeText: clipboardWriteText },
   })
   const view = render(<App api={api} />)
-  await screen.findByLabelText('3 个标签')
+  await waitFor(() => expect(document.querySelectorAll('.tab-row')).toHaveLength(3))
   await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(1))
   await waitFor(() =>
     expect(screen.queryByText('正在加载标签页…')).not.toBeInTheDocument(),
   )
+  return { api, user, ...view }
+}
+
+async function renderUnmaskedApp(api = createTestApi()) {
+  storeUiPreferences(false)
+  const user = userEvent.setup()
+  const view = render(<App api={api} />)
+  await screen.findByText('Mail Inbox')
+  await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(1))
   return { api, user, ...view }
 }
 
@@ -585,13 +593,14 @@ describe('App integration', () => {
     )
   })
 
-  it('keeps count, privacy, search, and the view switch inside one sticky toolbar without filter tabs', async () => {
+  it('keeps privacy, search, and the view switch inside one sticky toolbar without a tab count or filter tabs', async () => {
     const { container } = await renderReadyApp()
 
     expect(screen.queryByText('标签页管理器')).not.toBeInTheDocument()
     const toolbar = screen.getByRole('toolbar', { name: '标签页工具栏' })
     expect(toolbar).toHaveClass('sticky-controls')
-    expect(within(toolbar).getByLabelText('3 个标签')).toHaveTextContent(/^3$/)
+    expect(within(toolbar).queryByLabelText('3 个标签')).not.toBeInTheDocument()
+    expect(toolbar.querySelector('.tab-count')).not.toBeInTheDocument()
     expect(
       within(toolbar).getByRole('button', { name: '显示全部标签信息' }),
     ).toHaveTextContent('')
@@ -1055,7 +1064,7 @@ describe('App integration', () => {
     const api = createTestApi(async () => [...fixtureWindows].reverse())
     const { container } = await renderReadyApp(api)
 
-    expect(screen.getByLabelText('3 个标签')).toHaveTextContent(/^3$/)
+    expect(container.querySelectorAll('.tab-row')).toHaveLength(3)
     const groups = screen.getAllByRole('region', { name: /窗口/ })
     expect(within(groups[0]).getByText('当前窗口')).toBeInTheDocument()
     expect(within(groups[1]).getByText('窗口 2')).toBeInTheDocument()
@@ -1197,7 +1206,7 @@ describe('App integration', () => {
 
     expect(screen.getByText('正在加载标签页…')).toBeInTheDocument()
     resolveInitial(fixtureWindows)
-    await screen.findByLabelText('3 个标签')
+    await waitFor(() => expect(document.querySelectorAll('.tab-row')).toHaveLength(3))
 
     // A rejected operation forces the hook through its generic query error state.
     api.activateTab.mockRejectedValueOnce(new Error('GitHub - Chrome Tabs secret'))
@@ -1527,7 +1536,7 @@ describe('progressive sticky search toolbar', () => {
     const api = createTestApi()
     const user = userEvent.setup()
     const { container } = render(<App api={api} />)
-    await screen.findByLabelText('3 tabs')
+    await waitFor(() => expect(document.querySelectorAll('.tab-row')).toHaveLength(3))
     const search = screen.getByRole('searchbox', { name: 'Search tabs' })
     await user.type(search, 'github')
     await user.click(screen.getByRole('button', { name: 'Hide all tab information' }))
@@ -1626,7 +1635,7 @@ describe('progressive sticky search toolbar', () => {
     const user = userEvent.setup()
     render(<App api={api} />)
 
-    await screen.findByLabelText('6 个标签')
+    await waitFor(() => expect(document.querySelectorAll('.tab-row')).toHaveLength(6))
     await user.click(screen.getByRole('button', { name: '按域名升序排列标签页' }))
 
     await waitFor(() => expect(api.moveTabs).toHaveBeenCalledTimes(1))
@@ -1958,7 +1967,7 @@ describe('progressive sticky search toolbar', () => {
   })
 
 
-  it('orders tab row actions as hide, copy link, copy Markdown, pin, close', async () => {
+  it('orders tab row actions as hide, copy link, copy Markdown, open in new window, pin, close', async () => {
     storeUiPreferences(false)
     render(<App api={createTestApi()} />)
 
@@ -1968,9 +1977,78 @@ describe('progressive sticky search toolbar', () => {
       '隐藏此标签信息',
       '复制标签链接',
       '复制为 Markdown',
+      '在新窗口中打开',
       '置顶标签',
       '关闭标签页',
     ])
+  })
+
+  it('moves a tab into a new window without activating the row', async () => {
+    const { api, user } = await renderUnmaskedApp()
+    const row = screen.getByText('Mail Inbox').closest('li')!
+    const button = within(row).getByRole('button', { name: '在新窗口中打开' })
+
+    expect(button).toHaveAttribute('title', '在新窗口中打开')
+    expect(button).not.toHaveAttribute('aria-disabled')
+    await user.click(button)
+
+    await waitFor(() => expect(api.openTabInNewWindow).toHaveBeenCalledWith(102))
+    expect(api.openTabInNewWindow).toHaveBeenCalledTimes(1)
+    expect(api.activateTab).not.toHaveBeenCalled()
+    await waitFor(() => expect(api.queryWindows).toHaveBeenCalledTimes(2))
+  })
+
+  it('keeps the new-window action reachable by keyboard', async () => {
+    const { api, user } = await renderUnmaskedApp()
+    const row = screen.getByText('Mail Inbox').closest('li')!
+    within(row).getByRole('button', { name: '在新窗口中打开' }).focus()
+
+    await user.keyboard('{Enter}')
+
+    await waitFor(() => expect(api.openTabInNewWindow).toHaveBeenCalledWith(102))
+    expect(api.activateTab).not.toHaveBeenCalled()
+  })
+
+  it('disables the new-window action for a tab alone in its window', async () => {
+    const { api, user } = await renderUnmaskedApp()
+    const row = screen.getByText('Project Documentation').closest('li')!
+    const button = within(row).getByRole('button', { name: '已是所在窗口中唯一的标签页' })
+
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    expect(button).toHaveAttribute('title', '已是所在窗口中唯一的标签页')
+    expect(button).toHaveClass('is-unavailable')
+    await user.click(button)
+
+    expect(api.openTabInNewWindow).not.toHaveBeenCalled()
+    expect(api.activateTab).not.toHaveBeenCalled()
+  })
+
+  it('shows a sanitized error when a tab cannot move to a new window', async () => {
+    const api = createTestApi()
+    api.openTabInNewWindow.mockRejectedValueOnce(new Error('private window failure'))
+    const { user, container } = await renderUnmaskedApp(api)
+    const row = screen.getByText('Mail Inbox').closest('li')!
+
+    await user.click(within(row).getByRole('button', { name: '在新窗口中打开' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('无法在新窗口中打开该标签页，请重试。')
+    expect(container.innerHTML).not.toContain('private window failure')
+  })
+
+  it.each([
+    ['域名分组视图'],
+    ['自定义分组视图'],
+  ])('offers the new-window action in the %s', async (viewName) => {
+    const { api, user } = await renderUnmaskedApp()
+    await user.click(screen.getByRole('button', { name: viewName }))
+    const row = (await screen.findByText('Mail Inbox')).closest('li')!
+
+    await user.click(within(row).getByRole('button', { name: '在新窗口中打开' }))
+
+    await waitFor(() => expect(api.openTabInNewWindow).toHaveBeenCalledWith(102))
+    expect(api.activateTab).not.toHaveBeenCalled()
+    const loneRow = screen.getByText('Project Documentation').closest('li')!
+    expect(within(loneRow).getByRole('button', { name: '已是所在窗口中唯一的标签页' })).toHaveAttribute('aria-disabled', 'true')
   })
 
 

@@ -54,6 +54,7 @@ function createChromeMock(windows: unknown = []) {
     windows: {
       getAll: vi.fn().mockResolvedValue(windows),
       update: vi.fn().mockResolvedValue(undefined),
+      create: vi.fn().mockResolvedValue(undefined),
       onCreated: createEventMock(),
       onRemoved: createEventMock(),
       onFocusChanged: createEventMock(),
@@ -478,5 +479,26 @@ describe('createChromeTabsApi subscribe', () => {
     )
 
     expect(error.message).toBe(CHROME_API_UNAVAILABLE_MESSAGE)
+  })
+})
+
+describe('createChromeTabsApi openTabInNewWindow', () => {
+  it('moves the tab itself into a new focused window', async () => {
+    const chromeApi = createChromeMock()
+
+    await createChromeTabsApi(chromeApi as unknown as typeof chrome).openTabInNewWindow(102)
+
+    expect(chromeApi.windows.create).toHaveBeenCalledWith({ tabId: 102, focused: true })
+    expect(chromeApi.tabs.update).not.toHaveBeenCalled()
+  })
+
+  it('treats a Chrome API without windows.create as unavailable', async () => {
+    const chromeApi = createChromeMock()
+    const { create: _create, ...windowsWithoutCreate } = chromeApi.windows
+    void _create
+
+    await expect(
+      createSafeChromeTabsApi({ ...chromeApi, windows: windowsWithoutCreate } as unknown as typeof chrome).openTabInNewWindow(102),
+    ).rejects.toThrow('Chrome extension API is unavailable.')
   })
 })

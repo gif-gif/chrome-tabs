@@ -14,6 +14,9 @@ const unavailableChromeTabsApi: ChromeTabsApi = {
   closeTab: async () => {
     throw new Error(CHROME_API_UNAVAILABLE_MESSAGE)
   },
+  openTabInNewWindow: async () => {
+    throw new Error(CHROME_API_UNAVAILABLE_MESSAGE)
+  },
   moveTabs: async () => {
     throw new Error(CHROME_API_UNAVAILABLE_MESSAGE)
   },
@@ -62,6 +65,7 @@ function assertChromeApi(
     !chromeApi?.windows ||
     typeof chromeApi.windows.getAll !== 'function' ||
     typeof chromeApi.windows.update !== 'function' ||
+    typeof chromeApi.windows.create !== 'function' ||
     !chromeApi.tabs ||
     typeof chromeApi.tabs.update !== 'function' ||
     typeof chromeApi.tabs.remove !== 'function' ||
@@ -197,6 +201,10 @@ export function createChromeTabsApi(
 
     async closeTab(tabId: number): Promise<void> {
       await chromeApi.tabs.remove(tabId)
+    },
+
+    async openTabInNewWindow(tabId: number): Promise<void> {
+      await chromeApi.windows.create({ tabId, focused: true })
     },
 
     async moveTabs(tabIds: number[], windowId: number): Promise<void> {

@@ -112,7 +112,7 @@ function stub({ windows, storage }) {
     windows: {
       getAll: async () => structuredClone(windows),
       getLastFocused: async () => ({ id: 1 }),
-      update: ok,
+      update: ok, create: ok,
       onCreated: ev(), onRemoved: ev(), onFocusChanged: ev(),
     },
     tabs: {

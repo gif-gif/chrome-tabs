@@ -109,6 +109,7 @@ function createApi(): ChromeTabsApi {
     queryWindows: vi.fn(async () => windows),
     activateTab: vi.fn(async () => undefined),
     closeTab: vi.fn(async () => undefined),
+    openTabInNewWindow: vi.fn(async () => undefined),
     moveTabs: vi.fn(async () => undefined),
     capturePage: vi.fn(async () => ({ html: '<p>Page</p>', url: 'https://example.com/', title: 'Page' })),
     subscribe: vi.fn(() => () => undefined),
@@ -124,21 +125,18 @@ afterEach(() => {
 })
 
 describe('App internationalization', () => {
-  it('shows the numeric count with an English accessible name and no filter tabs', () => {
-    render(
+  it('shows only the English icon actions without a tab count or filter tabs', () => {
+    const { container } = render(
       <Header
         t={createTranslator('en')}
-        count={41}
         globalMasked={false}
         onToggleMask={vi.fn()}
       />,
     )
 
-    const count = screen.getByText('41')
-    expect(count).toHaveTextContent(/^41$/)
-    expect(count).toHaveAttribute('title', '41 tabs')
-    expect(count).toHaveAttribute('aria-label', '41 tabs')
-    expect(screen.queryByText('41 tabs')).not.toBeInTheDocument()
+    expect(container.querySelector('.tab-count')).not.toBeInTheDocument()
+    expect(container.querySelector('.app-header')).toHaveTextContent('')
+    expect(screen.getByRole('button', { name: 'Hide all tab information' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'All tabs' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Favorite tabs' })).not.toBeInTheDocument()
   })
@@ -408,7 +406,7 @@ describe('App internationalization', () => {
     const user = userEvent.setup()
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
     render(<App api={api} />)
-    await screen.findByLabelText('3 tabs')
+    await waitFor(() => expect(document.querySelectorAll('.tab-row')).toHaveLength(3))
 
     expect(screen.getByPlaceholderText('Search titles or URLs…')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'All tabs' })).not.toBeInTheDocument()
@@ -865,19 +863,7 @@ describe('compact progressive sticky toolbar CSS contract', () => {
   })
 
   it('keeps the compact header controls quiet and within narrow widths without filter tabs', () => {
-    const count = declarationsFor('.tab-count')
-    expect(count.get('display')).toBe('inline-grid')
-    expect(count.get('flex')).toBe('0 0 auto')
-    expect(count.get('min-width')).toBe('28px')
-    expect(count.get('height')).toBe('24px')
-    expect(count.get('padding')).toBe('0 4px')
-    expect(count.get('color')).toBe('var(--color-text-muted)')
-    expect(count.get('background')).toBe('transparent')
-    expect(count.get('border-radius')).toBe('var(--radius-sm)')
-    expect(count.get('font-weight')).toBe('500')
-    expect(count.get('font-variant-numeric')).toBe('tabular-nums')
-    expect(count.has('overflow')).toBe(false)
-    expect(count.has('text-overflow')).toBe(false)
+    expect(cssRules.some((rule) => rule.selector.includes('.tab-count'))).toBe(false)
 
     expect(cssRules.some((rule) => rule.selector.includes('.compact-filter'))).toBe(false)
     expect(declarationsFor(':root').get('--radius-sm')).toBe('4px')
@@ -905,18 +891,14 @@ describe('compact progressive sticky toolbar CSS contract', () => {
       (rule) => rule.media === '(max-width:420px)' && rule.selector === '.app-header',
     )
     expect(media340HeaderIndex).toBeGreaterThan(media420HeaderIndex)
-    expect(declarationsFor('.tab-count', media340).get('padding-inline')).toBe('5px')
     expect(declarationsFor('.app-header-actions', media340).get('gap')).toBe('0')
     expect(declarationsFor('.compact-icon-button', media340).get('width')).toBe('24px')
     expect(declarationsFor('.compact-icon-button', media340).get('min-width')).toBe('24px')
     expect(declarationsFor('.compact-icon-button').get('height')).toBe('var(--compact-control-size)')
 
     const availableHeaderWidth = 280 - (2 * 8)
-    const threeDigitCountWidth = Math.max(28, (3 * 7.2) + (2 * 5))
     const actionButtonsWidth = 3 * 24
-    const headerChildrenGaps = 2 * 1
-    const worstCaseHeaderWidth =
-      threeDigitCountWidth + actionButtonsWidth + headerChildrenGaps
+    const worstCaseHeaderWidth = actionButtonsWidth
 
     expect(availableHeaderWidth).toBe(264)
     expect(worstCaseHeaderWidth).toBeLessThanOrEqual(availableHeaderWidth)
