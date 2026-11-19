@@ -20,6 +20,13 @@
   --color-danger-soft: #fce8e6;
   --color-focus: #0b57d0;
   --color-on-accent: #ffffff;
+  /* Group headers (window, domain and custom groups) sit on a tinted band
+     with an accent marker so they read apart from the white tab rows. */
+  --color-group-header: #eceef2;
+  --color-group-header-hover: #e1e4e9;
+  --color-group-header-pressed: #d6dae0;
+  --color-group-count: #dadde3;
+  --color-group-marker: var(--color-accent);
   --shadow-sticky: 0 1px 3px rgb(60 64 67 / 18%);
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -56,6 +63,10 @@
   --color-danger-soft: #5c2b29;
   --color-focus: #aecbfa;
   --color-on-accent: #202124;
+  --color-group-header: #3c3f44;
+  --color-group-header-hover: #46494f;
+  --color-group-header-pressed: #4f535a;
+  --color-group-count: #53575e;
   --shadow-sticky: 0 1px 4px rgb(0 0 0 / 45%);
 }
 
@@ -77,6 +88,10 @@
     --color-danger-soft: #5c2b29;
     --color-focus: #aecbfa;
     --color-on-accent: #202124;
+    --color-group-header: #3c3f44;
+    --color-group-header-hover: #46494f;
+    --color-group-header-pressed: #4f535a;
+    --color-group-count: #53575e;
     --shadow-sticky: 0 1px 4px rgb(0 0 0 / 45%);
   }
 }
@@ -410,8 +425,9 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: stretch;
-  background: var(--color-surface-raised);
+  background: var(--color-group-header);
   border-bottom: 1px solid var(--color-border-subtle);
+  box-shadow: inset 3px 0 0 var(--color-group-marker);
 }
 
 .window-toggle {
@@ -424,15 +440,17 @@ main {
   gap: 6px;
   padding: 0 10px;
   text-align: left;
-  background: var(--color-surface-raised);
+  background: var(--color-group-header);
   border: 0;
   border-bottom: 1px solid var(--color-border-subtle);
+  box-shadow: inset 3px 0 0 var(--color-group-marker);
 }
 
 .domain-group-heading .window-toggle {
   background: transparent;
   border-bottom: 0;
   border-left: 0;
+  box-shadow: none;
 }
 
 .domain-group-actions {
@@ -456,11 +474,11 @@ main {
 }
 
 .window-toggle:hover {
-  background: var(--color-hover);
+  background: var(--color-group-header-hover);
 }
 
 .window-toggle:active {
-  background: var(--color-pressed);
+  background: var(--color-group-header-pressed);
 }
 
 .window-toggle svg {
@@ -474,22 +492,26 @@ main {
 
 .window-toggle > span:first-of-type {
   overflow: hidden;
-  font-weight: 500;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .window-toggle > span:last-child {
-  color: var(--color-text-muted);
+  padding: 1px 8px;
+  color: var(--color-text);
+  background: var(--color-group-count);
+  border-radius: 999px;
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
+/* Tabs sit indented under their group header. */
 .tab-list {
   margin: 0;
-  padding: 4px 0;
+  padding: 4px 0 4px 8px;
   list-style: none;
   background: color-mix(in srgb, var(--color-bg) 42%, var(--color-surface));
 }
@@ -1093,11 +1115,11 @@ main {
 }
 
 .domain-group-heading:hover {
-  background: var(--color-hover);
+  background: var(--color-group-header-hover);
 }
 
 .domain-group-heading:has(.window-toggle:active) {
-  background: var(--color-pressed);
+  background: var(--color-group-header-pressed);
 }
 
 .domain-group-heading .window-toggle:hover,
