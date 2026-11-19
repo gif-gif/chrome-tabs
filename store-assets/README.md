@@ -9,7 +9,7 @@ Materials for publishing the extension on the Chrome Web Store. Nothing here is 
 | `privacy-policy.md` / `privacy-policy.html` | Bilingual privacy policy, ready to host |
 | `submission-checklist.md` | Manifest, permissions, packaging and manual steps before submitting |
 | `images/icon-128.png` | Store icon 128×128 |
-| `images/<locale>/screenshots/*.png` | Five 1280×800 screenshots per language (`en`, `zh-CN`) |
+| `images/<locale>/screenshots/*.png` | Five 1280×800 screenshots per language (`en`, `zh-CN`, `zh-TW`) |
 | `images/<locale>/promo-small-440x280.png` | Small promo tile |
 | `images/<locale>/promo-marquee-1400x560.png` | Marquee promo tile (optional on the store) |
 | `scripts/` | Scripts that regenerate the images |
@@ -26,4 +26,4 @@ node capture.mjs <repo>/dist ./shots
 node compose.mjs ./shots <repo>/assets/chrome-tabs-icon.svg <repo>/store-assets/images
 ```
 
-Set `CHROME_PATH` if Google Chrome is not at the default macOS location. `playwright-core` is intentionally not a project dependency. The composed PNGs are flattened to 24-bit RGB (no alpha), as the store requires; re-run that step after regenerating, e.g. with Pillow: `Image.open(p).convert('RGB').save(p)`.
+Set `LOCALES=zh-TW` (comma-separated) on both commands to regenerate only some languages. Set `CHROME_PATH` if Google Chrome is not at the default macOS location. `playwright-core` is intentionally not a project dependency. The composed PNGs are flattened to 24-bit RGB (no alpha), as the store requires; re-run that step after regenerating, e.g. with Pillow: `Image.open(p).convert('RGB').save(p)`.

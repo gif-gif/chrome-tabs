@@ -71,7 +71,28 @@ const DATA = {
       ['月度预算 – Google 表格', 'https://docs.google.com/spreadsheets/d/budget'],
     ],
   ],
+  'zh-TW': [
+    [
+      ['Pull requests · acme/web-app', 'https://github.com/acme/web-app/pulls'],
+      ['第四季路線圖 – Google 文件', 'https://docs.google.com/document/d/q4-roadmap'],
+      ['團隊雲端硬碟 – 設計稿', 'https://drive.google.com/drive/folders/design'],
+      ['Array.prototype.flatMap() - JavaScript | MDN', 'https://developer.mozilla.org/zh-TW/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap'],
+      ['如何替 React Hook 加上防抖？ - Stack Overflow', 'https://stackoverflow.com/questions/12345/debounce-react-hook'],
+      ['第四季路線圖 – Google 文件', 'https://docs.google.com/document/d/q4-roadmap'],
+      ['Chrome 擴充功能：tabs API', 'https://developer.chrome.com/docs/extensions/reference/api/tabs'],
+    ],
+    [
+      ['飛往里斯本的航班 – 旅遊搜尋', 'https://www.example-travel.com/flights/lisbon'],
+      ['阿爾法瑪飯店 – 訂房詳情', 'https://www.example-travel.com/hotels/alfama'],
+      ['週末食譜：20 分鐘快速晚餐', 'https://cooking.example.org/weekend'],
+      ['Issues · acme/design-system', 'https://github.com/acme/design-system/issues'],
+      ['每月預算 – Google 試算表', 'https://docs.google.com/spreadsheets/d/budget'],
+    ],
+  ],
 }
+
+// LOCALES=zh-TW node capture.mjs ... captures only the listed locales.
+const LOCALES = process.env.LOCALES ? process.env.LOCALES.split(',') : Object.keys(DATA)
 
 function buildWindows(locale) {
   let id = 100
@@ -123,7 +144,7 @@ const SCENES = [
 ]
 
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' })
-for (const locale of ['en', 'zh-CN']) {
+for (const locale of LOCALES) {
   const windows = buildWindows(locale)
   for (const scene of SCENES) {
     const context = await browser.newContext({ viewport: { width: 420, height: 600 }, deviceScaleFactor: 2, locale })
