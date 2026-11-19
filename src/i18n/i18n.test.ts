@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   createTranslator,
@@ -87,6 +88,17 @@ describe('createTranslator', () => {
     for (const key of translationKeys) {
       expect(localeMessages[key].trim(), `${locale}.${key}`).not.toBe('')
     }
+  })
+
+  it.each([
+    ['zh-CN', 'zh_CN'],
+    ['zh-TW', 'zh_TW'],
+    ['en', 'en'],
+  ] as const)('uses the manifest extension name for %s', (locale, chromeLocale) => {
+    const manifestMessages = JSON.parse(
+      readFileSync(`public/_locales/${chromeLocale}/messages.json`, 'utf8'),
+    ) as Record<string, { message: string }>
+    expect(messages[locale].extensionName).toBe(manifestMessages.extensionName.message)
   })
 
   it.each(locales.filter((locale) => locale !== 'en'))(

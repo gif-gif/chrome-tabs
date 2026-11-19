@@ -109,6 +109,7 @@ function stub({ windows, storage }) {
   const ev = () => ({ addListener() {}, removeListener() {} })
   const ok = async () => undefined
   globalThis.chrome = {
+    runtime: { id: 'demo-extension-id' },
     windows: {
       getAll: async () => structuredClone(windows),
       getLastFocused: async () => ({ id: 1 }),
@@ -116,7 +117,7 @@ function stub({ windows, storage }) {
       onCreated: ev(), onRemoved: ev(), onFocusChanged: ev(),
     },
     tabs: {
-      update: ok, remove: ok, move: ok,
+      update: ok, remove: ok, move: ok, create: ok,
       get: async (id) => windows.flatMap((w) => w.tabs).find((t) => t.id === id),
       onCreated: ev(), onUpdated: ev(), onMoved: ev(), onActivated: ev(), onRemoved: ev(),
       onAttached: ev(), onDetached: ev(), onReplaced: ev(),

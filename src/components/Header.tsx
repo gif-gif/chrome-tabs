@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { Translator } from '../i18n/i18n'
 import type { TabSortStep } from '../types'
+import { ExtensionBrand } from './ExtensionBrand'
 import { Icon, type IconName } from './Icon'
 
 interface HeaderProps {
@@ -39,6 +40,7 @@ export function Header({
 
   return (
     <header className="app-header">
+      <ExtensionBrand t={t} />
       <div className="app-header-actions">
         {onSortTabs ? (
           <button

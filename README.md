@@ -14,6 +14,7 @@ A compact local Chrome extension for finding and managing many open tabs from a 
 - Pin tabs and groups to the top, remove duplicates, and sort a window's tabs by domain.
 - Hide sensitive tab information globally, by domain group, or per tab.
 - Use a compact sticky toolbar with privacy, grouping, view, appearance (light / dark / system), and language controls.
+- Click the extension icon and name at the top left of the popup to open its Chrome Web Store page.
 - Use Simplified Chinese, Traditional Chinese, or English; the default follows the browser language (zh-TW / zh-HK / zh-MO / zh-Hant map to Traditional Chinese) and falls back to English.
 
 ## Screenshots

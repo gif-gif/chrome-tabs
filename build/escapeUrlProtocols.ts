@@ -24,6 +24,8 @@ const knownReactUrlConstants = new Set([
   'http://www.w3.org/1998/Math/MathML',
   'http://www.w3.org/1999/xlink',
   'http://www.w3.org/XML/1998/namespace',
+  // Chrome Web Store base URL used by the popup's store link (src/chrome/storePage.ts).
+  'https://chromewebstore.google.com/detail/',
 ])
 
 const textExtensions = new Set([
