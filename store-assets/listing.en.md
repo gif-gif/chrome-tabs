@@ -34,6 +34,7 @@ THREE WAYS TO VIEW
 
 TIDY UP QUICKLY
 • Click a tab to jump to it; close single tabs or a whole group.
+• Move a tab into a new window of its own with one click.
 • Remove duplicate tabs in a group with one click.
 • Sort the tabs in each window by domain, then restore the original order.
 • Pin important tabs and groups to the top.
@@ -54,7 +55,7 @@ COMFORTABLE TO USE
 HOW TO USE
 1. Click the Tab Manager icon in the Chrome toolbar (pin it from the puzzle-piece menu for one-click access).
 2. Type in the search box, or switch between list, domain and custom-group views with the buttons next to it.
-3. Hover a tab to show its actions: hide, copy link, copy as Markdown, save, pin, close.
+3. Hover a tab to show its actions: hide, copy link, copy as Markdown, open in a new window, pin, close.
 
 Requires Chrome 141 or later.
 ```

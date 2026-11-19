@@ -8,6 +8,7 @@ A compact local Chrome extension for finding and managing many open tabs from a 
 
 - Search tab titles and URLs across every window.
 - Click a tab to focus it, or close tabs directly from the popup.
+- Move a tab out into a new window of its own with one click.
 - Stay synchronized as tabs and windows are created, updated, moved, activated, or closed.
 - Switch between a window list, registrable-domain groups, and your own custom groups. Subdomains such as `docs.google.com` and `drive.google.com` are grouped under `google.com`.
 - Pin tabs and groups to the top, remove duplicates, and sort a window's tabs by domain.
@@ -21,7 +22,7 @@ A compact local Chrome extension for finding and managing many open tabs from a 
 
 ![List view](store-assets/images/en/screenshots/1-list-1280x800.png)
 
-The default list view shows every open tab grouped by window, current window first. Click a tab to jump to it; hover it to hide, copy the link, copy as Markdown, pin, or close it.
+The default list view shows every open tab grouped by window, current window first. Click a tab to jump to it; hover it to hide, copy the link, copy as Markdown, open it in a new window, pin, or close it.
 
 ### Grouped by website
 

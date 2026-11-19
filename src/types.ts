@@ -81,6 +81,8 @@ export interface ChromeTabsApi {
   queryWindows(): Promise<BrowserWindow[]>
   activateTab(tabId: number, windowId: number): Promise<void>
   closeTab(tabId: number): Promise<void>
+  /** Moves a tab, not a copy of it, into a new focused window. */
+  openTabInNewWindow(tabId: number): Promise<void>
   moveTabs(tabIds: number[], windowId: number): Promise<void>
   /** Reads a tab's live HTML for Markdown conversion. */
   capturePage(tabId: number, url: string): Promise<PageSnapshot>
