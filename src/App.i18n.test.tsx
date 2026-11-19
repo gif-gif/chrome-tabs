@@ -751,7 +751,18 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     const count = declarationsFor('.window-toggle>span:last-child')
     expect(count.get('color')).toBe('var(--color-text)')
     expect(count.get('background')).toBe('var(--color-group-count)')
-    expect(declarationsFor('.tab-list').get('padding')).toBe('4px 0 4px 8px')
+    expect(declarationsFor('.tab-list').get('padding')).toBe('0')
+  })
+
+  it('runs tab rows edge to edge across the group card', () => {
+    expect(declarationsFor('.window-group').get('overflow')).toBe('hidden')
+    const row = declarationsFor('.tab-row')
+    expect(row.get('margin')).toBe('0')
+    expect(row.get('padding')).toBe('2px 8px 2px 10px')
+    expect(row.get('border-bottom')).toBe('1px solid var(--color-border-subtle)')
+    expect(declarationsFor('.tab-row:last-child').get('border-bottom')).toBe('0')
+    expect(declarationsFor('.tab-row:last-child').has('border-bottom-left-radius')).toBe(false)
+    expect(cssRules.some((rule) => rule.selector === '.tab-row:first-child')).toBe(false)
   })
 
   it('scopes compact background-free row actions without changing generic icon buttons', () => {
