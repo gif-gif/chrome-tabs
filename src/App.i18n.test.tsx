@@ -735,23 +735,41 @@ describe('compact progressive sticky toolbar CSS contract', () => {
     const dark = declarationsFor(':root[data-color-scheme="dark"]')
     expect(light.get('--color-group-header')).toBe('#eceef2')
     expect(dark.get('--color-group-header')).toBe('#3c3f44')
-    expect(light.get('--color-group-marker')).toBe('var(--color-accent)')
+    expect(light.has('--color-group-marker')).toBe(false)
 
-    for (const selector of ['.domain-group-heading', '.window-toggle']) {
-      const header = declarationsFor(selector)
-      expect(header.get('background')).toBe('var(--color-group-header)')
-      expect(header.get('box-shadow')).toBe('inset 3px 0 0 var(--color-group-marker)')
+    // Headers have no left accent bar, so their content lines up with the row edge.
+    for (const selector of ['.domain-group-heading', '.window-toggle', '.domain-group-heading .window-toggle']) {
+      expect(declarationsFor(selector).has('box-shadow')).toBe(false)
     }
-    expect(declarationsFor('.domain-group-heading .window-toggle').get('box-shadow')).toBe('none')
+    for (const selector of ['.domain-group-heading', '.window-toggle']) {
+      expect(declarationsFor(selector).get('background')).toBe('var(--color-group-header)')
+    }
     expect(declarationsFor('.window-toggle:hover').get('background')).toBe('var(--color-group-header-hover)')
     expect(declarationsFor('.window-toggle:active').get('background')).toBe('var(--color-group-header-pressed)')
     expect(declarationsFor('.domain-group-heading:has(.window-toggle:active)').get('background')).toBe('var(--color-group-header-pressed)')
 
     expect(declarationsFor('.window-toggle>span:first-of-type').get('font-weight')).toBe('600')
     const count = declarationsFor('.window-toggle>span:last-child')
-    expect(count.get('color')).toBe('var(--color-text)')
-    expect(count.get('background')).toBe('var(--color-group-count)')
-    expect(declarationsFor('.tab-list').get('padding')).toBe('4px 0 4px 8px')
+    expect(count.get('color')).toBe('var(--color-group-count-text)')
+    for (const property of ['background', 'background-color', 'border-radius', 'padding']) {
+      expect(count.has(property)).toBe(false)
+    }
+    expect(light.get('--color-group-count-text')).toBe('#55595e')
+    expect(dark.get('--color-group-count-text')).toBe('#c8cbd0')
+    expect(light.has('--color-group-count')).toBe(false)
+    expect(dark.has('--color-group-count')).toBe(false)
+    expect(declarationsFor('.tab-list').get('padding')).toBe('0')
+  })
+
+  it('runs tab rows edge to edge across the group card', () => {
+    expect(declarationsFor('.window-group').get('overflow')).toBe('hidden')
+    const row = declarationsFor('.tab-row')
+    expect(row.get('margin')).toBe('0')
+    expect(row.get('padding')).toBe('2px 8px 2px 10px')
+    expect(row.get('border-bottom')).toBe('1px solid var(--color-border-subtle)')
+    expect(declarationsFor('.tab-row:last-child').get('border-bottom')).toBe('0')
+    expect(declarationsFor('.tab-row:last-child').has('border-bottom-left-radius')).toBe(false)
+    expect(cssRules.some((rule) => rule.selector === '.tab-row:first-child')).toBe(false)
   })
 
   it('scopes compact background-free row actions without changing generic icon buttons', () => {

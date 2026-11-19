@@ -21,12 +21,13 @@
   --color-focus: #0b57d0;
   --color-on-accent: #ffffff;
   /* Group headers (window, domain and custom groups) sit on a tinted band
-     with an accent marker so they read apart from the white tab rows. */
+     so they read apart from the white tab rows. The tab count is plain
+     text a step lighter than the name; its color keeps 4.5:1 contrast on
+     the header's rest, hover and pressed tints. */
   --color-group-header: #eceef2;
   --color-group-header-hover: #e1e4e9;
   --color-group-header-pressed: #d6dae0;
-  --color-group-count: #dadde3;
-  --color-group-marker: var(--color-accent);
+  --color-group-count-text: #55595e;
   --shadow-sticky: 0 1px 3px rgb(60 64 67 / 18%);
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -66,7 +67,7 @@
   --color-group-header: #3c3f44;
   --color-group-header-hover: #46494f;
   --color-group-header-pressed: #4f535a;
-  --color-group-count: #53575e;
+  --color-group-count-text: #c8cbd0;
   --shadow-sticky: 0 1px 4px rgb(0 0 0 / 45%);
 }
 
@@ -91,7 +92,7 @@
     --color-group-header: #3c3f44;
     --color-group-header-hover: #46494f;
     --color-group-header-pressed: #4f535a;
-    --color-group-count: #53575e;
+    --color-group-count-text: #c8cbd0;
     --shadow-sticky: 0 1px 4px rgb(0 0 0 / 45%);
   }
 }
@@ -466,7 +467,6 @@ a.extension-brand:focus-visible {
   align-items: stretch;
   background: var(--color-group-header);
   border-bottom: 1px solid var(--color-border-subtle);
-  box-shadow: inset 3px 0 0 var(--color-group-marker);
 }
 
 .window-toggle {
@@ -482,14 +482,12 @@ a.extension-brand:focus-visible {
   background: var(--color-group-header);
   border: 0;
   border-bottom: 1px solid var(--color-border-subtle);
-  box-shadow: inset 3px 0 0 var(--color-group-marker);
 }
 
 .domain-group-heading .window-toggle {
   background: transparent;
   border-bottom: 0;
   border-left: 0;
-  box-shadow: none;
 }
 
 .domain-group-actions {
@@ -537,20 +535,18 @@ a.extension-brand:focus-visible {
 }
 
 .window-toggle > span:last-child {
-  padding: 1px 8px;
-  color: var(--color-text);
-  background: var(--color-group-count);
-  border-radius: 999px;
+  color: var(--color-group-count-text);
   font-size: 12px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* Tabs sit indented under their group header. */
+/* Tab rows run edge to edge across the group card; the card's
+   overflow: hidden clips the last row to its rounded corners. */
 .tab-list {
   margin: 0;
-  padding: 4px 0 4px 8px;
+  padding: 0;
   list-style: none;
   background: color-mix(in srgb, var(--color-bg) 42%, var(--color-surface));
 }
@@ -562,22 +558,15 @@ a.extension-brand:focus-visible {
   align-items: center;
   min-width: 0;
   min-height: 56px;
-  margin: 0 4px;
-  padding: 2px 4px 2px 8px;
+  margin: 0;
+  padding: 2px 8px 2px 10px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-subtle);
   transition: background-color var(--motion-fast) var(--ease);
 }
 
-.tab-row:first-child {
-  border-top-left-radius: var(--radius-sm);
-  border-top-right-radius: var(--radius-sm);
-}
-
 .tab-row:last-child {
   border-bottom: 0;
-  border-bottom-right-radius: var(--radius-sm);
-  border-bottom-left-radius: var(--radius-sm);
 }
 
 .tab-row:hover {
