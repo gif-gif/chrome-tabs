@@ -45,7 +45,7 @@ cd dist && zip -r ../chrome-tabs-<version>.zip . -x '.*' && cd ..
 
 ### 5. Store listing / 商店信息
 
-- [ ] Paste the detailed description from `listing.en.md` (English) and `listing.zh-CN.md` (中文 tab).
+- [ ] Paste the detailed description from `listing.en.md` (English), `listing.zh-CN.md` (简体中文 / zh_CN tab) and `listing.zh-TW.md` (繁體中文 / zh_TW tab).
 - [ ] Category: Productivity → Workflow & Planning.
 - [ ] Upload `images/icon-128.png` (128×128, transparent background, artwork inside the 16 px padding; check with `scripts/verify-icons.sh`).
 - [ ] Upload 3–5 screenshots per language from `images/<locale>/screenshots/` (1280×800, 24-bit PNG, no alpha).
