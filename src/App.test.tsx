@@ -175,7 +175,7 @@ describe('Header', () => {
   it.each([
     ['zh-CN', '标签页管理器', '在 Chrome 应用商店中查看'],
     ['zh-TW', '分頁管理器', '在 Chrome 線上應用程式商店中查看'],
-    ['en', 'Tab Manager', 'View in the Chrome Web Store'],
+    ['en', 'TabMate', 'View in the Chrome Web Store'],
   ] as const)('shows the extension icon and %s name as a store link', async (locale, name, hint) => {
     const user = userEvent.setup()
     const create = vi.fn().mockResolvedValue({})

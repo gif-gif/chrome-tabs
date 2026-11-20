@@ -1,11 +1,11 @@
 {
   "extensionName": {
-    "message": "Tab Manager"
+    "message": "TabMate"
   },
   "extensionDescription": {
     "message": "Manage and quickly access browser tabs from a compact Chrome toolbar popup."
   },
   "actionTitle": {
-    "message": "Open Tab Manager"
+    "message": "Open TabMate"
   }
 }

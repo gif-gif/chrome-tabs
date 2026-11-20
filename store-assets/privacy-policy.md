@@ -1,8 +1,8 @@
-## Tab Manager Privacy Policy
+## TabMate Privacy Policy
 
 _Last updated: 2026-11-19_
 
-Tab Manager ("the extension") is a Chrome extension for finding and organizing open browser tabs. This policy explains what information the extension handles. In short: **everything stays on your device. The extension does not collect, transmit, sell or share any of your data.**
+TabMate ("the extension") is a Chrome extension for finding and organizing open browser tabs. This policy explains what information the extension handles. In short: **everything stays on your device. The extension does not collect, transmit, sell or share any of your data.**
 
 ### Information the extension accesses
 

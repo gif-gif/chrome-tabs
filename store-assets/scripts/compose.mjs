@@ -10,7 +10,7 @@ const img = (name) => `data:image/png;base64,${fs.readFileSync(path.join(shotsDi
 
 const COPY = {
   en: {
-    name: 'Tab Manager',
+    name: 'TabMate',
     tagline: 'Find, group and tidy your open tabs from one compact popup.',
     shots: [
       ['list', 'Every tab, every window', 'See all open tabs at a glance. Click to jump, close, copy the link or pin, right from the list.'],

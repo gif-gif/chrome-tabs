@@ -4,10 +4,10 @@
 
 The store title is read from the manifest (`__MSG_extensionName__` in `public/_locales/en/messages.json`). It cannot be set separately in the dashboard.
 
-- Current manifest name: `Tab Manager` (11 characters)
-- Recommended (optional, needs a `_locales` change before packaging): `Tab Manager – Search, Group & Copy Tabs as Markdown` (51 characters)
+- Current manifest name: `TabMate` (7 characters)
+- Optional longer title (needs a `_locales` change before packaging): `TabMate – Search, Group & Copy Tabs as Markdown` (47 characters)
 
-"Tab Manager" alone is used by many existing listings, which makes the extension hard to find in search. A more descriptive title is recommended but not required.
+The Simplified and Traditional Chinese store titles stay `标签页管理器` / `分頁管理器`.
 
 ### Short description / summary (≤ 132 characters)
 
@@ -21,7 +21,7 @@ The summary is read from the manifest `description` (`__MSG_extensionDescription
 ### Detailed description
 
 ```text
-Tab Manager lists every open tab in every Chrome window in one compact toolbar popup, so you can find, switch to and tidy tabs without leaving the page you are on.
+TabMate lists every open tab in every Chrome window in one compact toolbar popup, so you can find, switch to and tidy tabs without leaving the page you are on.
 
 FIND ANY TAB
 • Search tab titles and URLs as you type.
@@ -53,7 +53,7 @@ COMFORTABLE TO USE
 • Popup closes when it loses focus and never takes space from the web page.
 
 HOW TO USE
-1. Click the Tab Manager icon in the Chrome toolbar (pin it from the puzzle-piece menu for one-click access).
+1. Click the TabMate icon in the Chrome toolbar (pin it from the puzzle-piece menu for one-click access).
 2. Type in the search box, or switch between list, domain and custom-group views with the buttons next to it.
 3. Hover a tab to show its actions: hide, copy link, copy as Markdown, open in a new window, pin, close.
 

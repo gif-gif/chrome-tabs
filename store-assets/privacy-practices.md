@@ -4,7 +4,7 @@ Answers for the **Privacy practices** tab of the Chrome Web Store developer dash
 
 ### Single purpose / 单一用途
 
-> Tab Manager helps users find, switch to and organize the tabs open in their Chrome windows from a toolbar popup: search, group by window, domain or user-defined group, close, sort, and copy tab links or page content as Markdown.
+> TabMate helps users find, switch to and organize the tabs open in their Chrome windows from a toolbar popup: search, group by window, domain or user-defined group, close, sort, and copy tab links or page content as Markdown.
 
 中文：在工具栏弹窗中查找、切换和整理已打开的标签页（搜索、按窗口/域名/自定义分组、关闭、排序，以及复制标签链接或把页面内容复制为 Markdown）。"复制为 Markdown"是针对列表中某个标签页的操作，属于同一用途。
 

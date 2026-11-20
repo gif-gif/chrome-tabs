@@ -219,7 +219,7 @@ export const messages = {
     englishLanguage: 'English',
   },
   en: {
-    extensionName: 'Tab Manager',
+    extensionName: 'TabMate',
     viewInChromeWebStore: 'View in the Chrome Web Store',
     informationHidden: 'Information hidden',
     maskedDomainGroup: 'Website group {number}',
