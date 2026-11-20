@@ -47,7 +47,7 @@ cd dist && zip -r ../chrome-tabs-<version>.zip . -x '.*' && cd ..
 
 - [ ] Paste the detailed description from `listing.en.md` (English) and `listing.zh-CN.md` (中文 tab).
 - [ ] Category: Productivity → Workflow & Planning.
-- [ ] Upload `images/icon-128.png` (128×128, artwork inside the 16 px padding).
+- [ ] Upload `images/icon-128.png` (128×128, transparent background, artwork inside the 16 px padding; check with `scripts/verify-icons.sh`).
 - [ ] Upload 3–5 screenshots per language from `images/<locale>/screenshots/` (1280×800, 24-bit PNG, no alpha).
 - [ ] Upload small promo tile `images/<locale>/promo-small-440x280.png`; optionally marquee `promo-marquee-1400x560.png`.
 - [ ] 👤 Support URL / homepage URL (e.g. the GitHub repository) — only if the repository is public.
