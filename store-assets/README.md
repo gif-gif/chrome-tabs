@@ -4,7 +4,7 @@ Materials for publishing the extension on the Chrome Web Store. Nothing here is 
 
 | File | Contents |
 | --- | --- |
-| `listing.en.md` / `listing.zh-CN.md` | Store name, summary, detailed description, category, languages |
+| `listing.en.md` / `listing.zh-CN.md` / `listing.zh-TW.md` | Store name, summary, detailed description, category, languages |
 | `privacy-practices.md` | Single purpose, per-permission justifications, remote code, data usage answers |
 | `privacy-policy.md` / `privacy-policy.html` | Bilingual privacy policy, ready to host |
 | `submission-checklist.md` | Manifest, permissions, packaging and manual steps before submitting |

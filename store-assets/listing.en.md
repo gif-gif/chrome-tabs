@@ -38,6 +38,7 @@ TIDY UP QUICKLY
 • Remove duplicate tabs in a group with one click.
 • Sort the tabs in each window by domain, then restore the original order.
 • Pin important tabs and groups to the top.
+• Collapse or expand all groups with one click.
 
 COPY
 • Copy a tab's link.
@@ -49,7 +50,8 @@ PRIVACY FIRST
 
 COMFORTABLE TO USE
 • Light, dark or follow-the-system appearance.
-• English, Simplified Chinese, and Traditional Chinese interface; follows your browser language by default.
+• English, Simplified Chinese, and Traditional Chinese interface; follows your browser language by default, or pick one from the globe icon.
+• Click the icon and name in the top-left corner of the popup to open the extension's Chrome Web Store page.
 • Popup closes when it loses focus and never takes space from the web page.
 
 HOW TO USE
@@ -71,7 +73,7 @@ Requires Chrome 141 or later.
 - Chinese (Simplified) (`zh_CN`)
 - Chinese (Traditional) (`zh_TW`)
 
-The store uses the localized strings from `_locales`; paste the Chinese detailed description from `listing.zh-CN.md` into the zh_CN listing tab in the dashboard. There is no separate Traditional Chinese listing copy yet; the zh_TW tab can stay on the English fallback or be filled with a Traditional conversion of `listing.zh-CN.md`.
+The store uses the localized strings from `_locales`; paste the detailed descriptions from `listing.zh-CN.md` into the zh_CN listing tab and from `listing.zh-TW.md` into the zh_TW listing tab in the dashboard.
 
 ### Assets for this locale
 
