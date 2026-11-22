@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tab Manager Privacy Policy</title>
+<link rel="alternate" hreflang="en" href="privacy-policy.en.html">
+<link rel="alternate" hreflang="zh-CN" href="privacy-policy.zh-CN.html">
+<link rel="alternate" hreflang="zh-TW" href="privacy-policy.zh-TW.html">
+<style>
+  body { max-width: 760px; margin: 0 auto; padding: 24px 20px 80px; font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "PingFang TC", "Microsoft YaHei", "Microsoft JhengHei", sans-serif; color: #202124; background: #fff; }
+  nav { font-size: 14px; color: #5f6368; padding-bottom: 12px; border-bottom: 1px solid #dadce0; }
+  nav a { color: #1a73e8; text-decoration: none; }
+  nav a:hover { text-decoration: underline; }
+  nav a[aria-current="page"] { color: inherit; font-weight: 600; pointer-events: none; }
+  h1 { font-size: 28px; margin: 32px 0 8px; }
+  h2 { font-size: 19px; margin: 28px 0 8px; }
+  code { background: #f1f3f4; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+  em { color: #5f6368; }
+  @media (prefers-color-scheme: dark) { body { background: #202124; color: #e8eaed; } nav { color: #bdc1c6; border-color: #5f6368; } nav a { color: #8ab4f8; } code { background: #303134; } em { color: #bdc1c6; } }
+</style>
+</head>
+<body>
+<nav aria-label="Language"><a href="privacy-policy.en.html" hreflang="en" lang="en" aria-current="page">English</a> <span aria-hidden="true">|</span> <a href="privacy-policy.zh-CN.html" hreflang="zh-CN" lang="zh-CN">简体中文</a> <span aria-hidden="true">|</span> <a href="privacy-policy.zh-TW.html" hreflang="zh-TW" lang="zh-TW">繁體中文</a></nav>
+<h1>Tab Manager Privacy Policy</h1>
+<p><em>Effective date: 2026-11-22 · Last updated: 2026-11-22</em></p>
+<p>Tab Manager ("the extension") is a Chrome extension for finding and organizing open browser tabs. This policy explains what information the extension handles. In short: <strong>everything stays on your device. The extension does not collect any user data, and it does not transmit, sell or share any of your data.</strong></p>
+<h2>Information the extension accesses</h2>
+<ul>
+<li><strong>Open tabs.</strong> With the <code>tabs</code> permission the extension reads the titles, URLs and icons of your open tabs to show, search and group them in its popup. This information is used in memory only while the popup is open and is not saved. Site icons come from Chrome's local favicon cache, not from the websites.</li>
+<li><strong>Page content, only when you ask.</strong> When you click "Copy as Markdown" on a tab, the extension reads that page's current HTML once, converts it to Markdown inside the popup and places the result on your clipboard. The page content and the result are not saved or uploaded. The extension asks for site access the first time you use this feature; you can decline or revoke it at any time in <code>chrome://extensions</code>.</li>
+<li><strong>Clipboard.</strong> The extension writes to the clipboard only when you click "Copy tab link" or "Copy as Markdown". It never reads your clipboard.</li>
+</ul>
+<h2>Information stored on your device</h2>
+<p>So your setup is kept between sessions, the extension saves the following in its own <code>localStorage</code> on your computer:</p>
+<ul>
+<li>your preferences: view mode, language, appearance and the privacy (hide titles and URLs) toggle;</li>
+<li>your custom groups: their names, the URLs of the tabs you add to them, whether a group is pinned and which groups are collapsed;</li>
+<li>the tabs and domains you pin;</li>
+<li>the tab order before you sort by domain, so it can be restored (numeric tab and window IDs only).</li>
+</ul>
+<p>Search text and per-tab or per-group privacy overrides are not saved. The stored data is not synced to your Google account and is not sent anywhere. It is removed when you uninstall the extension.</p>
+<h2>What the extension does not do</h2>
+<ul>
+<li>It makes no network requests. Its content security policy blocks all network connections, so your data never leaves your device.</li>
+<li>It does not use analytics, advertising, tracking or any third-party service.</li>
+<li>It does not collect any category of user data, and it does not sell, transfer or share data with anyone or use it for any purpose other than the features described above.</li>
+<li>It does not modify the web pages you visit.</li>
+</ul>
+<h2>Changes</h2>
+<p>If this policy changes, the updated version will be published at this address with a new "Last updated" date.</p>
+<h2>Contact</h2>
+<p>Questions about this policy: <code>&lt;CONTACT_EMAIL&gt;</code></p>
+</body>
+</html>

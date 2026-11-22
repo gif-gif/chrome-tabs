@@ -82,6 +82,6 @@ Tab information is visible by default. Everything the extension stores stays in 
 - the URLs of tabs you add to a custom group, and the names of your custom groups;
 - pinned tabs and domains, and the tab order saved before sorting by domain (numeric tab IDs).
 
-Search text and per-tab or per-group privacy overrides live only for the current popup instance. Titles and favicons of open tabs are read only while the popup is open and are not saved. See the [privacy policy](store-assets/privacy-policy.md) for details.
+Search text and per-tab or per-group privacy overrides live only for the current popup instance. Titles and favicons of open tabs are read only while the popup is open and are not saved. See the [privacy policy](store-assets/privacy-policy.en.md) for details.
 
 The extension makes no network requests and sends no browsing data to a remote service. It requests the `tabs`, `favicon` and `clipboardWrite` permissions, plus `scripting` with optional site access (`optional_host_permissions: <all_urls>`) for "Copy as Markdown". Site access is only requested the first time that button is used. The page's current HTML is read by a read-only script injected on click and converted to Markdown locally, with no network request.
