@@ -6,7 +6,9 @@ Materials for publishing the extension on the Chrome Web Store. Nothing here is 
 | --- | --- |
 | `listing.en.md` / `listing.zh-CN.md` / `listing.zh-TW.md` | Store name, summary, detailed description, category, languages |
 | `privacy-practices.md` | Single purpose, per-permission justifications, remote code, data usage answers |
-| `privacy-policy.md` / `privacy-policy.html` | Bilingual privacy policy, ready to host |
+| `privacy-policy.en.md` / `.zh-CN.md` / `.zh-TW.md` | Privacy policy in English, Simplified Chinese and Traditional Chinese |
+| `privacy-policy.en.html` / `.zh-CN.html` / `.zh-TW.html` | Standalone static pages of the same policy, ready to host (e.g. GitHub Pages), with a language switcher |
+| `privacy-policy.md` / `privacy-policy.html` | Index pages; the HTML one redirects to the visitor's browser language |
 | `submission-checklist.md` | Manifest, permissions, packaging and manual steps before submitting |
 | `images/icon-128.png` | Store icon 128×128, transparent background (RGBA) |
 | `images/<locale>/screenshots/*.png` | Five 1280×800 screenshots per language (`en`, `zh-CN`, `zh-TW`) |

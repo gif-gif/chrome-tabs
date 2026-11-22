@@ -57,9 +57,9 @@ Screenshots are rendered from the real built popup (`dist/index.html`) with demo
 ### 6. Privacy / 隐私
 
 - [ ] Fill the **Privacy practices** tab from `privacy-practices.md` (single purpose, five justifications, remote code = No, data usage, three certifications).
-- [ ] 👤 Replace `<CONTACT_EMAIL>` in `privacy-policy.md` and `privacy-policy.html` with a public contact address.
-- [ ] 👤 Host `privacy-policy.html` at a public URL and paste it into the dashboard. Options: GitHub Pages for this repo, a personal site, or a Gist. A private repository's file link does **not** work.
-- [ ] 👤 Pick one data-collection answer (none vs. conservative) and keep the privacy policy consistent with it.
+- [ ] 👤 Replace `<CONTACT_EMAIL>` with a public contact address in all six policy files: `privacy-policy.{en,zh-CN,zh-TW}.md` and `privacy-policy.{en,zh-CN,zh-TW}.html` (e.g. `grep -rl '<CONTACT_EMAIL>' store-assets`).
+- [ ] 👤 Host the four HTML files (`privacy-policy.html` plus the `.en` / `.zh-CN` / `.zh-TW` pages) together in one folder at a public URL, and paste the URL of `privacy-policy.en.html` (or of the `privacy-policy.html` picker) into the dashboard. Options: GitHub Pages for this repo or a personal site. A private repository's file link does **not** work.
+- [ ] Data usage: leave every data category unchecked. The privacy policy states that no category of user data is collected; if you ever change this answer, update all three language versions too.
 
 ### 7. Submit / 提交 👤
 

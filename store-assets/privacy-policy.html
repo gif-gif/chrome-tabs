@@ -3,74 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tab Manager Privacy Policy · 标签页管理器隐私政策</title>
+<title>Tab Manager Privacy Policy · 标签页管理器隐私政策 · 分頁管理器隱私權政策</title>
+<link rel="alternate" hreflang="en" href="privacy-policy.en.html">
+<link rel="alternate" hreflang="zh-CN" href="privacy-policy.zh-CN.html">
+<link rel="alternate" hreflang="zh-TW" href="privacy-policy.zh-TW.html">
+<link rel="alternate" hreflang="x-default" href="privacy-policy.html">
+<script>
+  // Send visitors to the policy in their browser language; the links below stay as a fallback.
+  (function () {
+    var langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']
+    for (var i = 0; i < langs.length; i++) {
+      var l = String(langs[i]).toLowerCase()
+      if (/^zh-(tw|hk|mo|hant)/.test(l)) return location.replace('privacy-policy.zh-TW.html')
+      if (/^zh/.test(l)) return location.replace('privacy-policy.zh-CN.html')
+      if (/^en/.test(l)) return location.replace('privacy-policy.en.html')
+    }
+    location.replace('privacy-policy.en.html')
+  })()
+</script>
 <style>
-  body { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; color: #202124; background: #fff; }
-  h1 { font-size: 28px; margin: 32px 0 8px; }
-  h2 { font-size: 19px; margin: 28px 0 8px; }
-  code { background: #f1f3f4; padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
-  hr { border: 0; border-top: 1px solid #dadce0; margin: 48px 0; }
-  em { color: #5f6368; }
-  @media (prefers-color-scheme: dark) { body { background: #202124; color: #e8eaed; } code { background: #303134; } em { color: #bdc1c6; } hr { border-color: #5f6368; } }
+  body { max-width: 760px; margin: 0 auto; padding: 40px 20px; font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "PingFang TC", "Microsoft YaHei", "Microsoft JhengHei", sans-serif; color: #202124; background: #fff; }
+  a { color: #1a73e8; }
+  @media (prefers-color-scheme: dark) { body { background: #202124; color: #e8eaed; } a { color: #8ab4f8; } }
 </style>
 </head>
 <body>
-<h1>Tab Manager Privacy Policy</h1>
-<p><em>Last updated: 2026-11-19</em></p>
-<p>Tab Manager ("the extension") is a Chrome extension for finding and organizing open browser tabs. This policy explains what information the extension handles. In short: <strong>everything stays on your device. The extension does not collect, transmit, sell or share any of your data.</strong></p>
-<h2>Information the extension accesses</h2>
+<h1>Privacy Policy · 隐私政策 · 隱私權政策</h1>
 <ul>
-<li><strong>Open tabs.</strong> With the <code>tabs</code> permission the extension reads the titles, URLs and icons of your open tabs to show, search and group them in its popup. This information is used in memory only while the popup is open.</li>
-<li><strong>Page content, only when you ask.</strong> When you click "Copy as Markdown" on a tab, the extension reads that page's current HTML once, converts it to Markdown inside the popup and places the result on your clipboard. The extension asks for site access the first time you use this feature; you can decline or revoke it at any time in <code>chrome://extensions</code>.</li>
-<li><strong>Clipboard.</strong> The extension writes to the clipboard only when you click a copy button. It never reads your clipboard.</li>
+<li><a href="privacy-policy.en.html" hreflang="en" lang="en">Tab Manager Privacy Policy (English)</a></li>
+<li><a href="privacy-policy.zh-CN.html" hreflang="zh-CN" lang="zh-CN">标签页管理器隐私政策（简体中文）</a></li>
+<li><a href="privacy-policy.zh-TW.html" hreflang="zh-TW" lang="zh-TW">分頁管理器隱私權政策（繁體中文）</a></li>
 </ul>
-<h2>Information stored on your device</h2>
-<p>The extension saves the following in its own local storage on your computer so your setup is kept between sessions:</p>
-<ul>
-<li>your preferences (view mode, language, appearance, privacy toggle);</li>
-<li>the URLs of tabs you add to a custom group, and the names of your custom groups;</li>
-<li>tabs and domains you pin, and the tab order before you sort by domain (numeric tab IDs).</li>
-</ul>
-<p>This data is not synced to your Google account and is not sent anywhere. It is removed when you uninstall the extension.</p>
-<h2>What the extension does not do</h2>
-<ul>
-<li>It makes no network requests. Its content security policy blocks all outgoing connections.</li>
-<li>It does not use analytics, advertising, tracking or any third-party service.</li>
-<li>It does not sell, transfer or share data with anyone, and does not use data for any purpose other than the features described above.</li>
-<li>It does not modify the web pages you visit.</li>
-</ul>
-<h2>Changes</h2>
-<p>If this policy changes, the updated version will be published at this address with a new "Last updated" date.</p>
-<h2>Contact</h2>
-<p>Questions about this policy: <code>&lt;CONTACT_EMAIL&gt;</code></p>
-<hr>
-<h1>标签页管理器隐私政策</h1>
-<p><em>最后更新：2026-11-19</em></p>
-<p>标签页管理器（下称"本扩展"）是一款用于查找和整理浏览器标签页的 Chrome 扩展。简而言之：<strong>所有数据都留在你的设备上，本扩展不收集、不传输、不出售、不分享你的任何数据。</strong></p>
-<h2>本扩展访问的信息</h2>
-<ul>
-<li><strong>已打开的标签页。</strong> 通过 <code>tabs</code> 权限读取标签页的标题、网址和图标，用于在弹窗中显示、搜索和分组，仅在弹窗打开期间于内存中使用。</li>
-<li><strong>页面内容（仅在你主动操作时）。</strong> 当你点击某个标签页的"复制为 Markdown"时，本扩展读取该页面当前的 HTML 一次，在弹窗内转换为 Markdown 并写入剪贴板。首次使用时会请求网站访问权限，你可以拒绝，也可以随时在 <code>chrome://extensions</code> 中撤销。</li>
-<li><strong>剪贴板。</strong> 只在你点击复制按钮时写入剪贴板，从不读取剪贴板。</li>
-</ul>
-<h2>保存在你设备上的信息</h2>
-<p>为了在下次打开时保留你的设置，本扩展在本机的扩展本地存储中保存：</p>
-<ul>
-<li>偏好设置（显示模式、语言、外观、隐私开关）；</li>
-<li>你加入自定义分组的标签页网址，以及自定义分组名称；</li>
-<li>你置顶的标签页和域名，以及按域名排序前的标签顺序（数字 ID）。</li>
-</ul>
-<p>这些数据不会同步到你的 Google 账号，也不会发送到任何地方，卸载扩展时会一并删除。</p>
-<h2>本扩展不会做的事</h2>
-<ul>
-<li>不发出任何网络请求，内容安全策略禁止所有外部连接。</li>
-<li>不使用任何统计分析、广告、跟踪或第三方服务。</li>
-<li>不向任何人出售、转让或分享数据，也不会将数据用于上述功能以外的任何用途。</li>
-<li>不修改你访问的网页。</li>
-</ul>
-<h2>变更</h2>
-<p>如本政策有更新，将在此地址发布新版本并更新"最后更新"日期。</p>
-<h2>联系方式</h2>
-<p>如对本政策有疑问，请联系：<code>&lt;CONTACT_EMAIL&gt;</code></p>
 </body>
 </html>

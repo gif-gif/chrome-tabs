@@ -36,7 +36,7 @@ What the code actually does:
 | --- | --- | --- |
 | Titles, URLs and favicons of open tabs | Read in memory to render the popup. Not sent anywhere. | 仅在内存中用于显示 |
 | URLs of tabs the user adds to a custom group, custom group names | Stored in the extension's own `localStorage` on the device (`chrome-tabs.custom-groups.v1`). Not synced, not sent anywhere. | 用户主动加入自定义分组的网址及分组名，保存在本机扩展 `localStorage` |
-| Preferences (view mode, language, theme, privacy toggle), pinned tab IDs and domain names, pre-sort tab order (numeric IDs) | Stored locally in `localStorage`. | 偏好设置、置顶项、排序前的标签顺序（数字 ID） |
+| Preferences (view mode, language, theme, privacy toggle), pinned tab IDs and domain names, pinned/collapsed custom groups, pre-sort tab order (numeric IDs) | Stored locally in `localStorage`. | 偏好设置、置顶项、自定义分组的置顶/折叠状态、排序前的标签顺序（数字 ID） |
 | Page HTML for "Copy as Markdown" | Read only on click, converted in memory, the result goes to the user's clipboard. Not stored, not sent. | 仅点击时读取，转换结果写入剪贴板，不保存不上传 |
 
 No data is transmitted off the device: the CSP blocks all network connections and the code contains no `fetch`/`XMLHttpRequest`.
@@ -44,9 +44,9 @@ No data is transmitted off the device: the CSP blocks all network connections an
 Recommended answers in the dashboard:
 
 - **"What user data do you plan to collect from users now or in the future?"** — leave every category **unchecked**. In the Chrome Web Store's user data FAQ, data that is processed or stored only on the user's device and never transmitted to the developer or third parties is not "collected".
-  - Conservative alternative, if you prefer to disclose local storage too: check **Web history** (saved/grouped URLs) and **Website content** (page read for Markdown). Either answer is consistent with the code; pick one and keep it the same in the privacy policy.
+  - The privacy policy (`privacy-policy.{en,zh-CN,zh-TW}.md`) states the same: no category of user data is collected. Keep the two in sync if either changes.
 - Certify all three statements:
   - ☑ I do not sell or transfer user data to third parties, outside of the approved use cases.
   - ☑ I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
   - ☑ I do not use or transfer user data to determine creditworthiness or for lending purposes.
-- **Privacy policy URL** — host `privacy-policy.html` (see `submission-checklist.md`) and paste its public URL.
+- **Privacy policy URL** — host the privacy policy HTML pages (see `submission-checklist.md`) and paste the public URL of `privacy-policy.en.html`, or of the `privacy-policy.html` language picker.
