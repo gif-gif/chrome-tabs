@@ -36,4 +36,4 @@ If this policy changes, the updated version will be published at this address wi
 
 ### Contact
 
-Questions about this policy: `<CONTACT_EMAIL>`
+Questions about this policy: [jiri.yao@gmail.com](mailto:jiri.yao@gmail.com)

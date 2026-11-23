@@ -36,4 +36,4 @@ _生效日期：2026-11-22 · 最後更新：2026-11-22_
 
 ### 聯絡方式
 
-如對本政策有任何疑問，請聯絡：`<CONTACT_EMAIL>`
+如對本政策有任何疑問，請聯絡：[jiri.yao@gmail.com](mailto:jiri.yao@gmail.com)
