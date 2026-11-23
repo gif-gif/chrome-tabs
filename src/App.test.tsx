@@ -14,6 +14,7 @@ import { createSafeChromeTabsApi } from './chrome/chromeTabs'
 import { windows as fixtureWindows } from './test/fixtures'
 import { createTranslator } from './i18n/i18n'
 
+const STORE_URL = 'https://chromewebstore.google.com/detail/tab-manager/jnlddbkjimakfiglopimemjlabocnhag'
 const UI_PREFERENCES_KEY = 'chrome-tabs.ui-preferences.v1'
 const stylesSource = readFileSync('src/styles.css', 'utf8')
 const cssRule = (selector: string) =>
@@ -180,7 +181,7 @@ describe('Header', () => {
     const user = userEvent.setup()
     const create = vi.fn().mockResolvedValue({})
     const close = vi.fn()
-    vi.stubGlobal('chrome', { runtime: { id: 'abcdefghijklmnop' }, tabs: { create } })
+    vi.stubGlobal('chrome', { runtime: { id: 'unpackeddevbuildid' }, tabs: { create } })
     vi.stubGlobal('close', close)
 
     const { container } = render(
@@ -190,7 +191,7 @@ describe('Header', () => {
     const link = screen.getByRole('link', { name: `${name} – ${hint}` })
     expect(link).toHaveTextContent(name)
     expect(link).toHaveAttribute('title', hint)
-    expect(link).toHaveAttribute('href', 'https://chromewebstore.google.com/detail/abcdefghijklmnop')
+    expect(link).toHaveAttribute('href', STORE_URL)
     const icon = link.querySelector('img')
     expect(icon).toHaveAttribute('src', 'icons/icon-32.png')
     expect(icon).toHaveAttribute('width', '16')
@@ -199,14 +200,14 @@ describe('Header', () => {
 
     await user.click(link)
     expect(create).toHaveBeenCalledTimes(1)
-    expect(create).toHaveBeenCalledWith({ url: 'https://chromewebstore.google.com/detail/abcdefghijklmnop' })
+    expect(create).toHaveBeenCalledWith({ url: STORE_URL })
     await waitFor(() => expect(close).toHaveBeenCalledTimes(1))
   })
 
   it('opens the store page from the keyboard', async () => {
     const user = userEvent.setup()
     const create = vi.fn().mockResolvedValue({})
-    vi.stubGlobal('chrome', { runtime: { id: 'abcdefghijklmnop' }, tabs: { create } })
+    vi.stubGlobal('chrome', { runtime: { id: 'unpackeddevbuildid' }, tabs: { create } })
     vi.stubGlobal('close', vi.fn())
 
     render(<Header t={zh} globalMasked onToggleMask={vi.fn()} />)
@@ -214,14 +215,13 @@ describe('Header', () => {
     await user.tab()
     expect(screen.getByRole('link', { name: /标签页管理器/ })).toHaveFocus()
     await user.keyboard('{Enter}')
-    expect(create).toHaveBeenCalledWith({ url: 'https://chromewebstore.google.com/detail/abcdefghijklmnop' })
+    expect(create).toHaveBeenCalledWith({ url: STORE_URL })
   })
 
-  it('shows the brand without a link when the extension ID is unavailable', () => {
+  it('links to the published store page even without a runtime extension ID', () => {
     render(<Header t={zh} globalMasked onToggleMask={vi.fn()} />)
 
-    expect(screen.getByText('标签页管理器')).toBeInTheDocument()
-    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /标签页管理器/ })).toHaveAttribute('href', STORE_URL)
   })
 
   it('truncates a long name instead of squeezing the header actions', () => {

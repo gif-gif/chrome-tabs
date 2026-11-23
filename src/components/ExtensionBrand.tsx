@@ -1,12 +1,12 @@
 import type { Translator } from '../i18n/i18n'
-import { getStorePageUrl, openStorePage } from '../chrome/storePage'
+import { STORE_PAGE_URL, openStorePage } from '../chrome/storePage'
 
 interface ExtensionBrandProps {
   t: Translator
-  storePageUrl?: string | null
+  storePageUrl?: string
 }
 
-export function ExtensionBrand({ t, storePageUrl = getStorePageUrl() }: ExtensionBrandProps) {
+export function ExtensionBrand({ t, storePageUrl = STORE_PAGE_URL }: ExtensionBrandProps) {
   const name = t('extensionName')
   const content = (
     <>
@@ -15,10 +15,6 @@ export function ExtensionBrand({ t, storePageUrl = getStorePageUrl() }: Extensio
       <span className="extension-brand-name">{name}</span>
     </>
   )
-
-  if (!storePageUrl) {
-    return <span className="extension-brand">{content}</span>
-  }
 
   const label = `${name} – ${t('viewInChromeWebStore')}`
   return (
