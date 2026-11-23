@@ -1,12 +1,5 @@
-const CHROME_WEB_STORE_DETAIL_URL = 'https://chromewebstore.google.com/detail/'
-
-// Once published, the extension ID is also the Chrome Web Store item ID.
-// Swap this for a fixed URL if the listing ever needs a different address.
-export function getStorePageUrl(
-  extensionId: string | undefined = globalThis.chrome?.runtime?.id,
-): string | null {
-  return extensionId ? `${CHROME_WEB_STORE_DETAIL_URL}${extensionId}` : null
-}
+// Fixed listing address, so unpacked dev builds (which get a different runtime ID) still open the published page.
+export const STORE_PAGE_URL = 'https://chromewebstore.google.com/detail/tab-manager/jnlddbkjimakfiglopimemjlabocnhag'
 
 export async function openStorePage(
   url: string,

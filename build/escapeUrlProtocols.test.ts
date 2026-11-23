@@ -16,7 +16,7 @@ const knownRuntimeValues = [
   'http://www.w3.org/1998/Math/MathML',
   'http://www.w3.org/1999/xlink',
   'http://www.w3.org/XML/1998/namespace',
-  'https://chromewebstore.google.com/detail/',
+  'https://chromewebstore.google.com/detail/tab-manager/jnlddbkjimakfiglopimemjlabocnhag',
 ]
 
 describe('escapeKnownReactUrlConstants', () => {
@@ -31,7 +31,7 @@ describe('escapeKnownReactUrlConstants', () => {
     expect(escaped).toContain('"http\\x3a//www.w3.org/1998/Math/MathML"')
     expect(escaped).toContain('"http\\x3a//www.w3.org/1999/xlink"')
     expect(escaped).toContain('"http\\x3a//www.w3.org/XML/1998/namespace"')
-    expect(escaped).toContain('"https\\x3a//chromewebstore.google.com/detail/"')
+    expect(escaped).toContain('"https\\x3a//chromewebstore.google.com/detail/tab-manager/jnlddbkjimakfiglopimemjlabocnhag"')
     expect(new Function(escaped)()).toEqual(knownRuntimeValues)
   })
 

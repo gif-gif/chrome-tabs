@@ -1,22 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getStorePageUrl, openStorePage } from './storePage'
+import { STORE_PAGE_URL, openStorePage } from './storePage'
 
 afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('getStorePageUrl', () => {
-  it('builds the Chrome Web Store detail URL from the extension ID', () => {
-    expect(getStorePageUrl('abcdefghijklmnop')).toBe('https://chromewebstore.google.com/detail/abcdefghijklmnop')
-  })
-
-  it('reads chrome.runtime.id by default', () => {
-    vi.stubGlobal('chrome', { runtime: { id: 'runtimeid' } })
-    expect(getStorePageUrl()).toBe('https://chromewebstore.google.com/detail/runtimeid')
-  })
-
-  it('returns null without an extension ID', () => {
-    expect(getStorePageUrl('')).toBeNull()
+describe('STORE_PAGE_URL', () => {
+  it('points at the published Chrome Web Store listing', () => {
+    expect(STORE_PAGE_URL).toBe('https://chromewebstore.google.com/detail/tab-manager/jnlddbkjimakfiglopimemjlabocnhag')
   })
 })
 
