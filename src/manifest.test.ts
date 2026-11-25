@@ -45,7 +45,7 @@ describe('Manifest V3 action popup wiring', () => {
 
     expect(manifest.manifest_version).toBe(3)
     expect(manifest.minimum_chrome_version).toBe('141')
-    expect(manifest.version).toBe('0.0.2')
+    expect(manifest.version).toBe('0.0.3')
     expect(JSON.parse(readFileSync(resolve(publicDir, '..', 'package.json'), 'utf8')).version).toBe(manifest.version)
     expect(manifest.permissions).toEqual(['tabs', 'favicon', 'clipboardWrite', 'scripting'])
     expect(manifest.optional_host_permissions).toEqual(['<all_urls>'])
