@@ -13,6 +13,8 @@ interface TabRowProps {
   onCopyMarkdown?: (tab: DisplayTab) => void
   onOpenInNewWindow?: (tab: DisplayTab) => void
   onClose: (tab: DisplayTab) => void
+  /** Shown in custom groups: drops the row's URL from the group, leaving the tab open. */
+  onRemoveFromGroup?: (tab: DisplayTab) => void
   t: Translator
   /** The tab is the only one in its window, so a new window would change nothing. */
   aloneInWindow?: boolean
@@ -31,6 +33,7 @@ export function TabRow({
   onCopyMarkdown,
   onOpenInNewWindow,
   onClose,
+  onRemoveFromGroup,
   t,
   aloneInWindow = false,
   pinned = false,
@@ -38,7 +41,7 @@ export function TabRow({
   copied = false,
   markdownCopied = false,
 }: TabRowProps) {
-  const rowClassName = `${tab.active ? 'tab-row is-active' : 'tab-row'}${pinned ? ' is-pinned' : ''}`
+  const rowClassName = `${tab.active ? 'tab-row is-active' : 'tab-row'}${pinned ? ' is-pinned' : ''}${onRemoveFromGroup ? ' has-group-action' : ''}`
   const currentSuffix = tab.active ? t('currentTabSuffix') : ''
   const activationLabel = tab.masked
     ? t('activateMaskedTab', { current: currentSuffix })
@@ -69,6 +72,7 @@ export function TabRow({
     <button type="button" className={`icon-button tab-action row-action-button row-markdown-action${markdownCopied ? ' is-copied' : ''}${tab.markdownSupported ? '' : ' is-unavailable'}`} aria-label={markdownLabel} title={markdownLabel} aria-disabled={!tab.markdownSupported || undefined} data-copied={markdownCopied || undefined} disabled={pending || !onCopyMarkdown} onClick={(event) => isolateAction(event, tab.markdownSupported ? onCopyMarkdown : undefined)}><Icon name={markdownCopied ? 'check' : 'markdown'} width={15} height={15} /></button>
     <button type="button" className={`icon-button tab-action row-action-button row-new-window-action${aloneInWindow ? ' is-unavailable' : ''}`} aria-label={newWindowLabel} title={newWindowLabel} aria-disabled={aloneInWindow || undefined} disabled={pending || !onOpenInNewWindow} onClick={(event) => isolateAction(event, aloneInWindow ? undefined : onOpenInNewWindow)}><Icon name="open-in-new-window" width={15} height={15} /></button>
     <button type="button" className={`icon-button tab-action row-action-button row-pin-action${pinned ? ' is-pinned' : ''}`} aria-label={pinLabel} title={pinLabel} aria-pressed={pinned} onClick={(event) => isolateAction(event, onTogglePin)}><Icon name="pin" width={15} height={15} /></button>
+    {onRemoveFromGroup ? <button type="button" className="icon-button tab-action row-action-button row-remove-from-group-action" aria-label={t('removeFromCustomGroup')} title={t('removeFromCustomGroup')} disabled={pending} onClick={(event) => isolateAction(event, onRemoveFromGroup)}><Icon name="folder-remove" width={15} height={15} /></button> : null}
     <button type="button" className="icon-button tab-action close-button row-action-button row-close-action" aria-label={t('closeTab')} disabled={pending} onClick={(event) => isolateAction(event, onClose)}><Icon name="close" width={15} height={15} /></button>
   </li>
 }

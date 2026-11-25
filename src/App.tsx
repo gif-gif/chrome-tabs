@@ -15,11 +15,15 @@ import {
   addCustomGroup,
   createDisplayCustomGroups,
   deleteCustomGroup,
+  findOpenTabForUrl,
+  listCustomGroupOpenTabs,
   listSelectableTabs,
   moveCustomGroup,
   reorderCustomGroup,
   toggleCustomGroupPin,
+  removeCustomGroupUrl,
   renameCustomGroup,
+  syncCustomGroupTitles,
   toggleCustomGroupUrl,
   UNGROUPED_CUSTOM_GROUP_KEY,
 } from './domain/customGroups'
@@ -62,6 +66,7 @@ import type {
   ChromeTabsApi,
   CustomTabGroup,
   DisplayCustomGroup,
+  DisplaySavedTab,
   DisplayDomainGroup,
   DisplayTab,
 } from './types'
@@ -117,6 +122,10 @@ export function App({ api }: AppProps) {
     () => new Set(initialPreferences.pinnedDomainKeys),
   )
   const [customGroups, setCustomGroups] = useState<CustomTabGroup[]>(loadCustomGroups)
+  // Tabs opened from saved custom group entries, by saved URL. Matching is by
+  // URL; the link only covers a tab still loading or redirected elsewhere.
+  const [customGroupTabLinks, setCustomGroupTabLinks] = useState<ReadonlyMap<string, number>>(new Map())
+  const [pendingSavedUrls, setPendingSavedUrls] = useState<ReadonlySet<string>>(new Set())
   const [draggingCustomGroupKey, setDraggingCustomGroupKey] = useState<string | null>(null)
   const [customGroupDropKey, setCustomGroupDropKey] = useState<string | null>(null)
   const [collapsedCustomGroupKeys, setCollapsedCustomGroupKeys] = useState<
@@ -168,6 +177,11 @@ export function App({ api }: AppProps) {
   useEffect(() => {
     saveCustomGroups(customGroups)
   }, [customGroups])
+
+  useEffect(() => {
+    // Keeps each saved URL's latest title so it still reads well once closed.
+    setCustomGroups((current) => syncCustomGroupTitles(current, windows))
+  }, [customGroups, windows])
 
   useEffect(() => {
     saveCollapsedCustomGroupKeys(collapsedCustomGroupKeys)
@@ -321,22 +335,23 @@ export function App({ api }: AppProps) {
   const displayCustomGroups = useMemo(
     () =>
       createDisplayCustomGroups(
-        filteredWindows,
+        sortedWindows,
         customGroups,
         globalMasked,
         tabMaskOverrides,
         t,
         pinnedTabIds,
+        { query, linkedTabIds: customGroupTabLinks },
       ),
-    [customGroups, filteredWindows, globalMasked, pinnedTabIds, t, tabMaskOverrides],
+    [customGroupTabLinks, customGroups, globalMasked, pinnedTabIds, query, sortedWindows, t, tabMaskOverrides],
   )
-  const openTabCountByCustomGroup = useMemo(() => {
-    const openUrls = sortedWindows.flatMap((window) => window.tabs.map((tab) => tab.url))
-    return new Map(customGroups.map((group) => {
-      const urls = new Set(group.urls)
-      return [group.id, openUrls.filter((url) => urls.has(url)).length]
-    }))
-  }, [customGroups, sortedWindows])
+  const openTabCountByCustomGroup = useMemo(
+    () => new Map(customGroups.map((group) => [
+      group.id,
+      listCustomGroupOpenTabs(sortedWindows, group, customGroupTabLinks).length,
+    ])),
+    [customGroupTabLinks, customGroups, sortedWindows],
+  )
   const selectableTabs = useMemo(
     () => listSelectableTabs(sortedWindows),
     [sortedWindows],
@@ -544,13 +559,91 @@ export function App({ api }: AppProps) {
     if (!window.confirm(t('deleteCustomGroupConfirm', { label: group.label }))) {
       return
     }
-    setCustomGroups((current) => deleteCustomGroup(current, group.key))
+    removeCustomGroup(group.key)
+  }
+
+  function removeCustomGroup(groupKey: string) {
+    setCustomGroups((current) => deleteCustomGroup(current, groupKey))
     setCollapsedCustomGroupKeys((current) => {
-      if (!current.has(group.key)) return current
+      if (!current.has(groupKey)) return current
       const next = new Set(current)
-      next.delete(group.key)
+      next.delete(groupKey)
       return next
     })
+  }
+
+  /** Deletes the group and closes its open tabs; closed entries go with the group. */
+  async function handleCloseCustomGroup(group: DisplayCustomGroup) {
+    const sourceGroup = customGroups.find((candidate) => candidate.id === group.key)
+    if (!sourceGroup) {
+      return
+    }
+    const tabIds = listCustomGroupOpenTabs(sortedWindows, sourceGroup, customGroupTabLinks)
+      .map((tab) => tab.id)
+    if (!window.confirm(t('closeCustomGroupConfirm', { label: group.label, count: tabIds.length }))) {
+      return
+    }
+
+    const operationSequence = beginGroupOperation(tabIds)
+    if (operationSequence === null) {
+      return
+    }
+
+    try {
+      const results = await Promise.allSettled(tabIds.map((tabId) => resolvedApi.closeTab(tabId)))
+      removeClosedTabState(tabIds.filter((_, index) => results[index]?.status === 'fulfilled'))
+
+      // Keep the group when a tab could not be closed, so nothing is lost silently.
+      if (results.some((result) => result.status === 'rejected')) {
+        if (operationSequence === operationSequenceRef.current) {
+          setOperationMessage('closeGroupError')
+        }
+        await refresh()
+        return
+      }
+
+      removeCustomGroup(group.key)
+      if (operationSequence === operationSequenceRef.current) {
+        setOperationMessage(null)
+      }
+    } finally {
+      finishGroupOperation(tabIds)
+    }
+  }
+
+  function handleRemoveCustomGroupUrl(groupKey: string, url: string) {
+    setCustomGroups((current) => removeCustomGroupUrl(current, groupKey, url))
+  }
+
+  /** Switches to the saved URL's open tab, or opens it again in the current window. */
+  async function handleReopenSavedTab(saved: DisplaySavedTab) {
+    if (pendingSavedUrls.has(saved.url)) {
+      return
+    }
+    setPendingSavedUrls((current) => new Set(current).add(saved.url))
+
+    try {
+      const openTab = findOpenTabForUrl(sortedWindows, saved.url, customGroupTabLinks)
+      if (openTab) {
+        await resolvedApi.activateTab(openTab.id, openTab.windowId)
+      } else {
+        const created = await resolvedApi.openTab(
+          saved.url,
+          effectiveFocusedWindowId >= 0 ? effectiveFocusedWindowId : undefined,
+        )
+        setCustomGroupTabLinks((current) => new Map(current).set(saved.url, created.id))
+      }
+      setOperationMessage(null)
+    } catch {
+      setOperationMessage('openSavedTabError')
+    } finally {
+      setPendingSavedUrls((current) => {
+        const next = new Set(current)
+        next.delete(saved.url)
+        return next
+      })
+    }
+    await refresh()
   }
 
   function handleMoveCustomGroup(groupKey: string, offset: -1 | 1) {
@@ -1119,10 +1212,11 @@ export function App({ api }: AppProps) {
                         onDropGroup={handleCustomGroupDrop}
                         dragging={draggingCustomGroupKey === group.key}
                         dropTarget={customGroupDropKey === group.key}
-                        hiddenTabCount={Math.max(0, (openTabCountByCustomGroup.get(group.key) ?? 0) - group.tabs.length)}
+                        hiddenTabCount={Math.max(0, group.savedUrlCount - group.entries.length)}
+                        openTabCount={openTabCountByCustomGroup.get(group.key) ?? group.tabs.length}
                         onTogglePinGroup={handleToggleCustomGroupPin}
                         onToggleGroupMask={handleDomainGroupMaskToggle}
-                        onCloseGroup={(customGroup) => void handleCloseDomainGroup(customGroup)}
+                        onCloseGroup={(customGroup) => void (sourceGroup ? handleCloseCustomGroup(customGroup) : handleCloseDomainGroup(customGroup))}
                         onActivate={(tab) => void handleActivate(tab)}
                         onTogglePin={handleTabPinToggle}
                               onToggleMask={handleTabMaskToggle}
@@ -1130,6 +1224,9 @@ export function App({ api }: AppProps) {
                   onCopyMarkdown={(tab) => void handleCopyMarkdown(tab)}
                         onOpenInNewWindow={(tab) => void handleOpenInNewWindow(tab)}
                         onClose={(tab) => void handleClose(tab)}
+                        onReopen={(saved) => void handleReopenSavedTab(saved)}
+                        onRemoveUrl={handleRemoveCustomGroupUrl}
+                        pendingUrls={pendingSavedUrls}
                         soleWindowTabIds={soleWindowTabIds}
                         pinnedTabIds={pinnedTabIds}
                               pendingTabIds={pendingTabIds}

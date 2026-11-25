@@ -27,6 +27,41 @@ describe('custom groups storage', () => {
     expect(loadCustomGroups()).toEqual(groups)
   })
 
+  it('reads groups saved before titles were kept, and round-trips saved titles', () => {
+    localStorage.setItem(CUSTOM_GROUPS_KEY, JSON.stringify({
+      version: 1,
+      groups: [{ id: 'old', name: 'Old', urls: ['https://a.example/'], pinned: true }],
+    }))
+    expect(loadCustomGroups()).toEqual([
+      { id: 'old', name: 'Old', urls: ['https://a.example/'], pinned: true },
+    ])
+
+    const groups = [{
+      id: 'new',
+      name: 'New',
+      urls: ['https://a.example/', 'https://b.example/'],
+      titles: { 'https://a.example/': 'Page A' },
+    }]
+    saveCustomGroups(groups)
+    expect(loadCustomGroups()).toEqual(groups)
+  })
+
+  it('drops malformed titles and titles of URLs the group no longer saves', () => {
+    localStorage.setItem(CUSTOM_GROUPS_KEY, JSON.stringify({
+      version: 1,
+      groups: [
+        { id: 'a', name: 'A', urls: ['https://a/'], titles: { 'https://a/': '  Page   A ', 'https://gone/': 'Gone' } },
+        { id: 'b', name: 'B', urls: ['https://b/'], titles: { 'https://b/': 7 } },
+        { id: 'c', name: 'C', urls: ['https://c/'], titles: ['nope'] },
+      ],
+    }))
+    expect(loadCustomGroups()).toEqual([
+      { id: 'a', name: 'A', urls: ['https://a/'], titles: { 'https://a/': 'Page A' } },
+      { id: 'b', name: 'B', urls: ['https://b/'] },
+      { id: 'c', name: 'C', urls: ['https://c/'] },
+    ])
+  })
+
   it('drops invalid groups, duplicate ids, and invalid or repeated URLs', () => {
     localStorage.setItem(CUSTOM_GROUPS_KEY, JSON.stringify({
       version: 1,

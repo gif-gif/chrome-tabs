@@ -36,6 +36,7 @@ export type IconName =
   | 'grip'
   | 'markdown'
   | 'open-in-new-window'
+  | 'folder-remove'
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'children' | 'name'> {
   name: IconName
@@ -169,6 +170,12 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   folder: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />,
+  'folder-remove': (
+    <>
+      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" />
+      <path d="M9 13h6" />
+    </>
+  ),
   plus: <path d="M12 5v14M5 12h14" />,
   edit: (
     <>

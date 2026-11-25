@@ -109,6 +109,7 @@ function createApi(): ChromeTabsApi {
     queryWindows: vi.fn(async () => windows),
     activateTab: vi.fn(async () => undefined),
     closeTab: vi.fn(async () => undefined),
+    openTab: vi.fn(async () => { throw new Error('unused') }),
     openTabInNewWindow: vi.fn(async () => undefined),
     moveTabs: vi.fn(async () => undefined),
     capturePage: vi.fn(async () => ({ html: '<p>Page</p>', url: 'https://example.com/', title: 'Page' })),

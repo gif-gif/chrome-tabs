@@ -4,10 +4,12 @@ import type {
   BrowserWindow,
   CustomTabGroup,
   DisplayCustomGroup,
+  DisplayCustomGroupEntry,
 } from '../types'
-import { createDisplayTab } from './tabs'
+import { createDisplayTab, matchesTabQuery, resolveSafeFaviconUrl } from './tabs'
 
 export const MAX_CUSTOM_GROUP_NAME_LENGTH = 40
+export const MAX_SAVED_TAB_TITLE_LENGTH = 300
 export const UNGROUPED_CUSTOM_GROUP_KEY = 'custom-ungrouped'
 
 export function normalizeCustomGroupName(name: string): string {
@@ -126,9 +128,103 @@ export function toggleCustomGroupUrl(
   return groups.map((group) => {
     if (group.id !== id) return group
     return group.urls.includes(url)
-      ? { ...group, urls: group.urls.filter((candidate) => candidate !== url) }
+      ? withoutUrl(group, url)
       : { ...group, urls: [...group.urls, url] }
   })
+}
+
+/** Removes a saved URL, and its remembered title, from one group. */
+export function removeCustomGroupUrl(
+  groups: readonly CustomTabGroup[],
+  id: string,
+  url: string,
+): CustomTabGroup[] {
+  return groups.map((group) =>
+    group.id === id && group.urls.includes(url) ? withoutUrl(group, url) : group,
+  )
+}
+
+function withoutUrl(group: CustomTabGroup, url: string): CustomTabGroup {
+  const { titles, ...rest } = group
+  const next: CustomTabGroup = { ...rest, urls: group.urls.filter((candidate) => candidate !== url) }
+  if (titles) {
+    const remaining = Object.fromEntries(
+      Object.entries(titles).filter(([titleUrl]) => titleUrl !== url),
+    )
+    if (Object.keys(remaining).length > 0) next.titles = remaining
+  }
+  return next
+}
+
+export function normalizeSavedTabTitle(title: string): string {
+  return title.trim().replace(/\s+/g, ' ').slice(0, MAX_SAVED_TAB_TITLE_LENGTH)
+}
+
+/**
+ * Remembers the current title of every open tab whose URL a group saved, so
+ * the entry keeps a readable name after the tab closes. Returns the input
+ * array itself when nothing changed, letting callers skip a storage write.
+ */
+export function syncCustomGroupTitles(
+  groups: CustomTabGroup[],
+  windows: readonly BrowserWindow[],
+): CustomTabGroup[] {
+  const titleByUrl = new Map<string, string>()
+  for (const tab of windows.flatMap((window) => window.tabs)) {
+    const title = normalizeSavedTabTitle(tab.title)
+    if (tab.url && title && !titleByUrl.has(tab.url)) titleByUrl.set(tab.url, title)
+  }
+
+  let changed = false
+  const next = groups.map((group) => {
+    let titles = group.titles
+    for (const url of group.urls) {
+      const title = titleByUrl.get(url)
+      if (title && titles?.[url] !== title) {
+        titles = { ...titles, [url]: title }
+      }
+    }
+    if (titles === group.titles) return group
+    changed = true
+    return { ...group, titles }
+  })
+  return changed ? next : groups
+}
+
+/**
+ * Finds the open tab for a saved URL: an exact URL match, preferring the
+ * first window in the given order (callers put the current window first),
+ * else the tab this popup opened for the URL while it is still loading or
+ * after a redirect changed its address.
+ */
+export function findOpenTabForUrl(
+  windows: readonly BrowserWindow[],
+  url: string,
+  linkedTabIds: ReadonlyMap<string, number> = new Map(),
+): BrowserTab | undefined {
+  const tabs = windows.flatMap((window) => window.tabs)
+  const linkedTabId = linkedTabIds.get(url)
+  return tabs.find((tab) => tab.url === url) ??
+    (linkedTabId === undefined ? undefined : tabs.find((tab) => tab.id === linkedTabId))
+}
+
+/**
+ * Lists the open tabs a group's close action closes: every tab showing one of
+ * its saved URLs, plus tabs linked to them while loading.
+ */
+export function listCustomGroupOpenTabs(
+  windows: readonly BrowserWindow[],
+  group: CustomTabGroup,
+  linkedTabIds: ReadonlyMap<string, number> = new Map(),
+): BrowserTab[] {
+  const urls = new Set(group.urls)
+  const linkedIds = new Set(group.urls.flatMap((url) => {
+    const tabId = linkedTabIds.get(url)
+    return tabId === undefined ? [] : [tabId]
+  }))
+  return windows
+    .flatMap((window) => window.tabs)
+    .filter((tab) => urls.has(tab.url) || linkedIds.has(tab.id))
 }
 
 /**
@@ -148,9 +244,19 @@ export function listSelectableTabs(windows: readonly BrowserWindow[]): BrowserTa
   return tabs
 }
 
+interface DisplayCustomGroupsOptions {
+  /** Search text; entries and ungrouped tabs that do not match are left out. */
+  query?: string
+  /** Tabs this popup opened for saved URLs, by URL. */
+  linkedTabIds?: ReadonlyMap<string, number>
+}
+
 /**
- * Builds the custom-group view. A tab appears in every group that saved its
- * URL; tabs in no group are collected in a trailing "ungrouped" section.
+ * Builds the custom-group view. Every saved URL is one row, in saved order
+ * with pinned tabs first: an open tab when one shows the URL, otherwise a
+ * "not open" entry the user can reopen. Open tabs in no group are collected
+ * in a trailing "ungrouped" section. `windows` must list every open tab with
+ * the current window first; the search query filters rows here.
  */
 export function createDisplayCustomGroups(
   windows: readonly BrowserWindow[],
@@ -159,31 +265,34 @@ export function createDisplayCustomGroups(
   overrides: ReadonlyMap<number, boolean>,
   t: Translator,
   pinnedTabIds: ReadonlySet<number> = new Set(),
+  { query = '', linkedTabIds = new Map() }: DisplayCustomGroupsOptions = {},
 ): DisplayCustomGroup[] {
   const tabs = windows.flatMap((window) => window.tabs)
-  const groupedUrls = new Set(groups.flatMap((group) => group.urls))
+  const groupedTabIds = new Set<number>()
 
   function toDisplayGroup(
     key: string,
     label: string,
-    groupTabs: BrowserTab[],
+    rows: DisplayCustomGroupEntry[],
     savedUrlCount: number,
     pinned: boolean,
   ): DisplayCustomGroup {
-    const displayTabs = groupTabs
-      .map((tab, originalIndex) => ({ tab, originalIndex }))
+    const entries = rows
+      .map((entry, originalIndex) => ({ entry, originalIndex }))
       .sort((left, right) => {
-        const leftPinned = pinnedTabIds.has(left.tab.id)
-        const rightPinned = pinnedTabIds.has(right.tab.id)
+        const leftPinned = left.entry.tab ? pinnedTabIds.has(left.entry.tab.id) : false
+        const rightPinned = right.entry.tab ? pinnedTabIds.has(right.entry.tab.id) : false
         return leftPinned === rightPinned
           ? left.originalIndex - right.originalIndex
           : leftPinned ? -1 : 1
       })
-      .map(({ tab }) => createDisplayTab(tab, globalMasked, overrides, t))
+      .map(({ entry }) => entry)
+    const displayTabs = entries.flatMap((entry) => entry.tab ? [entry.tab] : [])
 
     return {
       key,
       label,
+      entries,
       tabs: displayTabs,
       allMasked: displayTabs.length > 0 && displayTabs.every((tab) => tab.masked),
       savedUrlCount,
@@ -193,21 +302,45 @@ export function createDisplayCustomGroups(
 
   const orderedGroups = orderCustomGroups(groups)
   const displayGroups = orderedGroups.map((group) => {
-    const urls = new Set(group.urls)
-    return toDisplayGroup(
-      group.id,
-      group.name,
-      tabs.filter((tab) => urls.has(tab.url)),
-      group.urls.length,
-      Boolean(group.pinned),
-    )
+    const rows = group.urls.flatMap((url): DisplayCustomGroupEntry[] => {
+      const tab = findOpenTabForUrl(windows, url, linkedTabIds)
+      if (tab) {
+        groupedTabIds.add(tab.id)
+        return matchesTabQuery(tab.title, tab.url, query)
+          ? [{ url, tab: createDisplayTab(tab, globalMasked, overrides, t) }]
+          : []
+      }
+      const title = group.titles?.[url] ?? ''
+      if (!matchesTabQuery(title, url, query)) return []
+      return [{
+        url,
+        saved: {
+          url,
+          masked: globalMasked,
+          displayTitle: globalMasked ? t('informationHidden') : title || url,
+          displayUrl: globalMasked ? '' : url,
+          displayFavIconUrl: globalMasked ? undefined : resolveSafeFaviconUrl(undefined, url),
+        },
+      }]
+    })
+    return toDisplayGroup(group.id, group.name, rows, group.urls.length, Boolean(group.pinned))
   })
-  const ungroupedTabs = tabs.filter((tab) => !groupedUrls.has(tab.url))
+  const groupedUrls = new Set(groups.flatMap((group) => group.urls))
+  const ungroupedRows = tabs
+    .filter((tab) =>
+      !groupedUrls.has(tab.url) &&
+      !groupedTabIds.has(tab.id) &&
+      matchesTabQuery(tab.title, tab.url, query),
+    )
+    .map((tab): DisplayCustomGroupEntry => ({
+      url: tab.url,
+      tab: createDisplayTab(tab, globalMasked, overrides, t),
+    }))
 
-  return ungroupedTabs.length > 0
+  return ungroupedRows.length > 0
     ? [
         ...displayGroups,
-        toDisplayGroup(UNGROUPED_CUSTOM_GROUP_KEY, t('ungroupedTabs'), ungroupedTabs, 0, false),
+        toDisplayGroup(UNGROUPED_CUSTOM_GROUP_KEY, t('ungroupedTabs'), ungroupedRows, 0, false),
       ]
     : displayGroups
 }

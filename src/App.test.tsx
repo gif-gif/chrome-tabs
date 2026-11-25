@@ -553,6 +553,7 @@ function createTestApi(
   queryWindows: ReturnType<typeof vi.fn<ChromeTabsApi['queryWindows']>>
   activateTab: ReturnType<typeof vi.fn<ChromeTabsApi['activateTab']>>
   closeTab: ReturnType<typeof vi.fn<ChromeTabsApi['closeTab']>>
+  openTab: ReturnType<typeof vi.fn<ChromeTabsApi['openTab']>>
   openTabInNewWindow: ReturnType<typeof vi.fn<ChromeTabsApi['openTabInNewWindow']>>
   moveTabs: ReturnType<typeof vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>>
   capturePage: ReturnType<typeof vi.fn<ChromeTabsApi['capturePage']>>
@@ -561,6 +562,9 @@ function createTestApi(
     queryWindows: vi.fn(queryWindows),
     activateTab: vi.fn<ChromeTabsApi['activateTab']>(async () => undefined),
     closeTab: vi.fn<ChromeTabsApi['closeTab']>(async () => undefined),
+    openTab: vi.fn<ChromeTabsApi['openTab']>(async (url, windowId = 10) => ({
+      id: 900, windowId, index: 0, active: true, title: '', url,
+    })),
     openTabInNewWindow: vi.fn<ChromeTabsApi['openTabInNewWindow']>(async () => undefined),
     moveTabs: vi.fn<NonNullable<ChromeTabsApi['moveTabs']>>(async () => undefined),
     capturePage: vi.fn<ChromeTabsApi['capturePage']>(async (_tabId, url) => ({
@@ -1836,7 +1840,7 @@ describe('progressive sticky search toolbar', () => {
     await user.type(nameInput, '项目{Enter}')
     expect(screen.getByRole('region', { name: /^项目/ })).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: '删除 项目 分组' }))
+    await user.click(screen.getByRole('button', { name: '仅删除 项目 分组，保留其中的标签页' }))
     expect(confirm).toHaveBeenCalledWith('删除“项目”分组？分组里的标签页不会被关闭。')
     expect(screen.queryByRole('region', { name: /^项目/ })).not.toBeInTheDocument()
     expect(api.closeTab).not.toHaveBeenCalled()
@@ -1853,7 +1857,8 @@ describe('progressive sticky search toolbar', () => {
     const { container } = render(<App api={createTestApi()} />)
 
     await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
-    expect(screen.getByText('这个分组里的标签页当前都没有打开或不符合筛选条件。')).toBeInTheDocument()
+    const savedRow = screen.getByRole('button', { name: '重新打开 内容已隐藏' })
+    expect(savedRow).toHaveTextContent('未打开')
     await user.click(screen.getByRole('button', { name: '选择 工作 分组的标签页' }))
 
     expect(screen.getAllByRole('checkbox')).toHaveLength(4)
@@ -2022,9 +2027,156 @@ describe('progressive sticky search toolbar', () => {
       '重命名 工作 分组',
       '隐藏此分组信息',
       '置顶分组',
-      '关闭 工作 分组中的 0 个标签',
-      '删除 工作 分组',
+      '删除 工作 分组并关闭其中的 0 个标签页',
+      '仅删除 工作 分组，保留其中的标签页',
     ])
+  })
+
+  describe('saved custom group entries', () => {
+    const githubUrl = 'https://github.com/example/chrome-tabs'
+    const docsUrl = 'https://docs.example.com/project/overview'
+
+    function storeWorkGroup(urls: string[] = [githubUrl, docsUrl], extra: object = {}) {
+      localStorage.setItem('chrome-tabs.custom-groups.v1', JSON.stringify({
+        version: 1,
+        groups: [{ id: 'g1', name: '工作', urls, ...extra }],
+      }))
+    }
+
+    function storedGroups() {
+      return JSON.parse(localStorage.getItem('chrome-tabs.custom-groups.v1')!).groups
+    }
+
+    /** A test API whose tab list changes like Chrome's: closing removes the tab and notifies. */
+    function createLiveApi() {
+      let current = fixtureWindows.map((window) => ({ ...window, tabs: [...window.tabs] }))
+      let notify: () => void = () => undefined
+      const api = createTestApi(async () => current)
+      vi.mocked(api.subscribe).mockImplementation((listener: () => void) => {
+        notify = listener
+        return () => undefined
+      })
+      api.openTab.mockImplementation(async (_url, windowId = 10) => {
+        // Chrome reports a freshly created tab before its URL commits.
+        const tab = { id: 900, windowId, index: 99, active: true, title: '', url: '' }
+        current = current.map((window) => window.id === windowId ? { ...window, tabs: [...window.tabs, tab] } : window)
+        notify()
+        return tab
+      })
+      api.closeTab.mockImplementation(async (tabId) => {
+        current = current.map((window) => ({ ...window, tabs: window.tabs.filter((tab) => tab.id !== tabId) }))
+        notify()
+      })
+      return {
+        api,
+        closeElsewhere(tabId: number) {
+          current = current.map((window) => ({ ...window, tabs: window.tabs.filter((tab) => tab.id !== tabId) }))
+          act(() => notify())
+        },
+      }
+    }
+
+    async function openCustomView(api: ReturnType<typeof createTestApi>) {
+      storeUiPreferences(false)
+      const user = userEvent.setup()
+      render(<App api={api} />)
+      await user.click(await screen.findByRole('button', { name: '自定义分组视图' }))
+      return { user, work: screen.getByRole('region', { name: /^工作/ }) }
+    }
+
+    it('keeps an entry whose tab was closed elsewhere and shows it as not open', async () => {
+      storeWorkGroup()
+      const { api, closeElsewhere } = createLiveApi()
+      const { work } = await openCustomView(api)
+      expect(within(work).getByRole('button', { name: /^Project Documentation/ })).toBeInTheDocument()
+
+      closeElsewhere(201)
+
+      const reopen = await within(work).findByRole('button', { name: '重新打开 Project Documentation' })
+      expect(reopen).toHaveTextContent('未打开')
+      expect(reopen.closest('li')).toHaveClass('is-not-open')
+      expect(storedGroups()[0]).toMatchObject({
+        urls: [githubUrl, docsUrl],
+        titles: { [docsUrl]: 'Project Documentation' },
+      })
+    })
+
+    it('closes a tab from its row without removing the entry from the group', async () => {
+      storeWorkGroup()
+      const { api } = createLiveApi()
+      const { user, work } = await openCustomView(api)
+
+      const row = within(work).getByText('Project Documentation').closest('li')!
+      await user.click(within(row).getByRole('button', { name: '关闭标签页' }))
+      expect(api.closeTab).toHaveBeenCalledWith(201)
+
+      expect(await within(work).findByRole('button', { name: '重新打开 Project Documentation' })).toBeInTheDocument()
+      expect(storedGroups()[0].urls).toEqual([githubUrl, docsUrl])
+    })
+
+    it('reopens a not-open entry in the current window and switches to it', async () => {
+      storeWorkGroup([githubUrl, 'https://closed.example.com/'], { titles: { 'https://closed.example.com/': 'Closed page' } })
+      const { api } = createLiveApi()
+      const { user, work } = await openCustomView(api)
+
+      await user.click(within(work).getByRole('button', { name: '重新打开 Closed page' }))
+      expect(api.openTab).toHaveBeenCalledWith('https://closed.example.com/', 10)
+      expect(api.activateTab).not.toHaveBeenCalled()
+      // The new tab is still loading with no URL; it stays linked to the entry.
+      await waitFor(() => expect(within(work).queryByText('未打开')).not.toBeInTheDocument())
+    })
+
+    it('switches to the open tab when clicking an entry that is already open', async () => {
+      storeWorkGroup()
+      const { api } = createLiveApi()
+      const { user, work } = await openCustomView(api)
+
+      await user.click(within(work).getByRole('button', { name: /^Project Documentation/ }))
+      expect(api.activateTab).toHaveBeenCalledWith(201, 20)
+      expect(api.openTab).not.toHaveBeenCalled()
+    })
+
+    it('removes an entry from the group without closing its tab', async () => {
+      storeWorkGroup([githubUrl, 'https://closed.example.com/'])
+      const { api } = createLiveApi()
+      const { user, work } = await openCustomView(api)
+
+      const saved = within(work).getByRole('button', { name: '重新打开 https://closed.example.com/' }).closest('li')!
+      await user.click(within(saved).getByRole('button', { name: '移出分组' }))
+      const open = within(work).getByText('GitHub - Chrome Tabs').closest('li')!
+      await user.click(within(open).getByRole('button', { name: '移出分组' }))
+
+      expect(storedGroups()[0].urls).toEqual([])
+      expect(api.closeTab).not.toHaveBeenCalled()
+    })
+
+    it('deletes the group and closes its open tabs from the group close button', async () => {
+      storeWorkGroup([githubUrl, docsUrl, 'https://closed.example.com/'])
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const { api } = createLiveApi()
+      const { user, work } = await openCustomView(api)
+
+      const close = within(work).getByRole('button', { name: '删除 工作 分组并关闭其中的 2 个标签页' })
+      expect(close).toHaveAttribute('title', '删除 工作 分组并关闭其中的 2 个标签页')
+      await user.click(close)
+
+      expect(confirm).toHaveBeenCalledWith('删除“工作”分组并关闭其中 2 个已打开的标签页？')
+      expect(api.closeTab.mock.calls.map(([tabId]) => tabId)).toEqual([101, 201])
+      await waitFor(() => expect(screen.queryByRole('region', { name: /^工作/ })).not.toBeInTheDocument())
+      expect(storedGroups()).toEqual([])
+    })
+
+    it('keeps the group when one of its tabs fails to close', async () => {
+      storeWorkGroup()
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const { api } = createLiveApi()
+      api.closeTab.mockRejectedValueOnce(new Error('nope'))
+      const { user, work } = await openCustomView(api)
+
+      await user.click(within(work).getByRole('button', { name: /^删除 工作 分组并关闭/ }))
+      expect(await screen.findByText('无法关闭该分组，请重试。')).toBeInTheDocument()
+      expect(storedGroups()).toHaveLength(1)
+    })
   })
 
 

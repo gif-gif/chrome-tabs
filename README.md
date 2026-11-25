@@ -43,6 +43,8 @@ Type in the search box to filter by title or URL across all windows as you type.
 
 Open the folder view to create groups such as "Work" or "Trip", tick the tabs that belong in each one, then rename, pin, or drag the groups to reorder them. Groups are kept between sessions.
 
+A group remembers its pages by URL, so closing a tab — from the tab strip, another window, or the row's close button — keeps it in the group, greyed out and marked "Not open". Click an entry to switch to its tab, or to reopen it in a new tab if it is closed; after a browser restart, entries match their open tabs by URL again. Use "Remove from group" on a row to drop it from the group. The group's close button deletes the group and closes the tabs still open in it; the trash button deletes only the group and leaves its tabs open.
+
 ### Privacy mode & dark theme
 
 ![Dark theme with privacy mode](store-assets/images/en/screenshots/5-dark-private-1280x800.png)
@@ -79,9 +81,9 @@ The popup closes automatically when it loses focus and does not reduce the webpa
 Tab information is visible by default. Everything the extension stores stays in its own `localStorage` on your computer; it is not synced to your Google account, is never sent anywhere, and is removed when you uninstall the extension. That includes:
 
 - preferences: global privacy setting, view mode, language, and appearance;
-- the URLs of tabs you add to a custom group, and the names of your custom groups;
+- the URLs of tabs you add to a custom group with their last seen page titles (so closed entries stay recognizable), and the names of your custom groups;
 - pinned tabs and domains, and the tab order saved before sorting by domain (numeric tab IDs).
 
-Search text and per-tab or per-group privacy overrides live only for the current popup instance. Titles and favicons of open tabs are read only while the popup is open and are not saved. See the [privacy policy](store-assets/privacy-policy.en.md) for details.
+Search text and per-tab or per-group privacy overrides live only for the current popup instance. Titles and favicons of open tabs are read only while the popup is open and are not saved, except the titles of tabs in a custom group. See the [privacy policy](store-assets/privacy-policy.en.md) for details.
 
 The extension makes no network requests and sends no browsing data to a remote service. It requests the `tabs`, `favicon` and `clipboardWrite` permissions, plus `scripting` with optional site access (`optional_host_permissions: <all_urls>`) for "Copy as Markdown". Site access is only requested the first time that button is used. The page's current HTML is read by a read-only script injected on click and converted to Markdown locally, with no network request.
