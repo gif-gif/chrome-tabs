@@ -35,7 +35,7 @@ What the code actually does:
 | Data | Where it goes | 说明 |
 | --- | --- | --- |
 | Titles, URLs and favicons of open tabs | Read in memory to render the popup. Not sent anywhere. | 仅在内存中用于显示 |
-| URLs of tabs the user adds to a custom group, custom group names | Stored in the extension's own `localStorage` on the device (`chrome-tabs.custom-groups.v1`). Not synced, not sent anywhere. | 用户主动加入自定义分组的网址及分组名，保存在本机扩展 `localStorage` |
+| URLs of tabs the user adds to a custom group, those pages' last seen titles, custom group names | Stored in the extension's own `localStorage` on the device (`chrome-tabs.custom-groups.v1`) so closed entries stay recognizable and can be reopened. Not synced, not sent anywhere. | 用户主动加入自定义分组的网址、这些页面最近一次的标题及分组名，保存在本机扩展 `localStorage` |
 | Preferences (view mode, language, theme, privacy toggle), pinned tab IDs and domain names, pinned/collapsed custom groups, pre-sort tab order (numeric IDs) | Stored locally in `localStorage`. | 偏好设置、置顶项、自定义分组的置顶/折叠状态、排序前的标签顺序（数字 ID） |
 | Page HTML for "Copy as Markdown" | Read only on click, converted in memory, the result goes to the user's clipboard. Not stored, not sent. | 仅点击时读取，转换结果写入剪贴板，不保存不上传 |
 

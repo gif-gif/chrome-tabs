@@ -1,4 +1,4 @@
-import { normalizeCustomGroupName } from '../domain/customGroups'
+import { normalizeCustomGroupName, normalizeSavedTabTitle } from '../domain/customGroups'
 import type { CustomTabGroup } from '../types'
 
 export const CUSTOM_GROUPS_KEY = 'chrome-tabs.custom-groups.v1'
@@ -27,14 +27,29 @@ function parseGroup(value: unknown): CustomTabGroup | null {
     !Array.isArray(candidate.urls)
   ) return null
 
+  const urls = [...new Set(candidate.urls.filter(
+    (url): url is string => typeof url === 'string' && url.length > 0,
+  ))]
+  const titles = parseTitles(candidate.titles, urls)
   return {
     id: candidate.id,
     name,
-    urls: [...new Set(candidate.urls.filter(
-      (url): url is string => typeof url === 'string' && url.length > 0,
-    ))],
+    urls,
+    ...(titles ? { titles } : {}),
     ...(candidate.pinned === true ? { pinned: true } : {}),
   }
+}
+
+/** Keeps string titles of saved URLs only; groups saved before titles existed have none. */
+function parseTitles(value: unknown, urls: readonly string[]): Record<string, string> | undefined {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined
+  const record = value as Record<string, unknown>
+  const entries = urls.flatMap((url) => {
+    const title = Object.prototype.hasOwnProperty.call(record, url) ? record[url] : undefined
+    const normalized = typeof title === 'string' ? normalizeSavedTabTitle(title) : ''
+    return normalized ? [[url, normalized] as const] : []
+  })
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined
 }
 
 function getDefaultStorage(): CustomGroupsStorage | undefined {

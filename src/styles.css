@@ -585,6 +585,26 @@ a.extension-brand:focus-visible {
   opacity: 0.65;
 }
 
+/* Custom group rows carry an extra "remove from group" action. */
+.tab-row.has-group-action {
+  grid-template-columns: minmax(0, 1fr) repeat(7, var(--row-action-size));
+}
+
+/* A saved custom group entry whose tab is closed: greyed out until reopened. */
+.tab-row.is-not-open {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.tab-row.is-not-open .tab-main > img,
+.tab-row.is-not-open .tab-main > svg {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+.tab-row.is-not-open .tab-title {
+  color: var(--color-text-muted);
+}
+
 .tab-main {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);

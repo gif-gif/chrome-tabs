@@ -8,7 +8,7 @@ Tab Manager ("the extension") is a Chrome extension for finding and organizing o
 
 ### Information the extension accesses
 
-- **Open tabs.** With the `tabs` permission the extension reads the titles, URLs and icons of your open tabs to show, search and group them in its popup. This information is used in memory only while the popup is open and is not saved. Site icons come from Chrome's local favicon cache, not from the websites.
+- **Open tabs.** With the `tabs` permission the extension reads the titles, URLs and icons of your open tabs to show, search and group them in its popup. This information is used in memory only while the popup is open and is not saved, except the titles of tabs you put in a custom group (see below). Site icons come from Chrome's local favicon cache, not from the websites.
 - **Page content, only when you ask.** When you click "Copy as Markdown" on a tab, the extension reads that page's current HTML once, converts it to Markdown inside the popup and places the result on your clipboard. The page content and the result are not saved or uploaded. The extension asks for site access the first time you use this feature; you can decline or revoke it at any time in `chrome://extensions`.
 - **Clipboard.** The extension writes to the clipboard only when you click "Copy tab link" or "Copy as Markdown". It never reads your clipboard.
 
@@ -17,7 +17,7 @@ Tab Manager ("the extension") is a Chrome extension for finding and organizing o
 So your setup is kept between sessions, the extension saves the following in its own `localStorage` on your computer:
 
 - your preferences: view mode, language, appearance and the privacy (hide titles and URLs) toggle;
-- your custom groups: their names, the URLs of the tabs you add to them, whether a group is pinned and which groups are collapsed;
+- your custom groups: their names, the URLs of the tabs you add to them and those pages' last seen titles (so a closed entry stays recognizable), whether a group is pinned and which groups are collapsed;
 - the tabs and domains you pin;
 - the tab order before you sort by domain, so it can be restored (numeric tab and window IDs only).
 

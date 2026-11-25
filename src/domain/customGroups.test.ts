@@ -6,13 +6,17 @@ import {
   addCustomGroup,
   createDisplayCustomGroups,
   deleteCustomGroup,
+  findOpenTabForUrl,
+  listCustomGroupOpenTabs,
   listSelectableTabs,
   moveCustomGroup,
   orderCustomGroups,
   reorderCustomGroup,
   toggleCustomGroupPin,
   normalizeCustomGroupName,
+  removeCustomGroupUrl,
   renameCustomGroup,
+  syncCustomGroupTitles,
   toggleCustomGroupUrl,
   UNGROUPED_CUSTOM_GROUP_KEY,
 } from './customGroups'
@@ -134,7 +138,7 @@ describe('listSelectableTabs', () => {
 })
 
 describe('createDisplayCustomGroups', () => {
-  it('lists the selected tabs per group and collects the rest as ungrouped', () => {
+  it('lists one row per saved URL in saved order and collects the rest as ungrouped', () => {
     const groups = [
       { id: 'work', name: '工作', urls: [githubUrl, docsUrl, 'https://closed.example.com'] },
       { id: 'mail', name: '邮件', urls: [mailUrl, githubUrl] },
@@ -143,9 +147,82 @@ describe('createDisplayCustomGroups', () => {
 
     expect(result.map((group) => [group.key, group.label, group.tabs.map((tab) => tab.id)])).toEqual([
       ['work', '工作', [101, 201]],
-      ['mail', '邮件', [101, 102]],
+      ['mail', '邮件', [102, 101]],
+    ])
+    expect(result[0].entries.map((entry) => entry.tab?.id ?? entry.url)).toEqual([
+      101, 201, 'https://closed.example.com',
     ])
     expect(result[0].savedUrlCount).toBe(3)
+  })
+
+  it('keeps a saved URL whose tab is closed as a not-open entry with its remembered title', () => {
+    const [group] = createDisplayCustomGroups(
+      windows,
+      [{
+        id: 'work',
+        name: '工作',
+        urls: ['https://closed.example.com/a', 'https://closed.example.com/b'],
+        titles: { 'https://closed.example.com/a': 'Closed page' },
+      }],
+      false,
+      new Map(),
+      t,
+    )
+    expect(group.tabs).toEqual([])
+    expect(group.entries.map((entry) => entry.saved)).toEqual([
+      expect.objectContaining({ displayTitle: 'Closed page', displayUrl: 'https://closed.example.com/a' }),
+      expect.objectContaining({ displayTitle: 'https://closed.example.com/b' }),
+    ])
+
+    const [masked] = createDisplayCustomGroups(
+      windows,
+      [{ id: 'work', name: '工作', urls: ['https://closed.example.com/a'], titles: { 'https://closed.example.com/a': 'Secret' } }],
+      true,
+      new Map(),
+      t,
+    )
+    expect(masked.entries[0].saved).toMatchObject({ masked: true, displayTitle: '内容已隐藏', displayUrl: '' })
+    expect(masked.entries[0].saved?.displayFavIconUrl).toBeUndefined()
+  })
+
+  it('filters saved entries by the search query, including closed ones', () => {
+    const [group] = createDisplayCustomGroups(
+      windows,
+      [{ id: 'work', name: '工作', urls: [githubUrl, 'https://closed.example.com/'], titles: { 'https://closed.example.com/': 'Quarterly report' } }],
+      false,
+      new Map(),
+      t,
+      new Set(),
+      { query: 'quarterly' },
+    )
+    expect(group.entries.map((entry) => entry.url)).toEqual(['https://closed.example.com/'])
+    expect(group.savedUrlCount).toBe(2)
+  })
+
+  it('matches a saved URL to its tab again after a restart changes tab ids', () => {
+    const groups = [{ id: 'work', name: '工作', urls: [mailUrl] }]
+    const restarted = windows.map((window) => ({
+      ...window,
+      tabs: window.tabs.map((tab) => ({ ...tab, id: tab.id + 5000 })),
+    }))
+    const [group] = createDisplayCustomGroups(restarted, groups, false, new Map(), t)
+    expect(group.entries[0].tab?.id).toBe(102 + 5000)
+  })
+
+  it('uses the tab opened for an entry while it loads, then excludes it from ungrouped', () => {
+    const loading = { id: 777, windowId: windows[0].id, index: 9, active: true, title: '', url: '' }
+    const input = [{ ...windows[0], tabs: [...windows[0].tabs, loading] }, windows[1]]
+    const result = createDisplayCustomGroups(
+      input,
+      [{ id: 'work', name: '工作', urls: ['https://closed.example.com/'] }],
+      false,
+      new Map(),
+      t,
+      new Set(),
+      { linkedTabIds: new Map([['https://closed.example.com/', 777]]) },
+    )
+    expect(result[0].entries[0].tab?.id).toBe(777)
+    expect(result.at(-1)?.tabs.map((tab) => tab.id)).not.toContain(777)
   })
 
   it('appends an ungrouped section only when some tabs are not in any group', () => {
@@ -192,5 +269,44 @@ describe('createDisplayCustomGroups', () => {
     )
     expect(result[0].tabs.map((tab) => tab.id)).toEqual([102, 101])
     expect(result[1]).toMatchObject({ key: 'empty', tabs: [], allMasked: false })
+  })
+})
+
+describe('saved custom group entries', () => {
+  it('prefers the tab in the first (current) window when several show the same URL', () => {
+    const duplicate = { ...windows[1].tabs[0], id: 999, url: githubUrl }
+    const input = [{ ...windows[1], tabs: [...windows[1].tabs, duplicate] }, windows[0]]
+    expect(findOpenTabForUrl(input, githubUrl)?.id).toBe(999)
+    expect(findOpenTabForUrl(windows, githubUrl)?.id).toBe(101)
+    expect(findOpenTabForUrl(windows, 'https://closed.example.com/')).toBeUndefined()
+  })
+
+  it('lists every open tab of a group, duplicates included', () => {
+    const duplicate = { ...windows[1].tabs[0], id: 999, url: githubUrl }
+    const input = [windows[0], { ...windows[1], tabs: [...windows[1].tabs, duplicate] }]
+    const group = { id: 'work', name: '工作', urls: [githubUrl, 'https://closed.example.com/'] }
+    expect(listCustomGroupOpenTabs(input, group).map((tab) => tab.id)).toEqual([101, 999])
+  })
+
+  it('remembers open tab titles and leaves unchanged groups untouched', () => {
+    const groups: CustomTabGroup[] = [{ id: 'work', name: '工作', urls: [githubUrl, 'https://closed.example.com/'] }]
+    const synced = syncCustomGroupTitles(groups, windows)
+    expect(synced[0].titles).toEqual({ [githubUrl]: 'GitHub - Chrome Tabs' })
+    expect(syncCustomGroupTitles(synced, windows)).toBe(synced)
+
+    const closed = windows.map((window) => ({ ...window, tabs: [] }))
+    expect(syncCustomGroupTitles(synced, closed)).toBe(synced)
+  })
+
+  it('removes one URL and its title from only the targeted group', () => {
+    const groups: CustomTabGroup[] = [
+      { id: 'work', name: '工作', urls: [githubUrl, mailUrl], titles: { [githubUrl]: 'GitHub', [mailUrl]: 'Mail' } },
+      { id: 'mail', name: '邮件', urls: [githubUrl] },
+    ]
+    expect(removeCustomGroupUrl(groups, 'work', githubUrl)).toEqual([
+      { id: 'work', name: '工作', urls: [mailUrl], titles: { [mailUrl]: 'Mail' } },
+      { id: 'mail', name: '邮件', urls: [githubUrl] },
+    ])
+    expect(removeCustomGroupUrl(groups, 'work', 'https://unknown.example.com/')[0]).toBe(groups[0])
   })
 })

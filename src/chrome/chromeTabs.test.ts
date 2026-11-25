@@ -42,6 +42,7 @@ function createChromeMock(windows: unknown = []) {
       update: vi.fn().mockResolvedValue(undefined),
       remove: vi.fn().mockResolvedValue(undefined),
       move: vi.fn().mockResolvedValue(undefined),
+      create: vi.fn().mockResolvedValue({ id: 31, windowId: 20, index: 4, active: true, title: '', url: '' }),
       onCreated: createEventMock(),
       onUpdated: createEventMock(),
       onMoved: createEventMock(),
@@ -376,6 +377,23 @@ describe('createChromeTabsApi operations', () => {
     const error = new Error('remove failed')
     chromeApi.tabs.remove.mockRejectedValueOnce(error)
     await expect(api.closeTab(8)).rejects.toBe(error)
+  })
+
+  it('opens a URL in a new active tab of the given window and focuses that window', async () => {
+    const chromeApi = createChromeMock()
+    const api = createChromeTabsApi(chromeApi as unknown as typeof chrome)
+
+    await expect(api.openTab('https://example.com/', 20)).resolves.toMatchObject({ id: 31, windowId: 20 })
+    expect(chromeApi.tabs.create).toHaveBeenCalledWith({ url: 'https://example.com/', active: true, windowId: 20 })
+    expect(chromeApi.windows.update).toHaveBeenCalledWith(20, { focused: true })
+
+    await api.openTab('https://example.com/')
+    expect(chromeApi.tabs.create).toHaveBeenLastCalledWith({ url: 'https://example.com/', active: true })
+
+    const error = new Error('create failed')
+    chromeApi.tabs.create.mockRejectedValueOnce(error)
+    await expect(api.openTab('https://example.com/')).rejects.toBe(error)
+    await expect(createSafeChromeTabsApi(undefined).openTab('https://example.com/')).rejects.toThrow()
   })
 })
 

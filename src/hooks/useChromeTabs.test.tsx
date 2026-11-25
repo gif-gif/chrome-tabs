@@ -35,6 +35,7 @@ function createApi(
     subscribe: subscribe as MockedFunction<ChromeTabsApi['subscribe']>,
     activateTab: vi.fn(() => Promise.resolve()),
     closeTab: vi.fn(() => Promise.resolve()),
+    openTab: vi.fn(() => Promise.reject(new Error('unused'))),
     openTabInNewWindow: vi.fn(() => Promise.resolve()),
     moveTabs: vi.fn(() => Promise.resolve()),
     capturePage: vi.fn(() => Promise.reject(new Error('unused'))),

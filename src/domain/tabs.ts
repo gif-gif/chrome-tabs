@@ -99,23 +99,22 @@ export function sortWindowsCurrentFirst(
     .map(({ window }) => window)
 }
 
+/** True when the search query is blank or found in the title or URL. */
+export function matchesTabQuery(title: string, url: string, query: string): boolean {
+  const normalizedQuery = query.trim().toLocaleLowerCase()
+  return (
+    !normalizedQuery ||
+    title.toLocaleLowerCase().includes(normalizedQuery) ||
+    url.toLocaleLowerCase().includes(normalizedQuery)
+  )
+}
+
 export function filterWindows(
   windows: BrowserWindow[],
   { query }: FilterWindowsOptions,
 ): BrowserWindow[] {
-  const normalizedQuery = query.trim().toLocaleLowerCase()
-
   return windows.flatMap((window) => {
-    const tabs = window.tabs.filter((tab) => {
-      if (!normalizedQuery) {
-        return true
-      }
-
-      return (
-        tab.title.toLocaleLowerCase().includes(normalizedQuery) ||
-        tab.url.toLocaleLowerCase().includes(normalizedQuery)
-      )
-    })
+    const tabs = window.tabs.filter((tab) => matchesTabQuery(tab.title, tab.url, query))
 
     return tabs.length > 0 ? [{ ...window, tabs: [...tabs] }] : []
   })

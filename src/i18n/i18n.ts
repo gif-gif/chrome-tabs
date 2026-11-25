@@ -14,6 +14,7 @@ export const messages = {
     subscriptionError: '实时同步暂时不可用，请重试。',
     activateError: '无法切换到该标签页，请重试。',
     closeTabError: '无法关闭该标签页，请重试。',
+    openSavedTabError: '无法打开该标签页，请重试。',
     openTabInNewWindowError: '无法在新窗口中打开该标签页，请重试。',
     copyLinkError: '无法复制链接，请重试。',
     markdownUnsupportedTip: '此页面不支持复制为 Markdown',
@@ -49,7 +50,6 @@ export const messages = {
     noTabsToChoose: '当前没有可选的标签页',
     savedTabNotOpen: '未打开',
     customGroupEmpty: '这个分组还没有标签页，点击勾选按钮添加。',
-    customGroupNoOpenTabs: '这个分组里的标签页当前都没有打开或不符合筛选条件。',
     customGroupHiddenByFilter: '另有 {count} 个已选标签被当前搜索或筛选隐藏',
     noCustomGroups: '还没有自定义分组',
     noCustomGroupsHint: '在上方输入名称新建一个分组，再勾选要放进去的标签页。',
@@ -76,7 +76,11 @@ export const messages = {
     closeDomainGroup: '关闭 {label} 分组中的 {count} 个标签',
     chooseGroupTabs: '选择 {label} 分组的标签页',
     renameCustomGroup: '重命名 {label} 分组',
-    deleteCustomGroup: '删除 {label} 分组',
+    deleteCustomGroup: '仅删除 {label} 分组，保留其中的标签页',
+    closeCustomGroup: '删除 {label} 分组并关闭其中的 {count} 个标签页',
+    closeCustomGroupConfirm: '删除“{label}”分组并关闭其中 {count} 个已打开的标签页？',
+    removeFromCustomGroup: '移出分组',
+    reopenSavedTab: '重新打开 {title}',
     dragCustomGroup: '拖动调整 {label} 分组的顺序，也可以用上下方向键',
     finishChoosingGroupTabs: '完成选择 {label} 分组的标签页',
     deleteCustomGroupConfirm: '删除“{label}”分组？分组里的标签页不会被关闭。',
@@ -122,6 +126,7 @@ export const messages = {
     subscriptionError: '即時同步暫時無法使用，請重試。',
     activateError: '無法切換到該分頁，請重試。',
     closeTabError: '無法關閉該分頁，請重試。',
+    openSavedTabError: '無法開啟該分頁，請重試。',
     openTabInNewWindowError: '無法在新視窗中開啟該分頁，請重試。',
     copyLinkError: '無法複製連結，請重試。',
     markdownUnsupportedTip: '此頁面不支援複製為 Markdown',
@@ -157,7 +162,6 @@ export const messages = {
     noTabsToChoose: '目前沒有可選的分頁',
     savedTabNotOpen: '未開啟',
     customGroupEmpty: '這個群組還沒有分頁，點選勾選按鈕新增。',
-    customGroupNoOpenTabs: '這個群組裡的分頁目前都沒有開啟或不符合篩選條件。',
     customGroupHiddenByFilter: '另有 {count} 個已選分頁被目前的搜尋或篩選隱藏',
     noCustomGroups: '還沒有自訂群組',
     noCustomGroupsHint: '在上方輸入名稱新增一個群組，再勾選要放進去的分頁。',
@@ -184,7 +188,11 @@ export const messages = {
     closeDomainGroup: '關閉 {label} 群組中的 {count} 個分頁',
     chooseGroupTabs: '選擇 {label} 群組的分頁',
     renameCustomGroup: '重新命名 {label} 群組',
-    deleteCustomGroup: '刪除 {label} 群組',
+    deleteCustomGroup: '僅刪除 {label} 群組，保留其中的分頁',
+    closeCustomGroup: '刪除 {label} 群組並關閉其中的 {count} 個分頁',
+    closeCustomGroupConfirm: '刪除「{label}」群組並關閉其中 {count} 個已開啟的分頁？',
+    removeFromCustomGroup: '移出群組',
+    reopenSavedTab: '重新開啟 {title}',
     dragCustomGroup: '拖曳調整 {label} 群組的順序，也可以使用上下方向鍵',
     finishChoosingGroupTabs: '完成選擇 {label} 群組的分頁',
     deleteCustomGroupConfirm: '刪除「{label}」群組？群組裡的分頁不會被關閉。',
@@ -230,6 +238,7 @@ export const messages = {
     subscriptionError: 'Live synchronization is temporarily unavailable. Please try again.',
     activateError: 'Unable to switch to this tab. Please try again.',
     closeTabError: 'Unable to close this tab. Please try again.',
+    openSavedTabError: 'Unable to open this tab. Please try again.',
     openTabInNewWindowError: 'Unable to open this tab in a new window. Please try again.',
     copyLinkError: 'Unable to copy the link. Please try again.',
     markdownUnsupportedTip: 'This page can\'t be copied as Markdown',
@@ -265,7 +274,6 @@ export const messages = {
     noTabsToChoose: 'No tabs to choose from',
     savedTabNotOpen: 'Not open',
     customGroupEmpty: 'This group has no tabs yet. Use the checklist button to add some.',
-    customGroupNoOpenTabs: 'None of the tabs in this group are open or match the current filter.',
     customGroupHiddenByFilter: '{count} more selected {count, plural, one {tab is} other {tabs are}} hidden by the current search or filter',
     noCustomGroups: 'No custom groups yet',
     noCustomGroupsHint: 'Enter a name above to create a group, then check the tabs to include.',
@@ -292,7 +300,11 @@ export const messages = {
     closeDomainGroup: 'Close {count} {count, plural, one {tab} other {tabs}} in {label} group',
     chooseGroupTabs: 'Choose tabs for {label} group',
     renameCustomGroup: 'Rename {label} group',
-    deleteCustomGroup: 'Delete {label} group',
+    deleteCustomGroup: 'Delete only the {label} group and keep its tabs open',
+    closeCustomGroup: 'Delete {label} group and close its {count} {count, plural, one {tab} other {tabs}}',
+    closeCustomGroupConfirm: 'Delete the "{label}" group and close its {count} open {count, plural, one {tab} other {tabs}}?',
+    removeFromCustomGroup: 'Remove from group',
+    reopenSavedTab: 'Reopen {title}',
     dragCustomGroup: 'Drag to reorder the {label} group, or use the up and down arrow keys',
     finishChoosingGroupTabs: 'Finish choosing tabs for {label} group',
     deleteCustomGroupConfirm: 'Delete the "{label}" group? Its tabs will not be closed.',
@@ -342,6 +354,9 @@ export interface TranslationParameters {
   chooseGroupTabs: { label: string }
   renameCustomGroup: { label: string }
   deleteCustomGroup: { label: string }
+  closeCustomGroup: { label: string; count: number }
+  closeCustomGroupConfirm: { label: string; count: number }
+  reopenSavedTab: { title: string }
   dragCustomGroup: { label: string }
   customGroupHiddenByFilter: { count: number }
   finishChoosingGroupTabs: { label: string }
